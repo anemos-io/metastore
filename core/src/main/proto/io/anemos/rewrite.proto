@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package io.anemos;
+
+message MessageRewriteRule {
+
+}
+
+message FieldRewriteRule {
+    bool flatten = 1;
+}

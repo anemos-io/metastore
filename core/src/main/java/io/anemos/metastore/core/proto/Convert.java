@@ -1,0 +1,45 @@
+package io.anemos.metastore.core.proto;
+
+import com.google.protobuf.DescriptorProtos;
+import com.google.protobuf.Descriptors;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Convert {
+
+    public static Map<String, DescriptorProtos.FileDescriptorProto> extractProtoMap(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
+        HashMap<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
+        fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
+        return map;
+    }
+
+    private static Descriptors.FileDescriptor convertToFileDescriptorMap(String name, Map<String, DescriptorProtos.FileDescriptorProto> inMap, Map<String, Descriptors.FileDescriptor> outMap) {
+        if (outMap.containsKey(name)) {
+            return outMap.get(name);
+        }
+        DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
+        List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
+        if (fileDescriptorProto.getDependencyCount() > 0) {
+            fileDescriptorProto.getDependencyList().forEach(dependencyName ->
+                    dependencies.add(convertToFileDescriptorMap(dependencyName, inMap, outMap)));
+        }
+        try {
+            Descriptors.FileDescriptor fileDescriptor = Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
+            outMap.put(name, fileDescriptor);
+            return fileDescriptor;
+        } catch (Descriptors.DescriptorValidationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
+        Map<String, DescriptorProtos.FileDescriptorProto> inMap = extractProtoMap(fileDescriptorSet);
+        Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
+        inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap));
+        return outMap;
+    }
+
+}

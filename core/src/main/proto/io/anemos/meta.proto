@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package io.anemos;
+
+message MessageMeta {
+    string description = 1;
+}
+
+message FieldMeta {
+    string description = 1;
+}

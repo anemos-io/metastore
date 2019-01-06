@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.protobeam.examples";
+option java_multiple_files = true;
+
+package io.anemos.protobeam.examples;
+
+message ProtoBeamBasicMessage {
+    string test_name = 1;
+    int32 test_index = 2;
+    ProtoBeamBasicPrimitive message = 3;
+    repeated ProtoBeamBasicPrimitive repeated_message = 4;
+}
+
+message ProtoBeamBasicPrimitive {
+    string test_name = 1;
+    int32 test_index = 2;
+    double primitive_double = 3;
+    float primitive_float = 4;
+    int32 primitive_int32 = 5;
+    int64 primitive_int64 = 6;
+    uint32 primitive_uint32 = 7;
+    uint64 primitive_uint64 = 8;
+    sint32 primitive_sint32 = 9;
+    sint64 primitive_sint64 = 10;
+    fixed32 primitive_fixed32 = 11;
+    fixed64 primitive_fixed64 = 12;
+    sfixed32 primitive_sfixed32 = 13;
+    sfixed64 primitive_sfixed64 = 14;
+    bool primitive_bool = 15;
+    string primitive_string = 16;
+    bytes primitive_bytes = 17;
+}
+
+message ProtoBeamBasicRepeatPrimitive {
+    string test_name = 1;
+    int32 test_index = 2;
+    repeated double repeated_double = 3;
+    repeated float repeated_float = 4;
+    repeated int32 repeated_int32 = 5;
+    repeated int64 repeated_int64 = 6;
+    repeated uint32 repeated_uint32 = 7;
+    repeated uint64 repeated_uint64 = 8;
+    repeated sint32 repeated_sint32 = 9;
+    repeated sint64 repeated_sint64 = 10;
+    repeated fixed32 repeated_fixed32 = 11;
+    repeated fixed64 repeated_fixed64 = 12;
+    repeated sfixed32 repeated_sfixed32 = 13;
+    repeated sfixed64 repeated_sfixed64 = 14;
+    repeated bool repeated_bool = 15;
+    repeated string repeated_string = 16;
+    repeated bytes repeated_bytes = 17;
+}
+
+message ProtoBeamBasicSpecial {
+    enum EnumSpecial {
+        UNKNOWN = 0;
+        FOO = 1;
+        BAR = 2;
+    }
+    oneof second_oneof {
+        int64 oneof_int64 = 12;
+        double oneof_double = 13;
+    }
+    string test_name = 1;
+    int32 test_index = 2;
+    EnumSpecial special_enum = 3;
+    repeated EnumSpecial repeated_enum = 4;
+
+    oneof special_oneof {
+        int32 oneof_int32 = 5;
+        bool oneof_bool = 6;
+        string oneof_string = 7;
+        ProtoBeamBasicPrimitive oneof_primitive = 8;
+    }
+
+    map<string, int32> x = 9;
+    map<string, string> y = 10;
+    map<string, ProtoBeamBasicPrimitive> z = 11;
+
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.metastore";
+
+package io.anemos.metastore;
+
+message Emptry {
+}
+
+
+service MetaStoreService {
+    rpc Test (Emptry) returns (Emptry);
+}

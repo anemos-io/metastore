@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.metastore";
+
+package io.anemos.metastore;
+
+enum RuleType {
+    UNSPECIFIED = 0;
+    LINT = 1;
+
+}
+
+enum Severity {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+}
+
+message RuleInfo {
+    string package_name = 1;
+    oneof f {
+        string message_name = 2;
+        string enum_name = 3;
+    }
+    Severity severity = 4;
+
+}
+
+message SchemaDiff {
+    repeated RuleInfo rules = 1;
+}
