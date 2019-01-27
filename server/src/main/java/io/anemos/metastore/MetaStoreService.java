@@ -1,5 +1,7 @@
 package io.anemos.metastore;
 
+import io.anemos.metastore.v1alpha1.MetaStoreServiceGrpc;
+import io.anemos.metastore.v1alpha1.Metastore;
 import io.grpc.stub.StreamObserver;
 
 public class MetaStoreService extends MetaStoreServiceGrpc.MetaStoreServiceImplBase {

@@ -1,12 +1,8 @@
 package io.anemos.metastore;
 
-import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.Convert;
-import io.anemos.metastore.core.proto.ProtoLanguageFileWriter;
-
-import java.io.*;
-import java.util.Map;
+import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.ProtoToAvroSchema;
 
 public class FooBar {
 
@@ -15,27 +11,16 @@ public class FooBar {
         String sd = "/Users/AlexVB/Repos/src/quantum.build/proton/modules/boreporting/_quantum/api/service_descriptor.pb";
 
 
-        DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(new FileInputStream(sd));
+        ProtoDescriptor pb = new ProtoDescriptor(sd);
 
-        Map<String, Descriptors.FileDescriptor> fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
 
-        fileDescriptorMap.forEach(
-                (k, v) -> {
-                    File file = new File("tmp/" + k);
-                    file.getParentFile().mkdirs();
-                    try (OutputStream out = new FileOutputStream(file)) {
-                        ProtoLanguageFileWriter.write(v, out);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
 
-                    System.out.println(k);
-                    //ProtoLanguageFileWriter.write(v, System.out);
-                }
+        //pb.writeToDirectory("tmp/");
 
-        );
+        String messsageTypeName =  "quantum.api.grpc.CampaignOverviewResponse";
+        Descriptors.Descriptor descriptor = pb.getDescriptorByName(messsageTypeName);
+
+        System.out.println(ProtoToAvroSchema.convert(pb,messsageTypeName ));
 
 //        ProtoBeamBasicSpecial.Builder builder = ProtoBeamBasicSpecial.newBuilder();
 //        ProtoBeamBasicSpecial build = builder.build();

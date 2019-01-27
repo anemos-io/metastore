@@ -4,6 +4,8 @@ import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.anemos.metastore.core.proto.Convert;
+import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
+import io.anemos.metastore.v1alpha1.Schemaregistry;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Map;
@@ -11,7 +13,7 @@ import java.util.Map;
 public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
 
     @Override
-    public void submitSchema(Schemaregistry.SchemaSubmitRequest request, StreamObserver<Schemaregistry.SchemaSubmitResponse> responseObserver) {
+    public void submitSchema(Schemaregistry.SchemaRequest request, StreamObserver<Schemaregistry.SchemaResponse> responseObserver) {
         DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;
         try {
             fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(request.getDescriptorBody());
@@ -26,12 +28,12 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
                     System.out.println(k);
                 });
 
-        responseObserver.onNext(Schemaregistry.SchemaSubmitResponse.newBuilder().build());
+        responseObserver.onNext(Schemaregistry.SchemaResponse.newBuilder().build());
         responseObserver.onCompleted();
     }
 
     @Override
-    public void verifySchema(Schemaregistry.SchemaSubmitRequest request, StreamObserver<Schemaregistry.SchemaSubmitResponse> responseObserver) {
+    public void verifySchema(Schemaregistry.SchemaRequest request, StreamObserver<Schemaregistry.SchemaResponse> responseObserver) {
         super.verifySchema(request, responseObserver);
     }
 }

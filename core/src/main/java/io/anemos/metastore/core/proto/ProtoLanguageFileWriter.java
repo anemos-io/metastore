@@ -29,9 +29,7 @@ public class ProtoLanguageFileWriter {
 
     public static String write(Descriptors.FileDescriptor fd) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
         write(fd, byteArrayOutputStream);
-        printWriter.flush();
         return byteArrayOutputStream.toString();
     }
 
@@ -318,8 +316,5 @@ public class ProtoLanguageFileWriter {
             writer.println("}");
         }
 
-    }
-
-    public static class MetaStoreService {
     }
 }

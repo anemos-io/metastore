@@ -24,6 +24,8 @@ dependencies {
     compile("io.grpc:grpc-services:1.17.1")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
 
+    implementation("com.google.code.gson:gson:2.8.5")
+
     testImplementation("junit:junit:4.12")
 }
 

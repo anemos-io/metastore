@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option java_package = "io.anemos.metastore";
+option java_package = "io.anemos.metastore.v1alpha1";
 
-package io.anemos.metastore;
+package anemos.metastore.v1alpha1;
 
 enum RuleType {
     UNSPECIFIED = 0;
