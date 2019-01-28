@@ -239,10 +239,11 @@ public class ProtoLanguageFileWriter {
 
             fileOptions();
 
-
-            writer.print("package ");
-            writer.print(fd.getPackage());
-            writer.println(";");
+            if (!fd.getPackage().isEmpty()) {
+                writer.print("package ");
+                writer.print(fd.getPackage());
+                writer.println(";");
+            }
 
             for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
                 writer.println();
