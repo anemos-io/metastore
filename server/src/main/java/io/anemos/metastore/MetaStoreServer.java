@@ -7,9 +7,6 @@ import io.grpc.protobuf.services.ProtoReflectionService;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * A sample gRPC server that serve the RouteGuide (see route_guide.proto) service.
- */
 public class MetaStoreServer {
     private static final Logger logger = Logger.getLogger(MetaStoreServer.class.getName());
 
@@ -26,11 +23,13 @@ public class MetaStoreServer {
     /**
      * Create a RouteGuide server using serverBuilder as a base and features as data.
      */
-    public MetaStoreServer(ServerBuilder<?> serverBuilder, int port) {
+    public MetaStoreServer(ServerBuilder<?> serverBuilder, int port) throws IOException {
         this.port = port;
+        MetaStore metaStore = new MetaStore();
+
         server = serverBuilder
-                .addService(new MetaStoreService())
-                .addService(new SchemaRegistryService())
+                .addService(new MetaStoreService(metaStore))
+                .addService(new SchemaRegistryService(metaStore))
                 .addService(ProtoReflectionService.newInstance())
                 .build();
     }

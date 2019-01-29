@@ -12,6 +12,10 @@ import java.util.Map;
 
 public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
 
+    public SchemaRegistryService(MetaStore metaStore) {
+
+    }
+
     @Override
     public void submitSchema(Schemaregistry.SchemaRequest request, StreamObserver<Schemaregistry.SchemaResponse> responseObserver) {
         DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;

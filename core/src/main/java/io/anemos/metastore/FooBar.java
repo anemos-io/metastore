@@ -17,7 +17,7 @@ public class FooBar {
 
         //pb.writeToDirectory("tmp/");
 
-        String messsageTypeName =  "quantum.api.grpc.CampaignOverviewResponse";
+        String messsageTypeName =  "quantum.api.grpc.CampaignOverviewRequest";
         Descriptors.Descriptor descriptor = pb.getDescriptorByName(messsageTypeName);
 
         System.out.println(ProtoToAvroSchema.convert(pb,messsageTypeName ));

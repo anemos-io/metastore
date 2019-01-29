@@ -28,25 +28,14 @@ public class ProtoDescriptor {
     }
 
 
-    public void writeToDirectory(String root) {
-        fileDescriptorMap.forEach(
-                (k, v) -> {
-                    File file = new File(root + k);
-                    file.getParentFile().mkdirs();
-                    try (OutputStream out = new FileOutputStream(file)) {
-                        ProtoLanguageFileWriter.write(v, out);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    System.out.println(k);
-                    //ProtoLanguageFileWriter.write(v, System.out);
-                }
-
-        );
-
+    public void writeToDirectory(String root) throws IOException {
+        for (Map.Entry<String, Descriptors.FileDescriptor> entry : fileDescriptorMap.entrySet()) {
+            File file = new File(root + entry.getKey());
+            file.getParentFile().mkdirs();
+            try (OutputStream out = new FileOutputStream(file)) {
+                ProtoLanguageFileWriter.write(entry.getValue(), out);
+            }
+        }
     }
 
 

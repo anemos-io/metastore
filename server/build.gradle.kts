@@ -6,6 +6,8 @@ plugins {
     id("com.google.protobuf") version "0.8.8"
     java
     idea
+    id("com.google.cloud.tools.jib") version "1.0.0"
+
 }
 
 repositories {
