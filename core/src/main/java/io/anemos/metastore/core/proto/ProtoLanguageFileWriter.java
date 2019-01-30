@@ -7,6 +7,7 @@ import com.google.protobuf.Message;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -276,6 +277,9 @@ public class ProtoLanguageFileWriter {
             writer.print("message ");
             writer.print(messageType.getName());
             writer.println(" {");
+
+            messageOptions(messageType, indent);
+
             for (Descriptors.Descriptor nestedType : messageType.getNestedTypes()) {
                 if (!nestedType.getOptions().getMapEntry()) {
                     messageType(nestedType, indent + 1);
@@ -315,6 +319,47 @@ public class ProtoLanguageFileWriter {
 
             indent(indent);
             writer.println("}");
+        }
+
+        private void messageOptions(Descriptors.Descriptor messageDescriptor, int indent) {
+            Map<Descriptors.FieldDescriptor, Object> allFields = messageDescriptor.getOptions().getAllFields();
+            allFields.forEach((fieldDescriptor, obj) -> {
+                for (Descriptors.FieldDescriptor subFieldDescriptor : fieldDescriptor.getMessageType().getFields()) {
+                    Message optionsMessage = (Message) obj;
+                    Object value = optionsMessage.getField(subFieldDescriptor);
+
+                    if (subFieldDescriptor.isRepeated()) {
+                        List<Object> repeatedMessage = (List<Object>) value;
+                        for (Object repeatedObject : repeatedMessage) {
+                            String optionsValue = getOptionValue(subFieldDescriptor, repeatedObject);
+                            printMessageOption(fieldDescriptor.getFullName(), subFieldDescriptor.getName(), optionsValue, indent + 1);
+                        }
+                    } else {
+                        String optionsValue = getOptionValue(subFieldDescriptor, value);
+                        printMessageOption(fieldDescriptor.getFullName(), subFieldDescriptor.getName(), optionsValue, indent + 1);
+                    }
+                }
+            });
+            writer.println();
+        }
+
+        private void printMessageOption(String packageName, String optionName, String value, int indent) {
+            if (!value.isEmpty()) {
+                indent(indent);
+                writer.println(String.format("option (%s).%s = %s;", packageName, optionName, value));
+            }
+        }
+
+        private String getOptionValue(Descriptors.FieldDescriptor descriptor, Object value) {
+            switch (descriptor.getType()) {
+                case STRING:
+                    return "\"" + (String) value + "\"";
+                case INT32:
+                    return Integer.toString((Integer) value);
+                case INT64:
+                    return Long.toString((Long) value);
+            }
+            return "";
         }
 
     }

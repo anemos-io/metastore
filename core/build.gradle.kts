@@ -46,6 +46,7 @@ protobuf {
                 id("grpc")
             }
         }
+        ofSourceSet("test")
     }
 }
 
