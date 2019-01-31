@@ -111,7 +111,7 @@ public class ProtoLanguageFileWriter {
                     break;
                 case MESSAGE: {
                     Descriptors.Descriptor messageType = field.getMessageType();
-                    if (field.getFile() == fd) {
+                    if (messageType.getFile() == fd) {
                         if (isMap(field)) {
                             writer.print("map<");
                             writeFieldType(messageType.findFieldByNumber(1));
