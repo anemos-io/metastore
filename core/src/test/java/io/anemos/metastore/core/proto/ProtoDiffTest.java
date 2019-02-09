@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class TreeShakeTest {
+public class ProtoDiffTest {
 
     @Test
     public void xxx() throws IOException {

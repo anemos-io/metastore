@@ -1,6 +1,7 @@
 package io.anemos.metastore.core.proto;
 
 import com.google.protobuf.DescriptorProtos;
+import io.anemos.metastore.v1alpha1.Diff;
 
 import java.util.*;
 
@@ -71,36 +72,68 @@ public class ProtoDiff {
     private Map<String, DescriptorProtos.FieldDescriptorProto> toMap4FieldDescriptor(List<DescriptorProtos.FieldDescriptorProto> in) {
         Map<String, DescriptorProtos.FieldDescriptorProto> out = new HashMap<>();
         in.forEach(descriptor -> {
-            out.put(descriptor.getName(), descriptor);
+            out.put(String.valueOf(descriptor.getNumber()), descriptor);
         });
         return out;
     }
 
 
-    private void diffMessageType(DescriptorProtos.DescriptorProto d_ref, DescriptorProtos.DescriptorProto d_new) {
-        diffFields(d_ref.getFieldList(), d_new.getFieldList());
+    private Diff.MessageDiff diffMessageType(DescriptorProtos.DescriptorProto d_ref, DescriptorProtos.DescriptorProto d_new) {
+        List<Diff.FieldDiff> diffs = diffFields(d_ref.getFieldList(), d_new.getFieldList());
+        if (diffs.size()==0) {
+            return null;
+        }
+        return Diff.MessageDiff.newBuilder()
+                .addAllDiffs(diffs)
+                .build();
     }
 
-    private void diffFields(List<DescriptorProtos.FieldDescriptorProto> f_ref, List<DescriptorProtos.FieldDescriptorProto> f_new) {
+    private List<Diff.FieldDiff> diffFields(List<DescriptorProtos.FieldDescriptorProto> f_ref, List<DescriptorProtos.FieldDescriptorProto> f_new) {
+        List<Diff.FieldDiff> diffs = new ArrayList<>();
+
         Map<String, DescriptorProtos.FieldDescriptorProto> m_ref = toMap4FieldDescriptor(f_ref);
         Map<String, DescriptorProtos.FieldDescriptorProto> m_new = toMap4FieldDescriptor(f_new);
 
         Set<String> onlyRef = onlyInLeft(m_ref, m_new);
-        Set<String> onlyNew = onlyInLeft(m_new, m_ref);
-        Set<String> common = onlyInCommon(m_new, m_ref);
-
-        common.forEach(k -> {
-            diffField(m_ref.get(k), m_new.get(k));
+        onlyRef.forEach(k -> {
+            DescriptorProtos.FieldDescriptorProto fd = m_ref.get(k);
+            diffs.add(Diff.FieldDiff.newBuilder()
+                    .setDelta(Diff.Delta.REMOVAL)
+                    .setField(Diff.Field.newBuilder()
+                            .setIndex(fd.getNumber())
+                            .setName(fd.getName())
+                            .setType("type?")
+                            .build())
+                    .build());
         });
+
+        Set<String> onlyNew = onlyInLeft(m_new, m_ref);
+        onlyNew.forEach(k -> {
+            DescriptorProtos.FieldDescriptorProto fd = m_new.get(k);
+            diffs.add(Diff.FieldDiff.newBuilder()
+                    .setDelta(Diff.Delta.ADDITION)
+                    .setField(Diff.Field.newBuilder()
+                            .setIndex(fd.getNumber())
+                            .setName(fd.getName())
+                            .setType("type?")
+                            .build())
+                    .build());
+        });
+
+        Set<String> common = onlyInCommon(m_new, m_ref);
+        common.forEach(k -> {
+            Diff.FieldDiff fieldDiff = diffField(m_ref.get(k), m_new.get(k));
+            if (fieldDiff != null) {
+                diffs.add(fieldDiff);
+            }
+        });
+        return diffs;
     }
 
-    private void diffField(DescriptorProtos.FieldDescriptorProto f_ref, DescriptorProtos.FieldDescriptorProto f_new) {
-
-        if (f_ref.equals(f_new)) {
-            System.out.println("equal");
-        } else {
-            System.out.println("NOT");
+    private Diff.FieldDiff diffField(DescriptorProtos.FieldDescriptorProto f_ref, DescriptorProtos.FieldDescriptorProto f_new) {
+        if (!f_ref.equals(f_new)) {
+            return Diff.FieldDiff.newBuilder().build();
         }
-
+        return null;
     }
 }

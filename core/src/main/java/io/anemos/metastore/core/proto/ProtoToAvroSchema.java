@@ -2,7 +2,6 @@ package io.anemos.metastore.core.proto;
 
 import com.google.gson.Gson;
 import com.google.protobuf.Descriptors;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +68,7 @@ public class ProtoToAvroSchema {
                     break;
                 }
                 case ENUM: {
-                    throw new NotImplementedException();
+                    throw new RuntimeException();
                 }
                 default:
                     if (f.isRepeated()) {
