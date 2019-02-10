@@ -1,0 +1,14 @@
+plugins {
+    id 'base'
+}
+
+ext.protobufVersion = "3.6.1"
+
+allprojects {
+    group = "io.anemos"
+    version = "0.0.3-SNAPSHOT"
+
+    repositories {
+        jcenter()
+    }
+}

@@ -1,0 +1,29 @@
+//pluginManagement {
+//    repositories {
+//        mavenLocal()
+//        maven("https://plugins.gradle.org/m2/")
+//    }
+//    resolutionStrategy {
+//        eachPlugin {
+//            if (requested.id.id == "com.google.protobuf") {
+//                useModule("com.google.protobuf:protobuf-gradle-plugin:0.8.8")
+////                useModule("com.google.protobuf:protobuf-gradle-plugin:${requested.version}")
+//            }
+//        }
+//    }
+//}
+
+
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven {
+            url = "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+rootProject.name = "metastore"
+
+include ':server'
+include ':core'
+
