@@ -14,13 +14,15 @@ public class ProtoDescriptor {
     private Map<String, Descriptors.Descriptor> descriptorMap;
 
 
-    public ProtoDescriptor(String sd) throws IOException {
-        DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(new FileInputStream(sd));
+    public ProtoDescriptor(String filePath) throws IOException {
+        this(new FileInputStream(filePath));
+    }
 
+    public ProtoDescriptor(InputStream inputStream) throws IOException {
+        DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(inputStream);
 
         fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
         indexDescriptorByName();
-
     }
 
     public Descriptors.FileDescriptor getFileDescriptorByFileName(String fileName) {

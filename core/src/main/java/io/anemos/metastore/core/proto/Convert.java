@@ -2,6 +2,8 @@ package io.anemos.metastore.core.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.ExtensionRegistry;
+import io.anemos.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +18,7 @@ public class Convert {
         return map;
     }
 
-    private static Descriptors.FileDescriptor convertToFileDescriptorMap(String name, Map<String, DescriptorProtos.FileDescriptorProto> inMap, Map<String, Descriptors.FileDescriptor> outMap) {
+    private static Descriptors.FileDescriptor convertToFileDescriptorMap(String name, Map<String, DescriptorProtos.FileDescriptorProto> inMap, Map<String, Descriptors.FileDescriptor> outMap, ExtensionRegistry extensionRegistry) {
         if (outMap.containsKey(name)) {
             return outMap.get(name);
         }
@@ -24,7 +26,7 @@ public class Convert {
         List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
         if (fileDescriptorProto.getDependencyCount() > 0) {
             fileDescriptorProto.getDependencyList().forEach(dependencyName ->
-                    dependencies.add(convertToFileDescriptorMap(dependencyName, inMap, outMap)));
+                    dependencies.add(convertToFileDescriptorMap(dependencyName, inMap, outMap, extensionRegistry)));
         }
         try {
             Descriptors.FileDescriptor fileDescriptor = Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
@@ -38,7 +40,16 @@ public class Convert {
     public static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
         Map<String, DescriptorProtos.FileDescriptorProto> inMap = extractProtoMap(fileDescriptorSet);
         Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
-        inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap));
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+
+        //TODO Find way to do this dynamically
+        Options.registerAllExtensions(registry);
+
+        outMap.forEach( (k, fileDescriptor) -> {
+            Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);
+        });
+
         return outMap;
     }
 

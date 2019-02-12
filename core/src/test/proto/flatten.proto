@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.protobeam.examples";
+option java_multiple_files = true;
+
+import "google/protobuf/wrappers.proto";
+import "io/anemos/annotations.proto";
+
+package io.anemos.protobeam.examples;
+
+message ToFlatten {
+    string test_string = 1;
+    int32 test_int32 = 2;
+
+    Meta meta = 666 [(io.anemos.field_rewrite) = {
+        flatten: true
+    }];
+}
+
+message Meta {
+    string m1 = 1;
+    int32 m2 = 2;
+}
