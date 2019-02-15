@@ -2,9 +2,8 @@ package io.anemos.metastore.core.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import io.anemos.Annotations;
-import io.anemos.Meta;
-import io.anemos.OptionsTest;
+import io.anemos.metastore.core.test.OptionsTest;
+import io.anemos.metastore.core.test.TestOption;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +43,7 @@ public class ProtoLanguageFileWriterTest {
         DescriptorProtos.DescriptorProto.Builder descriptor = DescriptorProtos.DescriptorProto.newBuilder();
         descriptor.setName("TestMessage");
 
-        OptionsTest.TestOption testOption = OptionsTest.TestOption.newBuilder()
+        TestOption testOption = TestOption.newBuilder()
                 .setString("testString")
                 .addRepeatedString("test1")
                 .addRepeatedString("test2")
@@ -74,13 +73,13 @@ public class ProtoLanguageFileWriterTest {
                 "\n" +
                 "\n" +
                 "message TestMessage {\n" +
-                "\toption (io.anemos.test_option).string = \"testString\";\n" +
-                "\toption (io.anemos.test_option).repeated_string = \"test1\";\n" +
-                "\toption (io.anemos.test_option).repeated_string = \"test2\";\n" +
-                "\toption (io.anemos.test_option).int32 = 2;\n" +
-                "\toption (io.anemos.test_option).repeated_int32 = 3;\n" +
-                "\toption (io.anemos.test_option).repeated_int32 = 4;\n" +
-                "\toption (io.anemos.test_option).int64 = 10;\n" +
+                "\toption (anemos.metastore.core.test.test_option).string = \"testString\";\n" +
+                "\toption (anemos.metastore.core.test.test_option).repeated_string = \"test1\";\n" +
+                "\toption (anemos.metastore.core.test.test_option).repeated_string = \"test2\";\n" +
+                "\toption (anemos.metastore.core.test.test_option).int32 = 2;\n" +
+                "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 3;\n" +
+                "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 4;\n" +
+                "\toption (anemos.metastore.core.test.test_option).int64 = 10;\n" +
                 "\n" +
                 "}\n";
         Assert.assertEquals(expected, outputStream.toString());

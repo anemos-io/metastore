@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-package io.anemos;
+package anemos.metastore.core.test;
 
 import "google/protobuf/descriptor.proto";
 
+option java_package = "io.anemos.metastore.core.test";
+option java_multiple_files = true;
 
 extend google.protobuf.MessageOptions {
     TestOption test_option = 66666667;

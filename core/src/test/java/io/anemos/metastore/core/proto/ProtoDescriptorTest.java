@@ -2,18 +2,11 @@ package io.anemos.metastore.core.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.UnknownFieldSet;
-import io.anemos.Annotations;
-import io.anemos.Rewrite;
-import io.anemos.protobeam.examples.ToFlatten;
+import io.anemos.Options;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.FileInputStream;
-import java.util.List;
 
 @RunWith(JUnit4.class)
 public class ProtoDescriptorTest {
@@ -30,7 +23,7 @@ public class ProtoDescriptorTest {
 //
         DescriptorProtos.FieldOptions options = fieldDescriptor.getOptions();
 
-        Assert.assertTrue(options.hasExtension(Annotations.fieldRewrite));
+        Assert.assertTrue(options.hasExtension(Options.fieldRewrite));
 
     }
 }
