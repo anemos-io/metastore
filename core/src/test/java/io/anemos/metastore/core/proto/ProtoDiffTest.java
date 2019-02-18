@@ -2,6 +2,7 @@ package io.anemos.metastore.core.proto;
 
 
 import com.google.protobuf.DescriptorProtos;
+import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import org.junit.Test;
 
 import java.io.FileInputStream;
@@ -20,6 +21,6 @@ public class ProtoDiffTest {
         DescriptorProtos.FileDescriptorSet fds2 = DescriptorProtos.FileDescriptorSet.parseFrom(new FileInputStream(sd2));
         DescriptorProtos.FileDescriptorProto fd2 = fds2.getFileList().get(0);
 
-        new ProtoDiff(fd1, fd2).diff();
+//        new ProtoDiff(fd1, fd2).diff();
     }
 }

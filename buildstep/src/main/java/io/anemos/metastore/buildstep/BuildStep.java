@@ -1,5 +1,9 @@
 package io.anemos.metastore.buildstep;
 
+import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.validate.ProtoLint;
+import io.anemos.metastore.core.proto.validate.ValidationResults;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,56 +41,64 @@ public class BuildStep {
         return f;
     }
 
-
     public static void main(String... args) throws IOException {
-        System.out.println("Success");
-
         File workspace = new File("/Users/AlexVB/Repos/src/github.com/googleapis/googleapis");
 
         File file = listProtos(workspace);
 
         try {
-
-            /*
-            protoc \
- -Iserver/src/main/proto \
- -I/usr/local/include \
- -I$GOOGLEAPIS_DIR \
- --descriptor_set_out=tmp/service_descriptor.pb \
- --include_imports \
- --include_source_info \
- server/src/main/proto/io/anemos/metastore/metastore.proto \
- server/src/main/proto/io/anemos/metastore/schemaregistry.proto
-             */
-
             List<String> command = new ArrayList<>();
             command.add("protoc");
-            command.add("-I/usr/local/include");
-            command.add("-I"+workspace.getCanonicalPath());
+            if (true) {
+                command.add("-Itmp/include");
+                command.add("-I" + workspace.getCanonicalPath());
+            }
             command.add("--descriptor_set_out=tmp/descriptor.pb");
             command.add("--include_imports");
-            command.add("--include_source_info");
+//            command.add("--include_source_info");
             command.add("@" + file.getCanonicalPath());
 
-            ProcessBuilder builder = new ProcessBuilder(command);
-
-;
-            Process p = builder.start();
-
-            // enter code here
-
-            try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                String line;
-
-                while ((line = input.readLine()) != null) {
-                    System.out.println(line);
-                }
+            int pcexit = protoc(command);
+            if (pcexit > 0) {
+                System.exit(pcexit);
             }
-
         } catch (Exception err) {
             err.printStackTrace();
         }
 
-        System.exit(0);
+        ProtoDescriptor container = new ProtoDescriptor("tmp/descriptor.pb");
+
+
+        ValidationResults results = new ValidationResults();
+        ProtoLint lint = new ProtoLint(
+                container,
+                results
+        );
+        //lint.lintOnMessage(null);
+
+        lint.lint();
+        lint.lintOnFileName("google/monitoring/v3/notification_service.proto");
+
+        System.out.print(results.getResult());
+
+    }
+
+    private static int protoc(List<String> command) throws IOException {
+        ProcessBuilder builder = new ProcessBuilder(command);
+        Process p = builder.start();
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                System.err.println(line);
+            }
+        }
+        return p.exitValue();
     }
 }

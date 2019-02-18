@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "anemos/metastore/v1alpha1/diff.proto";
+import "anemos/metastore/v1alpha1/report.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
 
@@ -27,6 +27,6 @@ message SchemaRequest {
 }
 
 message SchemaResponse {
-    SchemaDiff diff = 1;
+    //SchemaDiff diff = 1;
 }
 

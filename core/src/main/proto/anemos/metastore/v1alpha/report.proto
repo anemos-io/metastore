@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.metastore.v1alpha1";
+
+package anemos.metastore.v1alpha1;
+
+enum RuleType {
+    UNSPECIFIED = 0;
+    LINT = 1;
+
+}
+
+enum Severity {
+    UNSET = 0;
+    INFO = 1;
+    WARNING = 2;
+    ERROR = 3;
+}
+
+enum Delta {
+    UNCHANGED = 0;
+    CHANGED = 1;
+    ADDITION = 2;
+    REMOVAL = 3;
+}
+
+enum TypeChange {
+    TYPE_UNCHANGED = 0;
+    TYPE_SAFE = 1;
+    TYPE_LOOSE_INFO = 2;
+}
+
+enum LintRule {
+    LINT_OK = 0;
+    LINT_MESSAGE_NAME = 1;
+    LINT_FIELD_NAME = 2;
+}
+
+message FileResult {
+    string file_name = 1;
+    repeated MessageResult message_results = 2;
+
+    int32 lint_errors = 10;
+    int32 lint_warnings = 11;
+    int32 lint_infos = 12;
+    int32 diff_errors = 13;
+    int32 diff_warnings = 14;
+    int32 diff_infos = 15;
+}
+
+message MessageResult {
+    string package = 1;
+    string name = 2;
+
+    //    Delta delta = 2;
+
+    repeated RuleInfo info = 3;
+
+    repeated FieldResult field_results = 4;
+
+
+    int32 lint_errors = 10;
+    int32 lint_warnings = 11;
+    int32 lint_infos = 12;
+    int32 diff_errors = 13;
+    int32 diff_warnings = 14;
+    int32 diff_infos = 15;
+}
+
+message FieldResult {
+    int32 index = 1;
+    string name = 2;
+
+    repeated RuleInfo info = 3;
+
+    DeltaPatch delta = 4;
+
+    int32 lint_errors = 10;
+    int32 lint_warnings = 11;
+    int32 lint_infos = 12;
+    int32 diff_errors = 13;
+    int32 diff_warnings = 14;
+    int32 diff_infos = 15;
+}
+
+//message FieldRef {
+//    int32 index = 1;
+//    string name = 2;
+//    string type = 3;
+//    TypeChange type_change = 4;
+//}
+
+message DeltaPatch {
+    string from_name = 1;
+    string to_name = 2;
+    Delta type = 3;
+    string from_type = 4;
+    string to_type = 5;
+
+}
+
+message RuleInfo {
+    RuleType type = 1;
+    oneof rule {
+        LintRule lint_rule = 2;
+    }
+    Severity severity = 4;
+
+}
+
+message SchemaDiff {
+    repeated RuleInfo rules = 1;
+}

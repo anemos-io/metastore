@@ -4,9 +4,7 @@ import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProtoDescriptor {
 
@@ -14,14 +12,24 @@ public class ProtoDescriptor {
     private Map<String, Descriptors.Descriptor> descriptorMap;
 
 
-    public ProtoDescriptor(String filePath) throws IOException {
-        this(new FileInputStream(filePath));
+    public ProtoDescriptor(String file) throws IOException {
+        this(new File(file));
+    }
+
+    public ProtoDescriptor(File file) throws IOException {
+        this(new FileInputStream(file));
     }
 
     public ProtoDescriptor(InputStream inputStream) throws IOException {
         DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(inputStream);
-
         fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
+        indexDescriptorByName();
+    }
+
+    public ProtoDescriptor(Descriptors.Descriptor descriptor) throws IOException {
+        fileDescriptorMap = new HashMap<>();
+        Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
+        fileDescriptorMap.put(fileDescriptor.getFullName(),fileDescriptor);
         indexDescriptorByName();
     }
 
@@ -29,6 +37,13 @@ public class ProtoDescriptor {
         return fileDescriptorMap.get(fileName);
     }
 
+    public Set<String> getFileNames() {
+        return fileDescriptorMap.keySet();
+    }
+
+    public Collection<Descriptors.FileDescriptor> getFileDescriptors() {
+        return fileDescriptorMap.values();
+    }
 
     public void writeToDirectory(String root) throws IOException {
         for (Map.Entry<String, Descriptors.FileDescriptor> entry : fileDescriptorMap.entrySet()) {
