@@ -1,6 +1,7 @@
 package io.anemos.metastore.buildstep;
 
 import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 
@@ -42,7 +43,8 @@ public class BuildStep {
     }
 
     public static void main(String... args) throws IOException {
-        File workspace = new File("/Users/AlexVB/Repos/src/github.com/googleapis/googleapis");
+        //File workspace = new File("/Users/AlexVB/Repos/src/github.com/googleapis/googleapis");
+        File workspace = new File("testsets/play");
 
         File file = listProtos(workspace);
 
@@ -67,17 +69,25 @@ public class BuildStep {
         }
 
         ProtoDescriptor container = new ProtoDescriptor("tmp/descriptor.pb");
+        ProtoDescriptor reference = new ProtoDescriptor("tmp/test1.pb");
 
 
         ValidationResults results = new ValidationResults();
+
         ProtoLint lint = new ProtoLint(
+                container,
+                results
+        );
+        ProtoDiff diff = new ProtoDiff(
+                reference,
                 container,
                 results
         );
         //lint.lintOnMessage(null);
 
         lint.lint();
-        lint.lintOnFileName("google/monitoring/v3/notification_service.proto");
+        diff.diffOnFileName("test/v1alpha1/simple.proto");
+//        lint.lintOnFileName("google/monitoring/v3/notification_service.proto");
 
         System.out.print(results.getResult());
 

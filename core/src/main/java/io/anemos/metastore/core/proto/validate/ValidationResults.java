@@ -43,7 +43,7 @@ public class ValidationResults {
         messageResult.addResult(ruleInfo);
     }
 
-    void setPatch(Descriptors.FieldDescriptor fd, Report.DeltaPatch patch) {
+    void setPatch(Descriptors.FieldDescriptor fd, Report.ChangeInfo patch) {
         MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
         messageResult.addPatch(fd, patch);
     }
@@ -60,7 +60,7 @@ public class ValidationResults {
 
     class FieldResultContainer {
         List<Report.RuleInfo> info = new ArrayList();
-        Report.DeltaPatch patch;
+        Report.ChangeInfo patch;
         String name;
         int number;
 
@@ -73,12 +73,12 @@ public class ValidationResults {
                     .setName(name)
                     .addAllInfo(info);
             if (patch != null) {
-                builder.setDelta(patch);
+                builder.setChange(patch);
             }
             return builder.build();
         }
 
-        public void addPatch(Report.DeltaPatch patch) {
+        public void addPatch(Report.ChangeInfo patch) {
             this.patch = patch;
         }
     }
@@ -88,14 +88,14 @@ public class ValidationResults {
 
         List<Report.RuleInfo> info = new ArrayList<>();
         Map<String, FieldResultContainer> fieldMap = new HashMap<>();
-        Report.DeltaPatch patch;
+        Report.ChangeInfo patch;
 
         public void add(Descriptors.FieldDescriptor field, Report.RuleInfo ruleInfo) {
             FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
             fieldResultContainer.add(ruleInfo);
         }
 
-        public void addPatch(Descriptors.FieldDescriptor field, Report.DeltaPatch patch) {
+        public void addPatch(Descriptors.FieldDescriptor field, Report.ChangeInfo patch) {
             FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
             fieldResultContainer.addPatch(patch);
         }
@@ -123,7 +123,7 @@ public class ValidationResults {
             info.add(ruleInfo);
         }
 
-        public void addPatch(Report.DeltaPatch patch) {
+        public void addPatch(Report.ChangeInfo patch) {
             this.patch = patch;
         }
 

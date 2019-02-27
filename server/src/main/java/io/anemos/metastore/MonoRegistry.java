@@ -25,12 +25,9 @@ public class MonoRegistry {
 
 
 
-        ObjectId objectIdOfTree = repo.resolve("HEAD");
-
-        RevWalk walk = new RevWalk(repo);
-        RevTree tree = walk.parseTree(objectIdOfTree);
-
-
-        System.out.println(tree);
+//        ObjectId objectIdOfTree = repo.resolve("HEAD");
+//        RevWalk walk = new RevWalk(repo);
+//        RevTree tree = walk.parseTree(objectIdOfTree);
+//        System.out.println(tree);
     }
 }

@@ -28,3 +28,12 @@ It can alse be used as a build step in a container based CI system.
 
 ## Roadmap
 
+## Quick setup
+
+Add the following to the `gradle.properties`
+
+```snapshotRepoUrl=https://you.maven.repo.example.com/repository/maven-snapshots/
+repoUrl=https://you.maven.repo.example.com/repository/maven-releases/
+repoUser=repo_user
+repoPass=repo_password```
+

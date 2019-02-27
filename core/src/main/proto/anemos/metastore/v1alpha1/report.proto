@@ -17,7 +17,7 @@ enum Severity {
     ERROR = 3;
 }
 
-enum Delta {
+enum ChangeType {
     UNCHANGED = 0;
     CHANGED = 1;
     ADDITION = 2;
@@ -52,8 +52,6 @@ message MessageResult {
     string package = 1;
     string name = 2;
 
-    //    Delta delta = 2;
-
     repeated RuleInfo info = 3;
 
     repeated FieldResult field_results = 4;
@@ -73,7 +71,7 @@ message FieldResult {
 
     repeated RuleInfo info = 3;
 
-    DeltaPatch delta = 4;
+    ChangeInfo change = 4;
 
     int32 lint_errors = 10;
     int32 lint_warnings = 11;
@@ -83,17 +81,10 @@ message FieldResult {
     int32 diff_infos = 15;
 }
 
-//message FieldRef {
-//    int32 index = 1;
-//    string name = 2;
-//    string type = 3;
-//    TypeChange type_change = 4;
-//}
-
-message DeltaPatch {
+message ChangeInfo {
     string from_name = 1;
     string to_name = 2;
-    Delta type = 3;
+    ChangeType change_type = 3;
     string from_type = 4;
     string to_type = 5;
 

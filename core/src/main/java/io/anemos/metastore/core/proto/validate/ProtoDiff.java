@@ -95,8 +95,8 @@ public class ProtoDiff {
         Set<String> onlyRef = onlyInLeft(m_ref, m_new);
         onlyRef.forEach(k -> {
             Descriptors.FieldDescriptor fd = m_ref.get(k);
-            results.setPatch(fd, Report.DeltaPatch.newBuilder()
-                    .setType(Report.Delta.REMOVAL)
+            results.setPatch(fd, Report.ChangeInfo.newBuilder()
+                    .setChangeType(Report.ChangeType.REMOVAL)
                     .setFromName(fd.getName())
                     .setFromType("type?")
                     .build());
@@ -105,8 +105,8 @@ public class ProtoDiff {
         Set<String> onlyNew = onlyInLeft(m_new, m_ref);
         onlyNew.forEach(k -> {
             Descriptors.FieldDescriptor fd = m_new.get(k);
-            results.setPatch(fd, Report.DeltaPatch.newBuilder()
-                    .setType(Report.Delta.ADDITION)
+            results.setPatch(fd, Report.ChangeInfo.newBuilder()
+                    .setChangeType(Report.ChangeType.ADDITION)
                     .setToName(fd.getName())
                     .setToType("type?")
                     .build());
@@ -114,27 +114,27 @@ public class ProtoDiff {
 
         Set<String> common = onlyInCommon(m_new, m_ref);
         common.forEach(k -> {
-            Report.DeltaPatch fieldDiff = diffField(m_ref.get(k), m_new.get(k));
+            Report.ChangeInfo fieldDiff = diffField(m_ref.get(k), m_new.get(k));
             if (fieldDiff != null) {
                 results.setPatch(m_ref.get(k), fieldDiff);
             }
         });
     }
 
-    private Report.DeltaPatch diffField(Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
-        Report.DeltaPatch.Builder builder = Report.DeltaPatch.newBuilder();
+    private Report.ChangeInfo diffField(Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
+        Report.ChangeInfo.Builder builder = Report.ChangeInfo.newBuilder();
         if (!f_ref.getName().equals(f_new.getName())) {
-            builder.setType(Report.Delta.CHANGED);
+            builder.setChangeType(Report.ChangeType.CHANGED);
             builder.setFromName(f_ref.getName());
             builder.setToName(f_new.getName());
         }
-        if(!f_ref.getType().equals(f_new.getType())) {
-            builder.setType(Report.Delta.CHANGED);
+        if (!f_ref.getType().equals(f_new.getType())) {
+            builder.setChangeType(Report.ChangeType.CHANGED);
             builder.setFromType(f_ref.getType().name());
             builder.setToType(f_new.getType().name());
         }
 
-        if(builder.getType().equals(Report.Delta.CHANGED)) {
+        if (builder.getChangeType().equals(Report.ChangeType.CHANGED)) {
             return builder.build();
         }
         return null;

@@ -18,11 +18,9 @@ dependencies {
     runtime("io.grpc:grpc-netty-shaded:1.17.1")
     compile("io.grpc:grpc-services:1.17.1")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
-
+    // Support common types like, color, date, latlng, ...
+    compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     protobuf('io.anemos:protobeam-options-proto:0.0.3-SNAPSHOT')
-//    compile(group: 'io.anemos', name: 'protobeam-options-proto', version: '0.0.3-SNAPSHOT', classifier: 'proto')
-    
-
     implementation("com.google.code.gson:gson:2.8.5")
 
     testImplementation("junit:junit:4.12")
