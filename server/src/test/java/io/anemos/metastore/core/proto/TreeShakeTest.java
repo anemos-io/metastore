@@ -4,6 +4,7 @@ package io.anemos.metastore.core.proto;
 import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.FileInputStream;
@@ -11,6 +12,7 @@ import java.io.IOException;
 
 public class TreeShakeTest {
 
+    @Ignore
     @Test
     public void xxx() throws IOException {
         String sd1 = "../tmp/test1.pb";
