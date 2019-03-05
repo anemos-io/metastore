@@ -30,13 +30,13 @@ public class ProtoToAvroSchema {
             case FIXED64:
             case SINT64:
             case SFIXED64:
-                return "int";
+                return "long";
             case INT32:
             case FIXED32:
             case UINT32:
             case SINT32:
             case SFIXED32:
-                return "long";
+                return "int";
             case BOOL:
                 return "boolean";
             case STRING:

@@ -26,7 +26,13 @@ public class ProtoDiff {
         diffMessageTypes(fdRef.getMessageTypes(), fdNew.getMessageTypes());
         diffEnumTypes(fdRef.getEnumTypes(), fdNew.getEnumTypes());
         diffServices(fdRef.getServices(), fdNew.getServices());
+    }
 
+    public void diffOnMessage(String messageName){
+        Descriptors.Descriptor refDescriptor = proto_ref.getDescriptorByName(messageName);
+        Descriptors.Descriptor newDescriptor = proto_new.getDescriptorByName(messageName);
+
+        diffMessageType(refDescriptor, newDescriptor);
 
     }
 

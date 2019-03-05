@@ -1,0 +1,8 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestSingleString",
+  "fields": [
+    { "name": "field1", "type": "string" }
+  ]
+}
