@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package io.anemos.metastore.core.proto;
+option java_multiple_files = true;
+
+message TestSingleInt {
+    int32 field1 = 1;
+}
+
+message TestSingleBoolean {
+    bool field1 = 1;
+}
+
+message TestSingleLong {
+    int64 field1 = 1;
+}
+
+message TestSingleFloat {
+    float field1 = 1;
+}
+
+message TestSingleDouble {
+    double field1 = 1;
+}
+
+message TestSingleBytes {
+    bytes field1 = 1;
+}
+
+message TestSingleString {
+    string field1 = 1;
+}
