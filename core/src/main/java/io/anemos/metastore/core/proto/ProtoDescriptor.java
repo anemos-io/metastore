@@ -1,5 +1,6 @@
 package io.anemos.metastore.core.proto;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 
@@ -11,7 +12,6 @@ public class ProtoDescriptor {
     private Map<String, Descriptors.FileDescriptor> fileDescriptorMap;
     private Map<String, Descriptors.Descriptor> descriptorMap;
 
-
     public ProtoDescriptor(String file) throws IOException {
         this(new File(file));
     }
@@ -20,8 +20,20 @@ public class ProtoDescriptor {
         this(new FileInputStream(file));
     }
 
+    public ProtoDescriptor() {
+        DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.newBuilder().build();
+        fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
+        indexDescriptorByName();
+    }
+
     public ProtoDescriptor(InputStream inputStream) throws IOException {
         DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(inputStream);
+        fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
+        indexDescriptorByName();
+    }
+
+    public ProtoDescriptor(byte[] buffer) throws IOException {
+        DescriptorProtos.FileDescriptorSet fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(buffer);
         fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
         indexDescriptorByName();
     }
@@ -29,7 +41,7 @@ public class ProtoDescriptor {
     public ProtoDescriptor(Descriptors.Descriptor descriptor) throws IOException {
         fileDescriptorMap = new HashMap<>();
         Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
-        fileDescriptorMap.put(fileDescriptor.getFullName(),fileDescriptor);
+        fileDescriptorMap.put(fileDescriptor.getFullName(), fileDescriptor);
         indexDescriptorByName();
     }
 
@@ -78,5 +90,17 @@ public class ProtoDescriptor {
 
     public Descriptors.Descriptor getDescriptorByName(String messageName) {
         return descriptorMap.get(messageName);
+    }
+
+    public byte[] toByteArray() {
+        DescriptorProtos.FileDescriptorSet.Builder builder = DescriptorProtos.FileDescriptorSet.newBuilder();
+        fileDescriptorMap.forEach((name, fd) -> builder.addFile(fd.toProto()));
+        return builder.build().toByteArray();
+    }
+
+    public ByteString toByteString () {
+        DescriptorProtos.FileDescriptorSet.Builder builder = DescriptorProtos.FileDescriptorSet.newBuilder();
+        fileDescriptorMap.forEach((name, fd) -> builder.addFile(fd.toProto()));
+        return builder.build().toByteString();
     }
 }
