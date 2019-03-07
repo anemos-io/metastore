@@ -3,6 +3,10 @@ package io.anemos.metastore;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
+import io.opencensus.trace.Tracing;
+import io.opencensus.trace.config.TraceConfig;
+import io.opencensus.trace.config.TraceParams;
+import io.opencensus.trace.samplers.Samplers;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -38,6 +42,15 @@ public class MetaStoreServer {
      * Main method.  This comment makes the linter happy.
      */
     public static void main(String[] args) throws Exception {
+
+        // 2. Configure 100% sample rate, otherwise, few traces will be sampled.
+        TraceConfig traceConfig = Tracing.getTraceConfig();
+        TraceParams activeTraceParams = traceConfig.getActiveTraceParams();
+        traceConfig.updateActiveTraceParams(
+                activeTraceParams.toBuilder().setSampler(
+                        Samplers.alwaysSample()).build());
+
+
         MetaStoreServer server = new MetaStoreServer(8980);
         server.start();
         server.blockUntilShutdown();

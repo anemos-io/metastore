@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    compile(project(':proto'))
     compile("com.google.protobuf:protobuf-java:3.6.1")
     compile("io.grpc:grpc-stub:1.18.0")
     compile("io.grpc:grpc-protobuf:1.18.0")
@@ -22,6 +23,7 @@ dependencies {
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     protobuf('io.anemos:protobeam-options-proto:0.0.3-SNAPSHOT')
     implementation("com.google.code.gson:gson:2.8.5")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
 
     testImplementation("junit:junit:4.12")
 }

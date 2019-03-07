@@ -1,0 +1,42 @@
+plugins {
+    id("net.ltgt.apt") version "0.20"
+    id("com.google.protobuf") version "0.8.8"
+    id 'java'
+    id 'idea'
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile("com.google.protobuf:protobuf-java:3.6.1")
+    compile("io.grpc:grpc-stub:1.17.1")
+    compile("io.grpc:grpc-protobuf:1.17.1")
+    runtime("io.grpc:grpc-netty-shaded:1.17.1")
+    compile("io.grpc:grpc-services:1.17.1")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.6.1"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.15.1"
+        }
+    }
+    
+    generateProtoTasks {
+        ofSourceSet('main').each {
+            task ->
+                task.plugins {
+                    grpc {
+                    }
+                }
+
+        }
+        ofSourceSet("test")
+    }
+}

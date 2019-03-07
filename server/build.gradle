@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    compile(project(":proto"))
     compile(project(":core"))
     compile("com.google.protobuf:protobuf-java:3.6.1")
     compile("io.grpc:grpc-stub:1.17.1")
@@ -20,6 +21,13 @@ dependencies {
     runtime("io.grpc:grpc-netty-shaded:1.17.1")
     compile("io.grpc:grpc-services:1.17.1")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
+
+    compile("io.opencensus:opencensus-api:0.19.2")
+    runtime("io.opencensus:opencensus-impl:0.19.2")
+    runtime("io.opencensus:opencensus-contrib-grpc-metrics:0.19.2")
+    runtime("io.opencensus:opencensus-exporter-trace-stackdriver:0.19.2")
+
+    implementation('com.google.cloud:google-cloud-storage:1.63.0')
 
     testImplementation("junit:junit:4.12")
 }
@@ -47,4 +55,21 @@ protobuf {
     }
 }
 
+jib {
+    from {
+        image = containerRepoBase + '/distroless/java-gcloud'
+    }
+    to {
+        image = conrainerRepoTarget + '/metaserver'
+    }
+    container {
+        mainClass = 'io.anemos.metastore.MetaStoreServer'
+        jvmFlags = ['-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=metaserver',
+                    '-agentpath:/opt/cdbg/cdbg_java_agent.so',
+                    '-Dcom.google.cdbg.auth.serviceaccount.enable=true',
+                    '-Dcom.google.cdbg.module=metaserver',
+                    '-Dcom.google.cdbg.version=v2019.3.1.1250' ]
+        volumes = ['/var/run/secrets/google']
+    }
+}
 

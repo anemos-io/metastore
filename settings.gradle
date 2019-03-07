@@ -24,7 +24,8 @@ pluginManagement {
 }
 rootProject.name = "metastore"
 
+include ':proto'
 include ':core'
 include ':server'
-include ':buildstep'
+include ':metastep'
 

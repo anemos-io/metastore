@@ -1,5 +1,6 @@
 package io.anemos.metastore;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -21,11 +22,6 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     @Override
     public void submitSchema(Schemaregistry.SubmitSchemaRequest request, StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
         DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;
-//        try {
-//            fileDescriptorProto = DescriptorProtos.FileDescriptorSet.parseFrom(request.getFdProtoSet());
-//        } catch (InvalidProtocolBufferException e) {
-//            e.printStackTrace();
-//        }
         ProtoDescriptor in = null;
         try {
             in = new ProtoDescriptor(request.getFdProtoSet().newInput());
@@ -33,16 +29,49 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
             e.printStackTrace();
         }
 
-//        Map<String, Descriptors.FileDescriptor> fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorProto);
-//
-//        fileDescriptorMap.forEach(
-//                (k, v) -> {
-//                    System.out.println(k);
-//                });
+        metaStore.repo = in;
+        metaStore.write();
+
+
+        responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
+                .newBuilder()
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void verifySchema(Schemaregistry.SubmitSchemaRequest request, StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
+        DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;
+
+        ProtoDescriptor in = null;
+        try {
+            in = new ProtoDescriptor(request.getFdProtoSet().newInput());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         ValidationResults results = new ValidationResults();
-        ProtoDiff diff = new ProtoDiff(metaStore.test, in, results);
-        diff.diffOnFileName("test/v1alpha1/simple.proto");
+        ProtoDiff diff = new ProtoDiff(metaStore.repo, in, results);
+
+        request.getScopeList().forEach(scope -> {
+            switch (scope.getEntityScopeCase()) {
+                case FILE_NAME:
+                    diff.diffOnFileName(scope.getFileName());
+                    break;
+                case MESSAGE_NAME:
+                    break;
+                case SERVICE_NAME:
+                    break;
+                case ENUM_NAME:
+                    break;
+                default:
+            }
+
+//            String messageName = scope.;
+//            diff.diffOnFileName();
+        });
+
 
         responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
                 .newBuilder()
@@ -52,7 +81,11 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     }
 
     @Override
-    public void verifySchema(Schemaregistry.SubmitSchemaRequest request, StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
-        super.verifySchema(request, responseObserver);
+    public void getSchema(Schemaregistry.GetSchemaRequest request, StreamObserver<Schemaregistry.GetSchemaResponse> responseObserver) {
+        responseObserver.onNext(Schemaregistry.GetSchemaResponse
+                .newBuilder()
+                .setFdProtoSet(ByteString.copyFrom(metaStore.repo.toByteArray()))
+                .build());
+        responseObserver.onCompleted();
     }
 }

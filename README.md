@@ -30,10 +30,18 @@ It can alse be used as a build step in a container based CI system.
 
 ## Quick setup
 
-Add the following to the `gradle.properties`
+Create a file `gradle/properties.gradle`
 
-```snapshotRepoUrl=https://you.maven.repo.example.com/repository/maven-snapshots/
-repoUrl=https://you.maven.repo.example.com/repository/maven-releases/
-repoUser=repo_user
-repoPass=repo_password```
+```
+ext {
+    snapshotRepoUrl = "https ://you.maven.repo.example/repository/maven-snapshots/"
+    repoUrl = "https ://you.maven.repo.example/repository/maven-releases/"
+    repoUser = "repo_user"
+    repoPass = "supersecret"
 
+    containerRepoBase = "eu.gcr.io/my-repo"
+    conrainerRepoTarget = "eu.gcr.io/my-repo"
+}```
+
+Build protobeam (metastore has a dependency, but is not published to mavenrepo) and
+publish to local maven repo.

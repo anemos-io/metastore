@@ -29,3 +29,5 @@ tmp/*
 
 # private ignore
 work
+
+gradle/properties.gradle
