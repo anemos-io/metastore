@@ -2,6 +2,7 @@ package io.anemos.metastore.core.proto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -79,6 +80,34 @@ public class AvroToProtoSchemaTest {
         ValidationResults result = new ValidationResults();
         new ProtoDiff(getProtoDescriptor(TestSingleString.getDescriptor()), getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()), result)
                 .diffOnMessage("io.anemos.metastore.core.proto.TestSingleString");
+        Assert.assertEquals(0, result.getResult().getMessageResultsCount());
+    }
+
+    @Test
+    public void testComplexArray() throws IOException {
+        JsonNode node = getJsonNode("testComplexArray");
+        ValidationResults result = new ValidationResults();
+        new ProtoDiff(getProtoDescriptor(TestComplexArrayInt.getDescriptor()), getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()), result)
+                .diffOnMessage("io.anemos.metastore.core.proto.TestComplexArrayInt");
+        Assert.assertEquals(0, result.getResult().getMessageResultsCount());
+    }
+
+    @Test
+    public void testComplexEnum() throws IOException {
+        JsonNode node = getJsonNode("testComplexEnum");
+        ValidationResults result = new ValidationResults();
+        new ProtoDiff(getProtoDescriptor(TestComplexEnum.getDescriptor()), getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()), result)
+                .diffOnMessage("io.anemos.metastore.core.proto.TestComplexEnum");
+        Assert.assertEquals(0, result.getResult().getMessageResultsCount());
+
+    }
+
+    @Test
+    public void testComplexMap() throws IOException {
+        JsonNode node = getJsonNode("testComplexMap");
+        ValidationResults result = new ValidationResults();
+        new ProtoDiff(getProtoDescriptor(TestComplexEnum.getDescriptor()), getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()), result)
+                .diffOnMessage("io.anemos.metastore.core.proto.TestComplexMap");
         Assert.assertEquals(0, result.getResult().getMessageResultsCount());
     }
 
