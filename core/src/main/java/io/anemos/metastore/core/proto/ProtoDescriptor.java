@@ -5,7 +5,11 @@ import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ProtoDescriptor {
 
@@ -49,12 +53,18 @@ public class ProtoDescriptor {
         return fileDescriptorMap.get(fileName);
     }
 
+    public List<Descriptors.FileDescriptor> getFileDescriptorsByPackagePrefix(String packagePrefix) {
+        return fileDescriptorMap.values().stream().filter(fd -> fd.getPackage().startsWith(packagePrefix))
+                .collect(Collectors.toList());
+    }
+
     public Set<String> getFileNames() {
         return fileDescriptorMap.keySet();
     }
 
-    public Collection<Descriptors.FileDescriptor> getFileDescriptors() {
-        return fileDescriptorMap.values();
+    public List<Descriptors.FileDescriptor> getFileDescriptors() {
+        return fileDescriptorMap.values()
+                .stream().collect(Collectors.toList());
     }
 
     public void writeToDirectory(String root) throws IOException {
@@ -98,7 +108,7 @@ public class ProtoDescriptor {
         return builder.build().toByteArray();
     }
 
-    public ByteString toByteString () {
+    public ByteString toByteString() {
         DescriptorProtos.FileDescriptorSet.Builder builder = DescriptorProtos.FileDescriptorSet.newBuilder();
         fileDescriptorMap.forEach((name, fd) -> builder.addFile(fd.toProto()));
         return builder.build().toByteString();

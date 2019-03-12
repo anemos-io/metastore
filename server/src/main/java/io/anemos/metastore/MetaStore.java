@@ -34,7 +34,6 @@ public class MetaStore {
         }
         bucket = System.getenv("METASTORE_BUCKET");
         path = System.getenv("METASTORE_PATH");
-        path = System.getenv("METASTORE_PATH");
         project = System.getenv("GOOGLE_PROJECT_ID");
 
         read();

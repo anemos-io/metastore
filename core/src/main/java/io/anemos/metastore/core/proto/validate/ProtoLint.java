@@ -3,7 +3,9 @@ package io.anemos.metastore.core.proto.validate;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.v1alpha1.LintRule;
 import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.RuleInfo;
 
 import java.util.List;
 
@@ -53,8 +55,8 @@ public class ProtoLint {
     private void diffMessageType(Descriptors.Descriptor dp) {
         String name = dp.getName();
         if (!isCamelCase(name)) {
-            results.addResult(dp, Report.RuleInfo.newBuilder()
-                    .setLintRule(Report.LintRule.LINT_MESSAGE_NAME)
+            results.addResult(dp, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_MESSAGE_NAME)
                     .build()
             );
         }
@@ -68,8 +70,8 @@ public class ProtoLint {
         String name = fd.getName();
         String suffix = isSnakeCase(name);
         if (suffix != null) {
-            results.addResult(fd, Report.RuleInfo.newBuilder()
-                    .setLintRule(Report.LintRule.LINT_FIELD_NAME)
+            results.addResult(fd, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_FIELD_NAME)
                     .build());
         }
     }

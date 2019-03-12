@@ -58,7 +58,7 @@ message SubmitSchemaRequest {
 
 message SubmitSchemaResponse {
     string schema_profile = 1;
-    map<string, FileResult> result = 2;
+    Report report = 2;
     int32 error_code = 3;
     //SchemaDiff diff = 1;
 }

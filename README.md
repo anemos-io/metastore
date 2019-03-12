@@ -41,7 +41,10 @@ ext {
 
     containerRepoBase = "eu.gcr.io/my-repo"
     conrainerRepoTarget = "eu.gcr.io/my-repo"
-}```
+}
+```
+
+Build the base images that jib uses, see README.md in base directory.
 
 Build protobeam (metastore has a dependency, but is not published to mavenrepo) and
 publish to local maven repo.

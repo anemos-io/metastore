@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 option java_package = "io.anemos.metastore.v1alpha1";
+option java_multiple_files = true;
 
 package anemos.metastore.v1alpha1;
 
@@ -36,16 +37,27 @@ enum LintRule {
     LINT_FIELD_NAME = 2;
 }
 
+message ResultCount {
+    int32 lint_errors = 1;
+    int32 lint_warnings = 2;
+    int32 lint_infos = 3;
+    int32 diff_errors = 4;
+    int32 diff_warnings = 5;
+    int32 diff_infos = 6;
+}
+
+message Report {
+    map<string, FileResult> file_results = 1;
+    map<string, MessageResult> message_results = 2;
+
+    ResultCount result_count = 4;
+}
+
 message FileResult {
     string file_name = 1;
-    repeated MessageResult message_results = 2;
+    repeated string message_result_ref = 2;
 
-    int32 lint_errors = 10;
-    int32 lint_warnings = 11;
-    int32 lint_infos = 12;
-    int32 diff_errors = 13;
-    int32 diff_warnings = 14;
-    int32 diff_infos = 15;
+    ResultCount result_count = 3;
 }
 
 message MessageResult {
@@ -54,15 +66,11 @@ message MessageResult {
 
     repeated RuleInfo info = 3;
 
-    repeated FieldResult field_results = 4;
+    ChangeInfo change = 4;
 
+    repeated FieldResult field_results = 5;
 
-    int32 lint_errors = 10;
-    int32 lint_warnings = 11;
-    int32 lint_infos = 12;
-    int32 diff_errors = 13;
-    int32 diff_warnings = 14;
-    int32 diff_infos = 15;
+    ResultCount result_count = 6;
 }
 
 message FieldResult {
@@ -73,12 +81,7 @@ message FieldResult {
 
     ChangeInfo change = 4;
 
-    int32 lint_errors = 10;
-    int32 lint_warnings = 11;
-    int32 lint_infos = 12;
-    int32 diff_errors = 13;
-    int32 diff_warnings = 14;
-    int32 diff_infos = 15;
+    ResultCount result_count = 5;
 }
 
 message ChangeInfo {

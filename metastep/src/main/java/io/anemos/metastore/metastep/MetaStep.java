@@ -3,6 +3,7 @@ package io.anemos.metastore.metastep;
 import com.google.protobuf.ByteString;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.ResultCount;
 import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
 import io.anemos.metastore.v1alpha1.Schemaregistry;
 import io.grpc.ManagedChannel;
@@ -14,7 +15,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 public class MetaStep {
@@ -224,18 +224,15 @@ public class MetaStep {
                         .build())
                 .build());
 
-        Map<String, Report.FileResult> resultMap = verifySchemaResponse.getResultMap();
+        Report report = verifySchemaResponse.getReport();
 
+        ResultCount resultCount = report.getResultCount();
         int errors = 0, warnings = 0, infos = 0;
-        for (Map.Entry<String, Report.FileResult> resultEntry : resultMap.entrySet()) {
-            Report.FileResult fileResult = resultEntry.getValue();
-            errors += fileResult.getDiffErrors();
-            errors += fileResult.getLintErrors();
-            warnings += fileResult.getLintWarnings();
-            warnings += fileResult.getDiffWarnings();
-
-            System.out.print(fileResult);
-        }
+        errors += resultCount.getDiffErrors();
+        errors += resultCount.getLintErrors();
+        warnings += resultCount.getLintWarnings();
+        warnings += resultCount.getDiffWarnings();
+        System.out.print(report);
 
         System.out.println(String.format("%d errors, %d warnings and %d infos", errors, warnings, infos));
         if (errors > 0) {

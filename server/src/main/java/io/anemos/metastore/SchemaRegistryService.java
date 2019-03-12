@@ -66,6 +66,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
                 case ENUM_NAME:
                     break;
                 default:
+                    diff.diffOnPackagePrefix(scope.getPackagePrefix());
             }
 
 //            String messageName = scope.;
@@ -75,7 +76,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
 
         responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
                 .newBuilder()
-                .putResult("", results.getResult())
+                .setReport(results.getReport())
                 .build());
         responseObserver.onCompleted();
     }
