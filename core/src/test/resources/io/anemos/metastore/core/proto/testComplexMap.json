@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestComplexMap",
+  "fields": [
+    {
+      "name": "field1",
+      "type": {
+        "type": "map",
+        "values": "string"
+      }
+    }
+  ]
+}

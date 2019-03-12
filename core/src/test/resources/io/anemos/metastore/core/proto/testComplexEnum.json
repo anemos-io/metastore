@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "TestComplexEnum",
+  "namespace": "io.anemos.metastore.core.proto",
+  "fields": [
+    {
+      "name": "field1",
+      "type": {
+        "name": "TestEnum",
+        "type": "enum",
+        "symbols": [
+          "UNKNOWN",
+          "RUNNING",
+          "STARTED"
+        ]
+      }
+    }
+  ]
+}

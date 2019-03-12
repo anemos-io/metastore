@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestComplexArrayInt",
+  "fields": [
+    {
+      "name": "field1",
+      "type": "array",
+      "items": "int"
+    }
+  ]
+}
