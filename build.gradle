@@ -5,7 +5,7 @@ plugins {
 ext.protobufVersion = "3.6.1"
 
 allprojects {
-    apply from: "${project.rootDir}/gradle/properties.gradle"
+    apply from: "${project.rootDir}/gradle/gradle.properties"
 
     group = "io.anemos"
     version = "0.0.3-SNAPSHOT"

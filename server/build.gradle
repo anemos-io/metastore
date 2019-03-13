@@ -60,7 +60,7 @@ jib {
         image = containerRepoBase + '/distroless/java-gcloud'
     }
     to {
-        image = conrainerRepoTarget + '/metaserver'
+        image = containerRepoTarget + '/metaserver'
     }
     container {
         mainClass = 'io.anemos.metastore.MetaStoreServer'

@@ -30,7 +30,7 @@ It can alse be used as a build step in a container based CI system.
 
 ## Quick setup
 
-Create a file `gradle/properties.gradle`
+Create a file `gradle/gradle.properties`
 
 ```
 ext {
@@ -40,7 +40,7 @@ ext {
     repoPass = "supersecret"
 
     containerRepoBase = "eu.gcr.io/my-repo"
-    conrainerRepoTarget = "eu.gcr.io/my-repo"
+    containerRepoTarget = "eu.gcr.io/my-repo"
 }
 ```
 

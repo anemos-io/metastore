@@ -30,4 +30,4 @@ tmp/*
 # private ignore
 work
 
-gradle/properties.gradle
+gradle/gradle.properties
