@@ -3,6 +3,7 @@ plugins {
     id("com.google.protobuf") version "0.8.8"
     id 'java'
     id 'idea'
+    id 'maven-publish'
 }
 
 repositories {
@@ -38,5 +39,31 @@ protobuf {
 
         }
         ofSourceSet("test")
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            if (project.version.endsWith('-SNAPSHOT')) {
+                url = uri(snapshotRepoUrl)
+            } else {
+                url = uri(repoUrl)
+            }
+            if (project.hasProperty('repoUser') && project.hasProperty('repoPass')) {
+                credentials {
+                    username repoUser
+                    password repoPass
+                }
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId 'io.anemos'
+            artifactId 'metastore-proto'
+            from components.java
+        }
     }
 }
