@@ -90,7 +90,7 @@ public class MetaStep {
 
     public static void main(String... args) throws IOException, ArgumentParserException {
 
-        System.out.println("MetaStep");
+        System.out.println("MetaStep v0.2");
         if (args[0].equals("sh")) {
             GitLabMagic gitLabMagic = new GitLabMagic();
 
@@ -236,6 +236,7 @@ public class MetaStep {
 
         System.out.println(String.format("%d errors, %d warnings and %d infos", errors, warnings, infos));
         if (errors > 0) {
+            System.err.println("Metastep failed.");
             System.exit(1);
         }
 

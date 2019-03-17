@@ -5,8 +5,7 @@ import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
-import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
-import io.anemos.metastore.v1alpha1.Schemaregistry;
+import io.anemos.metastore.v1alpha1.*;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
@@ -73,12 +72,29 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
 //            diff.diffOnFileName();
         });
 
+        Report report = results.getReport();
 
         responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
                 .newBuilder()
-                .setReport(results.getReport())
+                .setReport(demoHack(results.getReport()))
                 .build());
         responseObserver.onCompleted();
+    }
+
+    private Report demoHack(Report report) {
+        Report.Builder builder = Report.newBuilder(report);
+        int error = 0;
+        for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
+            for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
+                if (fieldResult.getChange().getChangeType() == ChangeType.REMOVAL) {
+                    error++;
+                }
+            }
+        }
+        builder.setResultCount(ResultCount.newBuilder()
+                .setDiffErrors(error)
+                .build());
+        return builder.build();
     }
 
     @Override
