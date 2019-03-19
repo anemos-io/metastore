@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "anemos/metastore/v1alpha1/report.proto";
+
+option java_package = "io.anemos.metastore.v1alpha1";
+
+package anemos.metastore.v1alpha1;
+
+service Profile {
+    rpc ProcessReport (ProcessReportRequest) returns (ProcessReportResponse);
+}
+
+message ProcessReportRequest {
+    Report report = 1;
+}
+
+message ProcessReportResponse {
+    Report report = 1;
+}

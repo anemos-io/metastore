@@ -55,7 +55,7 @@ public class ValidationResults {
         messageResult.addResult(ruleInfo);
     }
 
-    void setPatch(Descriptors.FieldDescriptor fd, ChangeInfo patch) {
+    void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
         MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
         messageResult.addPatch(fd, patch);
     }
@@ -81,7 +81,7 @@ public class ValidationResults {
 
     class FieldResultContainer {
         List<RuleInfo> info = new ArrayList();
-        ChangeInfo patch;
+        FieldChangeInfo patch;
         String name;
         int number;
 
@@ -92,6 +92,7 @@ public class ValidationResults {
         public FieldResult getResult() {
             FieldResult.Builder builder = FieldResult.newBuilder()
                     .setName(name)
+                    .setNumber(number)
                     .addAllInfo(info);
             if (patch != null) {
                 builder.setChange(patch);
@@ -99,7 +100,7 @@ public class ValidationResults {
             return builder.build();
         }
 
-        public void addPatch(ChangeInfo patch) {
+        public void addPatch(FieldChangeInfo patch) {
             this.patch = patch;
         }
     }
@@ -116,7 +117,7 @@ public class ValidationResults {
             fieldResultContainer.add(ruleInfo);
         }
 
-        public void addPatch(Descriptors.FieldDescriptor field, ChangeInfo patch) {
+        public void addPatch(Descriptors.FieldDescriptor field, FieldChangeInfo patch) {
             FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
             fieldResultContainer.addPatch(patch);
         }

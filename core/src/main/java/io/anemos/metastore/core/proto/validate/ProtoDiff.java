@@ -4,9 +4,12 @@ import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.v1alpha1.ChangeInfo;
 import io.anemos.metastore.v1alpha1.ChangeType;
+import io.anemos.metastore.v1alpha1.FieldChangeInfo;
 
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
 
 /**
  * File in package -> can be removed/added/keep the same
@@ -63,11 +66,11 @@ public class ProtoDiff {
         diffServices(refServiceDescriptors, newServiceDescriptors);
     }
 
-    public void diffOnMessage(String messageName){
+    public void diffOnMessage(String messageName) {
         Descriptors.Descriptor refDescriptor = proto_ref.getDescriptorByName(messageName);
         Descriptors.Descriptor newDescriptor = proto_new.getDescriptorByName(messageName);
 
-        diffMessageType(refDescriptor,newDescriptor);
+        diffMessageType(refDescriptor, newDescriptor);
     }
 
     public void diffOnPackagePrefix(String packagePrefix) {
@@ -163,7 +166,7 @@ public class ProtoDiff {
                     .setChangeType(ChangeType.REMOVAL)
                     .setFromName(fd.getName())
                     .build());
-            diffFileDescriptor(fd,null);
+            diffFileDescriptor(fd, null);
         });
 
         Set<String> onlyNew = onlyInLeft(m_new, m_ref);
@@ -183,58 +186,92 @@ public class ProtoDiff {
     }
 
     private void diffMessageType(Descriptors.Descriptor d_ref, Descriptors.Descriptor d_new) {
-        diffFields(d_ref.getFields(), d_new.getFields());
+        diffFields(d_ref, d_new);
     }
 
-    private void diffFields(List<Descriptors.FieldDescriptor> f_ref, List<Descriptors.FieldDescriptor> f_new) {
-        Map<String, Descriptors.FieldDescriptor> m_ref = toMap4FieldDescriptor(f_ref);
-        Map<String, Descriptors.FieldDescriptor> m_new = toMap4FieldDescriptor(f_new);
+    private void diffFields(Descriptors.Descriptor d_ref, Descriptors.Descriptor d_new) {
+        Map<String, Descriptors.FieldDescriptor> m_ref = toMap4FieldDescriptor(d_ref.getFields());
+        Map<String, Descriptors.FieldDescriptor> m_new = toMap4FieldDescriptor(d_new.getFields());
 
         Set<String> onlyRef = onlyInLeft(m_ref, m_new);
         onlyRef.forEach(k -> {
             Descriptors.FieldDescriptor fd = m_ref.get(k);
-            results.setPatch(fd, ChangeInfo.newBuilder()
-                    .setChangeType(ChangeType.REMOVAL)
+            FieldChangeInfo.Builder builder = FieldChangeInfo.newBuilder()
+                    .setChangeType(FIELD_REMOVED)
                     .setFromName(fd.getName())
-                    .setFromType("type?")
-                    .build());
+                    .setFromTypeValue(fd.getType().toProto().getNumber())
+                    .setFromDeprecated(isDeprecated(fd));
+            if (d_new.isReservedNumber(fd.getNumber())) {
+                builder.setChangeType(FIELD_RESERVED);
+                if (d_new.isReservedName(fd.getName())) {
+                    builder.setToName(fd.getName());
+                }
+            }
+            results.setPatch(fd, builder.build());
         });
 
         Set<String> onlyNew = onlyInLeft(m_new, m_ref);
         onlyNew.forEach(k -> {
             Descriptors.FieldDescriptor fd = m_new.get(k);
-            results.setPatch(fd, ChangeInfo.newBuilder()
-                    .setChangeType(ChangeType.ADDITION)
+            FieldChangeInfo.Builder builder = FieldChangeInfo.newBuilder()
+                    .setChangeType(FIELD_ADDED)
                     .setToName(fd.getName())
-                    .setToType("type?")
-                    .build());
+                    .setToTypeValue(fd.getType().toProto().getNumber())
+                    .setToDeprecated(isDeprecated(fd));
+            if (d_ref.isReservedNumber(fd.getNumber())) {
+                builder.setChangeType(FIELD_UNRESERVED);
+                if (d_ref.isReservedName(fd.getName())) {
+                    builder.setFromName(fd.getName());
+                }
+            }
+            results.setPatch(fd, builder.build());
         });
 
         Set<String> common = onlyInCommon(m_new, m_ref);
         common.forEach(k -> {
-            ChangeInfo fieldDiff = diffField(m_ref.get(k), m_new.get(k));
+            FieldChangeInfo fieldDiff = diffField(m_ref.get(k), m_new.get(k));
             if (fieldDiff != null) {
                 results.setPatch(m_ref.get(k), fieldDiff);
             }
         });
     }
 
-    private ChangeInfo diffField(Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
-        ChangeInfo.Builder builder = ChangeInfo.newBuilder();
+    private FieldChangeInfo diffField(Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
+        FieldChangeInfo.Builder builder = FieldChangeInfo.newBuilder();
+
         if (!f_ref.getName().equals(f_new.getName())) {
-            builder.setChangeType(ChangeType.CHANGED);
+            builder.setChangeType(FIELD_CHANGED);
             builder.setFromName(f_ref.getName());
             builder.setToName(f_new.getName());
         }
         if (!f_ref.getType().equals(f_new.getType())) {
-            builder.setChangeType(ChangeType.CHANGED);
-            builder.setFromType(f_ref.getType().name());
-            builder.setToType(f_new.getType().name());
+            builder.setChangeType(FIELD_CHANGED);
+            builder.setFromTypeValue(f_ref.getType().toProto().getNumber());
+            builder.setToTypeValue(f_new.getType().toProto().getNumber());
+        }
+        if(isDeprecated(f_ref) != isDeprecated(f_new)) {
+            builder.setChangeType(FIELD_CHANGED);
+            builder.setFromDeprecated(isDeprecated(f_ref));
+            builder.setToDeprecated(isDeprecated(f_new));
         }
 
-        if (builder.getChangeType().equals(ChangeType.CHANGED)) {
+        if (builder.getChangeType().equals(FIELD_CHANGED)) {
             return builder.build();
         }
         return null;
+    }
+
+    private boolean isDeprecated(Descriptors.FieldDescriptor fieldDescriptor) {
+        Map<Descriptors.FieldDescriptor, Object> allFields = fieldDescriptor.getOptions().getAllFields();
+        if (allFields.size() > 0) {
+            for (Map.Entry<Descriptors.FieldDescriptor, Object> entry : allFields.entrySet()) {
+                Descriptors.FieldDescriptor f = entry.getKey();
+                switch (f.getFullName()) {
+                    case "google.protobuf.FieldOptions.deprecated":
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 }

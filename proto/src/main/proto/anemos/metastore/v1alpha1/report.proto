@@ -23,6 +23,9 @@ enum ChangeType {
     CHANGED = 1;
     ADDITION = 2;
     REMOVAL = 3;
+
+    DEPRECATED = 4;
+    UNDEPRECATED = 5;
 }
 
 enum TypeChange {
@@ -74,23 +77,64 @@ message MessageResult {
 }
 
 message FieldResult {
-    int32 index = 1;
+    int32 number = 1;
     string name = 2;
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    FieldChangeInfo change = 4;
 
     ResultCount result_count = 5;
+}
+
+message FieldChangeInfo {
+    enum FieldType {
+        FIELD_TYPE_UNSET = 0;
+        FIELD_TYPE_DOUBLE = 1;
+        FIELD_TYPE_FLOAT = 2;
+        FIELD_TYPE_INT64 = 3;
+        FIELD_TYPE_UINT64 = 4;
+        FIELD_TYPE_INT32 = 5;
+        FIELD_TYPE_FIXED64 = 6;
+        FIELD_TYPE_FIXED32 = 7;
+        FIELD_TYPE_BOOL = 8;
+        FIELD_TYPE_STRING = 9;
+        FIELD_TYPE_MESSAGE = 11;
+        FIELD_TYPE_BYTES = 12;
+        FIELD_TYPE_UINT32 = 13;
+        FIELD_TYPE_ENUM = 14;
+        FIELD_TYPE_SFIXED32 = 15;
+        FIELD_TYPE_SFIXED64 = 16;
+        FIELD_TYPE_SINT32 = 17;
+        FIELD_TYPE_SINT64 = 18;
+    };
+    enum FieldChangeType {
+        FIELD_UNCHANGED = 0;
+        FIELD_CHANGED = 1;
+        FIELD_ADDED = 2;
+        FIELD_REMOVED = 3;
+        FIELD_RESERVED = 4;
+        FIELD_UNRESERVED = 5;
+    }
+
+    FieldChangeType change_type = 1;
+
+    string from_name = 2;
+    FieldType from_type = 3;
+    bool from_deprecated = 4;
+    bool from_reserved = 5;
+
+    string to_name = 6;
+    FieldType to_type = 7;
+    bool to_deprecated = 8;
+    bool to_reserved = 9;
+
 }
 
 message ChangeInfo {
     string from_name = 1;
     string to_name = 2;
     ChangeType change_type = 3;
-    string from_type = 4;
-    string to_type = 5;
-
 }
 
 message RuleInfo {

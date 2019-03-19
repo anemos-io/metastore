@@ -10,6 +10,8 @@ import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
 
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_REMOVED;
+
 public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
 
     MetaStore metaStore;
@@ -86,7 +88,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
         int error = 0;
         for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
             for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
-                if (fieldResult.getChange().getChangeType() == ChangeType.REMOVAL) {
+                if (fieldResult.getChange().getChangeType() == FIELD_REMOVED) {
                     error++;
                 }
             }
