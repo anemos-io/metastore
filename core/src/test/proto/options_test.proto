@@ -11,6 +11,11 @@ extend google.protobuf.MessageOptions {
     TestOption test_option = 66666667;
 }
 
+extend google.protobuf.FieldOptions {
+    int32 field_option_1 = 66666668;
+    string field_option_2 = 66666669;
+}
+
 message TestOption {
     string string = 1;
     repeated string repeated_string = 2;
@@ -19,5 +24,4 @@ message TestOption {
     repeated int32 repeated_int32 = 4;
 
     int64 int64 = 5;
-
 }

@@ -30,4 +30,5 @@ tmp/*
 # private ignore
 work
 
+gradle/wrapper/gradle-wrapper.properties
 gradle/properties.gradle
