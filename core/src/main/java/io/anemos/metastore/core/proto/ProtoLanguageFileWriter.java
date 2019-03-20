@@ -7,10 +7,7 @@ import com.google.protobuf.Message;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProtoLanguageFileWriter {
     private Descriptors.FileDescriptor fd;
@@ -170,22 +167,33 @@ public class ProtoLanguageFileWriter {
             writer.print(" = ");
             writer.print(field.getNumber());
 
-            field.getOptions().getAllFields().forEach(
-                    (k, v) -> {
-                        writer.print(" [");
-                        if (k.getFullName().startsWith("google.protobuf.FieldOptions")) {
-                            writer.print(k.getName());
-                        } else {
-                            writer.print("(");
-                            writer.print(k.getFullName());
-                            writer.print(")");
-                        }
+            boolean hasFieldOptions = field.getOptions().getAllFields().size() > 0;
+            if (hasFieldOptions)
+                writer.print(" [");
 
-                        writer.print(" = ");
-                        value(v);
-                        writer.print("]");
-                    }
-            );
+            Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iter = field.getOptions().getAllFields().entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<Descriptors.FieldDescriptor, Object> fieldOption = iter.next();
+                Descriptors.FieldDescriptor k = fieldOption.getKey();
+                Object v = fieldOption.getValue();
+                if (k.getFullName().startsWith("google.protobuf.FieldOptions")) {
+                    writer.print(k.getName());
+                } else {
+                    writer.print("(");
+                    writer.print(k.getFullName());
+                    writer.print(")");
+                }
+
+                writer.print(" = ");
+                value(v);
+
+                if (iter.hasNext())
+                    writer.print(", ");
+            }
+
+            if (hasFieldOptions)
+                writer.print("]");
+
             writer.println(";");
         }
 
