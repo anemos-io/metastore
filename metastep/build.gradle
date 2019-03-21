@@ -21,7 +21,7 @@ jib {
         image = containerRepoBase + '/distroless/java-protoc'
     }
     to {
-        image = conrainerRepoTarget + '/metastep'
+        image = containerRepoTarget + '/metastep'
     }
     container {
         mainClass = 'io.anemos.metastore.metastep.MetaStep'
