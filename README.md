@@ -40,7 +40,7 @@ ext {
     repoPass = "supersecret"
 
     containerRepoBase = "eu.gcr.io/my-repo"
-    conrainerRepoTarget = "eu.gcr.io/my-repo"
+    containerRepoTarget = "eu.gcr.io/my-repo"
 }
 ```
 
