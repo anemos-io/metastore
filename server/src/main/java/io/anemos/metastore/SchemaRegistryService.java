@@ -3,14 +3,17 @@ package io.anemos.metastore;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
+import io.anemos.metastore.core.proto.profile.ValidationProfile;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
+import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
-import io.anemos.metastore.v1alpha1.*;
+import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
+import io.anemos.metastore.v1alpha1.Schemaregistry;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
-
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_REMOVED;
 
 public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
 
@@ -42,61 +45,48 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
 
     @Override
     public void verifySchema(Schemaregistry.SubmitSchemaRequest request, StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
-        DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;
-
-        ProtoDescriptor in = null;
+        ProtoDescriptor in;
         try {
             in = new ProtoDescriptor(request.getFdProtoSet().newInput());
         } catch (IOException e) {
-            e.printStackTrace();
+            responseObserver.onError(e);
+            return;
         }
 
 
         ValidationResults results = new ValidationResults();
         ProtoDiff diff = new ProtoDiff(metaStore.repo, in, results);
+        ProtoLint lint = new ProtoLint(in, results);
 
         request.getScopeList().forEach(scope -> {
             switch (scope.getEntityScopeCase()) {
                 case FILE_NAME:
                     diff.diffOnFileName(scope.getFileName());
+                    lint.lintOnFileName(scope.getFileName());
                     break;
                 case MESSAGE_NAME:
+                    lint.lintOnMessage(scope.getMessageName());
                     break;
                 case SERVICE_NAME:
+                    lint.lintOnService(scope.getServiceName());
                     break;
                 case ENUM_NAME:
+                    lint.lintOnEnum(scope.getEnumName());
                     break;
                 default:
                     diff.diffOnPackagePrefix(scope.getPackagePrefix());
+                    lint.lintOnPackagePrefix(scope.getPackagePrefix());
             }
-
-//            String messageName = scope.;
-//            diff.diffOnFileName();
         });
 
-        Report report = results.getReport();
+        ValidationProfile profile = new ProfileAvroEvolve();
+        Report report = profile.validate(results.getReport());
 
         responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
                 .newBuilder()
-                .setReport(demoHack(results.getReport()))
+                .setReport(report)
                 .build());
         responseObserver.onCompleted();
-    }
-
-    private Report demoHack(Report report) {
-        Report.Builder builder = Report.newBuilder(report);
-        int error = 0;
-        for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
-            for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
-                if (fieldResult.getChange().getChangeType() == FIELD_REMOVED) {
-                    error++;
-                }
-            }
-        }
-        builder.setResultCount(ResultCount.newBuilder()
-                .setDiffErrors(error)
-                .build());
-        return builder.build();
     }
 
     @Override

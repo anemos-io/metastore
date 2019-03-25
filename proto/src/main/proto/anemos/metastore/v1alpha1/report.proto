@@ -1,22 +1,11 @@
 syntax = "proto3";
 
+import "anemos/metastore/v1alpha1/rules.proto";
+
 option java_package = "io.anemos.metastore.v1alpha1";
 option java_multiple_files = true;
 
 package anemos.metastore.v1alpha1;
-
-enum RuleType {
-    UNSPECIFIED = 0;
-    LINT = 1;
-
-}
-
-enum Severity {
-    UNSET = 0;
-    INFO = 1;
-    WARNING = 2;
-    ERROR = 3;
-}
 
 enum ChangeType {
     UNCHANGED = 0;
@@ -34,12 +23,6 @@ enum TypeChange {
     TYPE_LOOSE_INFO = 2;
 }
 
-enum LintRule {
-    LINT_OK = 0;
-    LINT_MESSAGE_NAME = 1;
-    LINT_FIELD_NAME = 2;
-}
-
 message ResultCount {
     int32 lint_errors = 1;
     int32 lint_warnings = 2;
@@ -47,20 +30,26 @@ message ResultCount {
     int32 diff_errors = 4;
     int32 diff_warnings = 5;
     int32 diff_infos = 6;
+
+    map<string, string> error_info = 7;
+    map<string, string> warning_info = 8;
+    map<string, string> info_info = 9;
 }
 
 message Report {
     map<string, FileResult> file_results = 1;
     map<string, MessageResult> message_results = 2;
+    map<string, EnumResult> enum_results = 3;
+    map<string, ServiceResult> service_results = 4;
 
-    ResultCount result_count = 4;
+    ResultCount result_count = 5;
 }
 
 message FileResult {
     string file_name = 1;
     repeated string message_result_ref = 2;
 
-    ResultCount result_count = 3;
+    //ResultCount result_count = 3;
 }
 
 message MessageResult {
@@ -73,7 +62,7 @@ message MessageResult {
 
     repeated FieldResult field_results = 5;
 
-    ResultCount result_count = 6;
+    //ResultCount result_count = 6;
 }
 
 message FieldResult {
@@ -84,7 +73,7 @@ message FieldResult {
 
     FieldChangeInfo change = 4;
 
-    ResultCount result_count = 5;
+    //ResultCount result_count = 5;
 }
 
 message FieldChangeInfo {
@@ -131,6 +120,42 @@ message FieldChangeInfo {
 
 }
 
+
+message ServiceResult {
+    string package = 1;
+    string name = 2;
+
+    repeated RuleInfo info = 3;
+
+    ChangeInfo change = 4;
+
+    repeated MethodResult method_results = 5;
+
+    //ResultCount result_count = 6;
+}
+
+message MethodResult {
+    string name = 2;
+
+    repeated RuleInfo info = 3;
+
+    ChangeInfo change = 4;
+
+    //ResultCount result_count = 5;
+}
+
+message EnumResult {
+    string package = 1;
+    string name = 2;
+
+    repeated RuleInfo info = 3;
+
+    ChangeInfo change = 4;
+
+    //ResultCount result_count = 6;
+}
+
+
 message ChangeInfo {
     string from_name = 1;
     string to_name = 2;
@@ -138,14 +163,10 @@ message ChangeInfo {
 }
 
 message RuleInfo {
-    RuleType type = 1;
-    oneof rule {
-        LintRule lint_rule = 2;
-    }
-    Severity severity = 4;
-
+    LintRule lint_rule = 1;
+    string code = 2;
 }
 
-message SchemaDiff {
-    repeated RuleInfo rules = 1;
-}
+//message SchemaDiff {
+//    repeated RuleInfo rules = 1;
+//}

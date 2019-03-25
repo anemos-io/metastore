@@ -1,10 +1,8 @@
 package io.anemos.metastore.core.proto.validate;
 
-import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.v1alpha1.LintRule;
-import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.RuleInfo;
 
 import java.util.List;
@@ -27,51 +25,83 @@ public class ProtoLint {
     public void lintOnFileName(String fileName) {
         Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(fileName);
         fileDescriptor.getMessageTypes().forEach(message -> lintOnMessage(message.getFullName()));
+        fileDescriptor.getServices().forEach(service -> lintOnService(service.getFullName()));
+        fileDescriptor.getEnumTypes().forEach(enu -> lintOnEnum(enu.getFullName()));
     }
 
     public void lintOnMessage(String fullName) {
-        Descriptors.Descriptor descriptor = proto.getDescriptorByName(fullName);
-        diffMessageType(descriptor);
-//        diffMessageTypes(proto.getMessageTypeList());
-//        diffEnumTypes(proto.getEnumTypeList());
-//        diffServices(proto.getServiceList());
+        lintMessage(proto.getDescriptorByName(fullName));
     }
 
-    private void diffServices(List<DescriptorProtos.ServiceDescriptorProto> s_ref) {
-
-    }
-
-    private void diffEnumTypes(List<DescriptorProtos.EnumDescriptorProto> e_ref) {
-
-    }
-
-
-    private void diffMessageTypes(List<DescriptorProtos.DescriptorProto> messages) {
-//        messages.forEach(dp -> {
-//            diffMessageType(dp);
-//        });
-    }
-
-    private void diffMessageType(Descriptors.Descriptor dp) {
-        String name = dp.getName();
-        if (!isCamelCase(name)) {
-            results.addResult(dp, RuleInfo.newBuilder()
-                    .setLintRule(LintRule.LINT_MESSAGE_NAME)
+    public void lintOnService(Descriptors.ServiceDescriptor service) {
+        String name = service.getName();
+        if (!isPascalCase(name)) {
+            results.addResult(service, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_SERVICE_NAME_SHOULD_BE_PASCAL)
+                    .setCode(String.format("L%d/00", LintRule.LINT_SERVICE_NAME_SHOULD_BE_PASCAL_VALUE))
                     .build()
             );
         }
 
-        dp.getFields().forEach(fd -> {
-            diffField(fd);
-        });
+        service.getMethods().forEach(m -> lintMethod(m));
     }
 
-    private void diffField(Descriptors.FieldDescriptor fd) {
+    public void lintOnService(String fullName) {
+        lintOnService(proto.getServiceDescriptorByName(fullName));
+    }
+
+    public void lintOnEnum(String fullName) {
+        lintOnEnum(proto.getEnumDescriptorByName(fullName));
+    }
+
+    private void lintOnEnum(Descriptors.EnumDescriptor enu) {
+
+    }
+
+    public void lintOnPackagePrefix(String packagePrefix) {
+        List<Descriptors.FileDescriptor> fdRef = proto.getFileDescriptorsByPackagePrefix(packagePrefix);
+        lintFiles(fdRef);
+    }
+
+    private void lintFiles(List<Descriptors.FileDescriptor> f_ref) {
+        f_ref.forEach(v -> lintOnFileName(v.getName()));
+    }
+
+    private void lintMessage(Descriptors.Descriptor dp) {
+        String name = dp.getName();
+        if (!isPascalCase(name)) {
+            results.addResult(dp, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL)
+                    .setCode(String.format("L%d/00", LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL_VALUE))
+                    .build()
+            );
+        }
+
+        dp.getFields().forEach(fd -> lintField(fd));
+    }
+
+    private void lintMethod(Descriptors.MethodDescriptor md) {
+        if (!md.getInputType().getFullName().endsWith("Request")) {
+            results.addResult(md, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST)
+                    .setCode(String.format("L%d/00", LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST_VALUE))
+                    .build());
+        }
+        if (!md.getOutputType().getFullName().endsWith("Response")) {
+            results.addResult(md, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE)
+                    .setCode(String.format("L%d/00", LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE_VALUE))
+                    .build());
+        }
+    }
+
+    private void lintField(Descriptors.FieldDescriptor fd) {
         String name = fd.getName();
         String suffix = isSnakeCase(name);
         if (suffix != null) {
             results.addResult(fd, RuleInfo.newBuilder()
-                    .setLintRule(LintRule.LINT_FIELD_NAME)
+                    .setLintRule(LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE)
+                    .setCode(String.format("L%d/%s", LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE_VALUE, suffix))
                     .build());
         }
     }
@@ -113,7 +143,7 @@ public class ProtoLint {
         return null;
     }
 
-    private boolean isCamelCase(String fieldName) {
+    private boolean isPascalCase(String fieldName) {
         if (!Character.isUpperCase(fieldName.charAt(0))) {
             return false;
         }

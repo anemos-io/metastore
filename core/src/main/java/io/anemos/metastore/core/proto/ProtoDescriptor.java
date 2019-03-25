@@ -15,6 +15,8 @@ public class ProtoDescriptor {
 
     private Map<String, Descriptors.FileDescriptor> fileDescriptorMap;
     private Map<String, Descriptors.Descriptor> descriptorMap;
+    private Map<String, Descriptors.ServiceDescriptor> serviceMap;
+    private Map<String, Descriptors.EnumDescriptor> enumMap;
 
     public ProtoDescriptor(String file) throws IOException {
         this(new File(file));
@@ -88,18 +90,38 @@ public class ProtoDescriptor {
     private void indexDescriptorByName() {
         descriptorMap = new HashMap<>();
         fileDescriptorMap.forEach(
-                (k, v) -> {
-                    v.getMessageTypes().forEach(
-                            mt -> {
-                                descriptorMap.put(mt.getFullName(), mt);
-                                indexNestedDescriptorByName(mt.getNestedTypes());
-                            }
-                    );
-                });
+                (k, v) -> v.getMessageTypes().forEach(
+                        mt -> {
+                            descriptorMap.put(mt.getFullName(), mt);
+                            indexNestedDescriptorByName(mt.getNestedTypes());
+                        }
+                ));
+        serviceMap = new HashMap<>();
+        fileDescriptorMap.forEach(
+                (k, v) -> v.getServices().forEach(
+                        mt -> {
+                            serviceMap.put(mt.getFullName(), mt);
+                        }
+                ));
+        enumMap = new HashMap<>();
+        fileDescriptorMap.forEach(
+                (k, v) -> v.getEnumTypes().forEach(
+                        mt -> {
+                            enumMap.put(mt.getFullName(), mt);
+                        }
+                ));
     }
 
     public Descriptors.Descriptor getDescriptorByName(String messageName) {
         return descriptorMap.get(messageName);
+    }
+
+    public Descriptors.ServiceDescriptor getServiceDescriptorByName(String messageName) {
+        return serviceMap.get(messageName);
+    }
+
+    public Descriptors.EnumDescriptor getEnumDescriptorByName(String messageName) {
+        return enumMap.get(messageName);
     }
 
     public byte[] toByteArray() {

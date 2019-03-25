@@ -87,7 +87,7 @@ public class ProtoDiff {
 
     }
 
-    private Map<String, Descriptors.FileDescriptor> toMap4FileDescriptor(List<Descriptors.FileDescriptor> in) {
+    static Map<String, Descriptors.FileDescriptor> toMap4FileDescriptor(List<Descriptors.FileDescriptor> in) {
         Map<String, Descriptors.FileDescriptor> out = new HashMap<>();
         in.forEach(descriptor -> {
             out.put(descriptor.getName(), descriptor);
@@ -147,7 +147,7 @@ public class ProtoDiff {
         });
     }
 
-    private Map<String, Descriptors.FieldDescriptor> toMap4FieldDescriptor(List<Descriptors.FieldDescriptor> in) {
+    static Map<String, Descriptors.FieldDescriptor> toMap4FieldDescriptor(List<Descriptors.FieldDescriptor> in) {
         Map<String, Descriptors.FieldDescriptor> out = new HashMap<>();
         in.forEach(descriptor -> {
             out.put(String.valueOf(descriptor.getNumber()), descriptor);

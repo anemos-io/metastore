@@ -4,6 +4,9 @@ import io.anemos.metastore.v1alpha1.Report;
 
 public class ProfileAllowNone implements ValidationProfile {
 
+    public String profileName = "proto:none";
+
+
 
     @Override
     public Report validate(Report report) {

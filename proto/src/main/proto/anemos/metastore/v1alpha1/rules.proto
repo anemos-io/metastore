@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_package = "io.anemos.metastore.v1alpha1";
+option java_multiple_files = true;
+
+package anemos.metastore.v1alpha1;
+
+enum LintRule {
+    LINT_OK = 0;
+
+    LINT_MESSAGE_CUSTOM = 10000;
+    LINT_MESSAGE_NAME_SHOULD_BE_PASCAL = 10001;
+
+    LINT_FIELD_CUSTOM = 20000;
+    LINT_FIELD_NAME_SHOULD_BE_SNAKE = 20001;
+
+    LINT_ENUM_CUSTOM = 30000;
+    LINT_ENUM_NAME_SHOULD_BE_PASCAL = 30001;
+
+    LINT_SERVICE_CUSTOM = 40000;
+    LINT_SERVICE_NAME_SHOULD_BE_PASCAL = 40001;
+
+    LINT_METHOD_CUSTOM = 50000;
+    LINT_METHOD_NAME_SHOULD_BE_PASCAL = 50001;
+
+    LINT_METHOD_ITYPE_END_WITH_REQUEST = 50002;
+    LINT_METHOD_RTYPE_END_WITH_RESPONSE = 50003;
+
+    LINT_GENERAL_CUSTOM = 60000;
+}

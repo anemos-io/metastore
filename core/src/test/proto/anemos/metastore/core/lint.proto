@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/empty.proto";
+
 package anemos.metastore.core;
 
 option java_package = "io.anemos.metastore.core";
@@ -26,4 +28,13 @@ message lint_message_camelcase {
 
 }
 
+service MethodService {
+    rpc MethodOk (MethodRequest) returns (MethodResponse);
+    rpc MethodEmpty (google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc MethodEmptyI (google.protobuf.Empty) returns (MethodResponse);
+    rpc MethodEmptyR (MethodRequest) returns (google.protobuf.Empty);
+}
 
+message MethodRequest {}
+
+message MethodResponse {}

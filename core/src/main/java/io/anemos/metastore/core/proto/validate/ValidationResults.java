@@ -12,6 +12,7 @@ public class ValidationResults {
     Map<String, FileResultContainer> fileMap = new HashMap<>();
 
     Map<String, MessageResultContainer> messageMap = new HashMap<>();
+    Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
 
     public List<RuleInfo> getInfo(String messageName, String fieldName) {
         List<RuleInfo> rules = new ArrayList<>();
@@ -35,6 +36,16 @@ public class ValidationResults {
         return messageResult;
     }
 
+    private ServiceResultContainer getOrCreateService(String serviceName) {
+        ServiceResultContainer serviceResult = serviceMap.get(serviceName);
+        if (serviceResult == null) {
+            serviceResult = new ServiceResultContainer();
+            serviceResult.fullName = serviceName;
+            serviceMap.put(serviceName, serviceResult);
+        }
+        return serviceResult;
+    }
+
     private FileResultContainer getOrCreateFile(String fileName) {
         FileResultContainer fileResult = fileMap.get(fileName);
         if (fileResult == null) {
@@ -50,9 +61,19 @@ public class ValidationResults {
         messageResult.add(fd, ruleInfo);
     }
 
+    void addResult(Descriptors.MethodDescriptor md, RuleInfo ruleInfo) {
+        ServiceResultContainer messageResult = getOrCreateService(md.getService().getFullName());
+        messageResult.add(md, ruleInfo);
+    }
+
     void addResult(Descriptors.Descriptor descriptor, RuleInfo ruleInfo) {
         MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
         messageResult.addResult(ruleInfo);
+    }
+
+    void addResult(Descriptors.ServiceDescriptor descriptor, RuleInfo ruleInfo) {
+        ServiceResultContainer serviceResult = getOrCreateService(descriptor.getFullName());
+        serviceResult.addResult(ruleInfo);
     }
 
     void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
@@ -74,6 +95,9 @@ public class ValidationResults {
         Report.Builder builder = Report.newBuilder();
         messageMap.values().forEach(message -> {
             builder.putMessageResults(message.fullName, message.getResult());
+        });
+        serviceMap.values().forEach(service -> {
+            builder.putServiceResults(service.fullName, service.getResult());
         });
 
         return builder.build();
@@ -136,7 +160,7 @@ public class ValidationResults {
         MessageResult getResult() {
             MessageResult.Builder messageInfo = MessageResult.newBuilder();
             messageInfo.setName(fullName);
-            if(patch != null) {
+            if (patch != null) {
                 messageInfo.setChange(patch);
             }
             fieldMap.values().forEach(field -> messageInfo.addFieldResults(field.getResult()));
@@ -163,7 +187,76 @@ public class ValidationResults {
         public void setPatch(ChangeInfo patch) {
             this.patch = patch;
         }
+    }
 
+    class ServiceResultContainer {
+        String fullName;
 
+        List<RuleInfo> info = new ArrayList<>();
+        Map<String, MethodResultContainer> methodMap = new HashMap<>();
+        ChangeInfo patch;
+
+        public void add(Descriptors.MethodDescriptor method, RuleInfo ruleInfo) {
+            MethodResultContainer methoddResultContainer = getOrCreateMethodContainer(method);
+            methoddResultContainer.add(ruleInfo);
+        }
+
+        public void addPatch(Descriptors.MethodDescriptor method, ChangeInfo patch) {
+            MethodResultContainer methodResultContainer = getOrCreateMethodContainer(method);
+            methodResultContainer.addPatch(patch);
+        }
+
+        private MethodResultContainer getOrCreateMethodContainer(Descriptors.MethodDescriptor method) {
+            MethodResultContainer methodResultContainer = methodMap.get(method.getName());
+            if (methodResultContainer == null) {
+                methodResultContainer = new MethodResultContainer();
+                methodResultContainer.fullName = method.getName();
+                methodMap.put(method.getName(), methodResultContainer);
+            }
+            return methodResultContainer;
+        }
+
+        ServiceResult getResult() {
+            ServiceResult.Builder messageInfo = ServiceResult.newBuilder();
+            messageInfo.setName(fullName);
+            if(patch != null) {
+                messageInfo.setChange(patch);
+            }
+            methodMap.values().forEach(method -> messageInfo.addMethodResults(method.getResult()));
+            messageInfo.addAllInfo(info);
+            return messageInfo.build();
+        }
+
+        public void addResult(RuleInfo ruleInfo) {
+            info.add(ruleInfo);
+        }
+
+        public void setPatch(ChangeInfo patch) {
+            this.patch = patch;
+        }
+    }
+
+    class MethodResultContainer {
+        List<RuleInfo> info = new ArrayList();
+        ChangeInfo patch;
+        String fullName;
+
+        public void add(RuleInfo ruleInfo) {
+            info.add(ruleInfo);
+        }
+
+        public MethodResult getResult() {
+            MethodResult.Builder builder = MethodResult.newBuilder()
+                    .setName(fullName)
+                    .addAllInfo(info);
+            if (patch != null) {
+                builder.setChange(patch);
+            }
+            return builder.build();
+        }
+
+        public void addPatch(ChangeInfo patch) {
+            this.patch = patch;
+        }
     }
 }
