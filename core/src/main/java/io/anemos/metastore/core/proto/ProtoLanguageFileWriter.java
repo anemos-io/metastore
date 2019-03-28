@@ -174,18 +174,18 @@ public class ProtoLanguageFileWriter {
             Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iter = field.getOptions().getAllFields().entrySet().iterator();
             while (iter.hasNext()) {
                 Map.Entry<Descriptors.FieldDescriptor, Object> fieldOption = iter.next();
-                Descriptors.FieldDescriptor k = fieldOption.getKey();
-                Object v = fieldOption.getValue();
-                if (k.getFullName().startsWith("google.protobuf.FieldOptions")) {
-                    writer.print(k.getName());
+                Descriptors.FieldDescriptor fieldDescriptor = fieldOption.getKey();
+                Object value = fieldOption.getValue();
+                if (fieldDescriptor.getFullName().startsWith("google.protobuf.FieldOptions")) {
+                    writer.print(fieldDescriptor.getName());
                 } else {
                     writer.print("(");
-                    writer.print(k.getFullName());
+                    writer.print(fieldDescriptor.getFullName());
                     writer.print(")");
                 }
 
                 writer.print(" = ");
-                value(v);
+                value(value, fieldDescriptor);
 
                 if (iter.hasNext())
                     writer.print(", ");
@@ -195,13 +195,16 @@ public class ProtoLanguageFileWriter {
                 writer.print("]");
 
             writer.println(";");
+
+            if (hasFieldOptions)
+                writer.println();
         }
 
-        private void value(Object v) {
+        private void value(Object v, Descriptors.FieldDescriptor fieldDescriptor) {
             if (v instanceof Message) {
                 message((Message) v);
             } else {
-                writer.print(v);
+                writer.print(getOptionValue(fieldDescriptor, v));
             }
         }
 
