@@ -4,9 +4,7 @@ import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
-import io.anemos.metastore.v1alpha1.FieldChangeInfo;
-import io.anemos.metastore.v1alpha1.FieldResult;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +14,7 @@ import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_STRING;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_UNSET;
 
-public class ProtoDiffTest {
+public class DiffTest {
 
     @Test
     public void onBaseDeprecatedString() throws IOException {
@@ -148,7 +146,6 @@ public class ProtoDiffTest {
         Assert.assertEquals(false, change.getToDeprecated());
     }
 
-
     @Test
     public void toBaseUnreserveStringOnlyNumber() throws IOException {
         FieldResult fieldResults = diff(TestSets.baseReserveStringOnlyNumber(), TestSets.base());
@@ -167,6 +164,35 @@ public class ProtoDiffTest {
         Assert.assertEquals(false, change.getToDeprecated());
     }
 
+    @Test
+    public void toBaseExtraFileAdded() throws IOException {
+        Report report = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
+
+        Assert.assertEquals(1, report.getFileResultsCount());
+        Assert.assertEquals(ChangeType.ADDITION, report
+                .getFileResultsOrThrow("test/v1/extra.proto")
+                .getChange().getChangeType());
+
+        Assert.assertEquals(1, report.getMessageResultsCount());
+        Assert.assertEquals(ChangeType.ADDITION, report
+                .getMessageResultsOrThrow("test.v1.ProtoExtraMessage")
+                .getChange().getChangeType());
+    }
+
+    @Test
+    public void toBaseExtraFileRemoved() throws IOException {
+        Report report = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
+
+        Assert.assertEquals(1, report.getFileResultsCount());
+        Assert.assertEquals(ChangeType.REMOVAL, report
+                .getFileResultsOrThrow("test/v1/extra.proto")
+                .getChange().getChangeType());
+
+        Assert.assertEquals(1, report.getMessageResultsCount());
+        Assert.assertEquals(ChangeType.REMOVAL, report
+                .getMessageResultsOrThrow("test.v1.ProtoExtraMessage")
+                .getChange().getChangeType());
+    }
 
     private FieldResult diff(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
         ValidationResults results = new ValidationResults();
@@ -176,5 +202,13 @@ public class ProtoDiffTest {
         Report result = results.getReport();
         System.out.println(result);
         return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
+    }
+
+    private Report diffOnPackage(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
+        ValidationResults results = new ValidationResults();
+        ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
+        diff.diffOnPackagePrefix("test.v1");
+
+        return results.getReport();
     }
 }

@@ -28,6 +28,22 @@ public class ProtoDiff {
         this.results = results;
     }
 
+    static Map<String, Descriptors.FileDescriptor> toMap4FileDescriptor(List<Descriptors.FileDescriptor> in) {
+        Map<String, Descriptors.FileDescriptor> out = new HashMap<>();
+        in.forEach(descriptor -> {
+            out.put(descriptor.getName(), descriptor);
+        });
+        return out;
+    }
+
+    static Map<String, Descriptors.FieldDescriptor> toMap4FieldDescriptor(List<Descriptors.FieldDescriptor> in) {
+        Map<String, Descriptors.FieldDescriptor> out = new HashMap<>();
+        in.forEach(descriptor -> {
+            out.put(String.valueOf(descriptor.getNumber()), descriptor);
+        });
+        return out;
+    }
+
     public void diffOnFileName(String fileName) {
         Descriptors.FileDescriptor fdRef = proto_ref.getFileDescriptorByFileName(fileName);
         Descriptors.FileDescriptor fdNew = proto_new.getFileDescriptorByFileName(fileName);
@@ -46,6 +62,7 @@ public class ProtoDiff {
             refEnumDescriptors = fdRef.getEnumTypes();
             refServiceDescriptors = fdRef.getServices();
         } else {
+            results.setPatch(fdNew, ChangeInfo.newBuilder().setChangeType(ChangeType.ADDITION).build());
             refDescriptors = new ArrayList<>(0);
             refEnumDescriptors = new ArrayList<>(0);
             refServiceDescriptors = new ArrayList<>(0);
@@ -56,10 +73,14 @@ public class ProtoDiff {
             newEnumDescriptors = fdNew.getEnumTypes();
             newServiceDescriptors = fdNew.getServices();
         } else {
+            results.setPatch(fdRef, ChangeInfo.newBuilder().setChangeType(ChangeType.REMOVAL).build());
             newDescriptors = new ArrayList<>(0);
             newEnumDescriptors = new ArrayList<>(0);
             newServiceDescriptors = new ArrayList<>(0);
         }
+
+
+
 
         diffMessageTypes(refDescriptors, newDescriptors);
         diffEnumTypes(refEnumDescriptors, newEnumDescriptors);
@@ -87,14 +108,6 @@ public class ProtoDiff {
 
     }
 
-    static Map<String, Descriptors.FileDescriptor> toMap4FileDescriptor(List<Descriptors.FileDescriptor> in) {
-        Map<String, Descriptors.FileDescriptor> out = new HashMap<>();
-        in.forEach(descriptor -> {
-            out.put(descriptor.getName(), descriptor);
-        });
-        return out;
-    }
-
     private Map<String, Descriptors.Descriptor> toMap4Descriptor(List<Descriptors.Descriptor> in) {
         Map<String, Descriptors.Descriptor> out = new HashMap<>();
         in.forEach(descriptor -> {
@@ -117,7 +130,6 @@ public class ProtoDiff {
         intersect.removeAll(onlyInLeft(right, left));
         return intersect;
     }
-
 
     private void diffMessageTypes(List<Descriptors.Descriptor> mt_ref, List<Descriptors.Descriptor> mt_new) {
         Map<String, Descriptors.Descriptor> m_ref = toMap4Descriptor(mt_ref);
@@ -145,14 +157,6 @@ public class ProtoDiff {
         common.forEach(k -> {
             diffMessageType(m_ref.get(k), m_new.get(k));
         });
-    }
-
-    static Map<String, Descriptors.FieldDescriptor> toMap4FieldDescriptor(List<Descriptors.FieldDescriptor> in) {
-        Map<String, Descriptors.FieldDescriptor> out = new HashMap<>();
-        in.forEach(descriptor -> {
-            out.put(String.valueOf(descriptor.getNumber()), descriptor);
-        });
-        return out;
     }
 
     private void diffFiles(List<Descriptors.FileDescriptor> f_ref, List<Descriptors.FileDescriptor> f_new) {
@@ -249,7 +253,7 @@ public class ProtoDiff {
             builder.setFromTypeValue(f_ref.getType().toProto().getNumber());
             builder.setToTypeValue(f_new.getType().toProto().getNumber());
         }
-        if(isDeprecated(f_ref) != isDeprecated(f_new)) {
+        if (isDeprecated(f_ref) != isDeprecated(f_new)) {
             builder.setChangeType(FIELD_CHANGED);
             builder.setFromDeprecated(isDeprecated(f_ref));
             builder.setToDeprecated(isDeprecated(f_new));
