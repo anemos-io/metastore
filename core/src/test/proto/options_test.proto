@@ -24,4 +24,10 @@ message TestOption {
     repeated int32 repeated_int32 = 4;
 
     int64 int64 = 5;
+
+    enum TestEnum {
+        ENUM1 = 0;
+        ENUM2 = 1;
+    }
+    TestEnum test_enum = 6;
 }
