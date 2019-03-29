@@ -52,6 +52,7 @@ public class ProtoLanguageFileWriterTest {
                 .addRepeatedInt32(3)
                 .addRepeatedInt32(4)
                 .setInt64(10)
+                .setTestEnum(TestOption.TestEnum.ENUM2)
                 .build();
         DescriptorProtos.MessageOptions messageOptions = DescriptorProtos.MessageOptions.newBuilder()
                 .setExtension(OptionsTest.testOption, testOption)
@@ -81,6 +82,7 @@ public class ProtoLanguageFileWriterTest {
                 "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 3;\n" +
                 "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 4;\n" +
                 "\toption (anemos.metastore.core.test.test_option).int64 = 10;\n" +
+                "\toption (anemos.metastore.core.test.test_option).test_enum = ENUM2;\n" +
                 "\n" +
                 "}\n";
         Assert.assertEquals(expected, outputStream.toString());

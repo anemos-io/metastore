@@ -369,6 +369,9 @@ public class ProtoLanguageFileWriter {
                     return Integer.toString((Integer) value);
                 case INT64:
                     return Long.toString((Long) value);
+                case ENUM:
+                    Descriptors.EnumValueDescriptor valueDescriptor = (Descriptors.EnumValueDescriptor) value;
+                    return valueDescriptor.toString();
             }
             return "";
         }
