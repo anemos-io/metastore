@@ -282,4 +282,5 @@ public class ValidationResults {
             this.patch = patch;
         }
     }
+
 }
