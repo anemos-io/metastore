@@ -16,7 +16,6 @@ public class AvroToProtoSchema {
     public FileDescriptorProto toDescriptor() {
         String recordName = node.path("name").asText();
         String recordNamespace = node.path("namespace").asText();
-        //String recordType = node.path("type").asText();
         JsonNode fields = node.withArray("fields");
 
         FileDescriptorProto.Builder fileDescriptorProtoBuilder =
@@ -66,12 +65,12 @@ public class AvroToProtoSchema {
                     .setName(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldName))
                     .setNumber(i);
 
-            //CASO ARRAY
+            //CASE ARRAY
             if (field.path("type").asText().equals("array")){
                 //fieldType = field.path("type").asText();
                 fieldDescriptorProtoBuilder.setType(toFieldDescriptorType(field.path("items").asText()));
                 fieldDescriptorProtoBuilder.setLabel(DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED);
-            //CASO ENUM
+            //CASE ENUM
             }else if (field.path("type").path("type").asText().equals("enum")){
                 DescriptorProtos.EnumDescriptorProto.Builder enumDescriptorProto = DescriptorProtos.EnumDescriptorProto.newBuilder()
                         .setName(field.path("type").path("name").asText());
