@@ -174,3 +174,4 @@ message RuleInfo {
 //message SchemaDiff {
 //    repeated RuleInfo rules = 1;
 //}
+
