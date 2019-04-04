@@ -5,6 +5,7 @@ import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.v1alpha1.LintRule;
 import io.anemos.metastore.v1alpha1.RuleInfo;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ProtoLint {
@@ -165,5 +166,20 @@ public class ProtoLint {
 
         return true;
     }
+
+    public void lintOnPackage(Descriptors.Descriptor ref) {
+        Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(ref.getFile().getName());
+        String protoPackageName = fileDescriptor.getPackage();
+        String fileName = ref.getFile().getFullName();
+        String dirName = fileName.substring(0, fileName.lastIndexOf("/")).replace("/", ".");
+        if (!dirName.equals(protoPackageName)) {
+            results.addResult(fileDescriptor, RuleInfo.newBuilder()
+                    .setLintRule(LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT)
+                    .setCode(String.format("L%d/00", LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT_VALUE))
+                    .build()
+            );
+        }
+    }
+
 
 }

@@ -76,6 +76,11 @@ public class ValidationResults {
         serviceResult.addResult(ruleInfo);
     }
 
+    void addResult(Descriptors.FileDescriptor descriptor, RuleInfo ruleInfo) {
+        FileResultContainer fileResult = getOrCreateFile(descriptor.getFullName());
+        fileResult.addResult(ruleInfo);
+    }
+
     void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
         MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
         messageResult.addPatch(fd, patch);
@@ -192,10 +197,18 @@ public class ValidationResults {
         }
 
         public FileResult getResult() {
-            return FileResult.newBuilder()
+
+            FileResult.Builder builder = FileResult.newBuilder()
                     .setFileName(fullName)
-                    .setChange(patch)
-                    .build();
+                    .addAllInfo(info);
+            if (patch != null){
+                builder.setChange(patch);
+            }
+            return builder.build();
+        }
+
+        public void addResult(RuleInfo ruleInfo) {
+            info.add(ruleInfo);
         }
     }
 

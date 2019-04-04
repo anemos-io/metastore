@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package anemos.metastore.invalid.test;
+
+option java_package = "io.anemos.metastore.invalid";
+
+message InvalidMessage {}
