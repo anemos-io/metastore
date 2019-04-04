@@ -3,7 +3,10 @@ package io.anemos.metastore.core.proto;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.ExtensionRegistry;
+import io.anemos.Bigquery;
+import io.anemos.Meta;
 import io.anemos.Options;
+import io.anemos.Rewrite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +48,9 @@ public class Convert {
 
         //TODO Find way to do this dynamically
         Options.registerAllExtensions(registry);
+        Rewrite.registerAllExtensions(registry);
+        Meta.registerAllExtensions(registry);
+        Bigquery.registerAllExtensions(registry);
 
         outMap.forEach( (k, fileDescriptor) -> {
             Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);

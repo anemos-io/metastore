@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package test.v1;
+
+message ProtoExtraMessage {
+    string test_name = 1;
+    int32 test_index = 2;
+}
+

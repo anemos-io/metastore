@@ -35,3 +35,10 @@ protoc \
  --descriptor_set_out=core/src/test/resources/io/anemos/metastore/core/proto/base_reserve_string_only_number.pb \
  test/v1/simple.proto
 
+protoc \
+ -Itestsets/base_add_file \
+ -I/usr/local/include \
+ -I$GOOGLEAPIS_DIR \
+ --descriptor_set_out=core/src/test/resources/io/anemos/metastore/core/proto/base_add_file.pb \
+ test/v1/simple.proto \
+ test/v1/extra.proto

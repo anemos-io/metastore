@@ -32,4 +32,8 @@ public class TestSets {
         return new ProtoDescriptor(resourceAsStream);
     }
 
+    public static ProtoDescriptor baseExtraFile() throws IOException {
+        InputStream resourceAsStream = TestSets.class.getResourceAsStream("base_add_file.pb");
+        return new ProtoDescriptor(resourceAsStream);
+    }
 }

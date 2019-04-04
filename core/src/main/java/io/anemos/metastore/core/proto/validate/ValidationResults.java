@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ValidationResults {
-    Map<String, FileResultContainer> fileMap = new HashMap<>();
+    private Map<String, FileResultContainer> fileMap = new HashMap<>();
 
-    Map<String, MessageResultContainer> messageMap = new HashMap<>();
+    private Map<String, MessageResultContainer> messageMap = new HashMap<>();
     Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
 
     public List<RuleInfo> getInfo(String messageName, String fieldName) {
@@ -76,6 +76,11 @@ public class ValidationResults {
         serviceResult.addResult(ruleInfo);
     }
 
+    void addResult(Descriptors.FileDescriptor descriptor, RuleInfo ruleInfo) {
+        FileResultContainer fileResult = getOrCreateFile(descriptor.getFullName());
+        fileResult.addResult(ruleInfo);
+    }
+
     void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
         MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
         messageResult.addPatch(fd, patch);
@@ -93,6 +98,9 @@ public class ValidationResults {
 
     public Report getReport() {
         Report.Builder builder = Report.newBuilder();
+        fileMap.values().forEach(file -> {
+            builder.putFileResults(file.fullName, file.getResult());
+        });
         messageMap.values().forEach(message -> {
             builder.putMessageResults(message.fullName, message.getResult());
         });
@@ -186,6 +194,21 @@ public class ValidationResults {
 
         public void setPatch(ChangeInfo patch) {
             this.patch = patch;
+        }
+
+        public FileResult getResult() {
+
+            FileResult.Builder builder = FileResult.newBuilder()
+                    .setFileName(fullName)
+                    .addAllInfo(info);
+            if (patch != null){
+                builder.setChange(patch);
+            }
+            return builder.build();
+        }
+
+        public void addResult(RuleInfo ruleInfo) {
+            info.add(ruleInfo);
         }
     }
 

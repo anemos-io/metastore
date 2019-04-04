@@ -52,6 +52,7 @@ public class ProtoLanguageFileWriterTest {
                 .addRepeatedInt32(3)
                 .addRepeatedInt32(4)
                 .setInt64(10)
+                .setTestEnum(TestOption.TestEnum.ENUM2)
                 .build();
         DescriptorProtos.MessageOptions messageOptions = DescriptorProtos.MessageOptions.newBuilder()
                 .setExtension(OptionsTest.testOption, testOption)
@@ -81,6 +82,7 @@ public class ProtoLanguageFileWriterTest {
                 "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 3;\n" +
                 "\toption (anemos.metastore.core.test.test_option).repeated_int32 = 4;\n" +
                 "\toption (anemos.metastore.core.test.test_option).int64 = 10;\n" +
+                "\toption (anemos.metastore.core.test.test_option).test_enum = ENUM2;\n" +
                 "\n" +
                 "}\n";
         Assert.assertEquals(expected, outputStream.toString());
@@ -105,7 +107,13 @@ public class ProtoLanguageFileWriterTest {
                         .setExtension(OptionsTest.fieldOption2, "something")
                         .build());
 
+        DescriptorProtos.FieldDescriptorProto.Builder fieldDescriptorProtoBuilder2 = DescriptorProtos.FieldDescriptorProto.newBuilder()
+                .setName("field2")
+                .setNumber(124)
+                .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING);
+
         descriptor.addField(fieldDescriptorProtoBuilder);
+        descriptor.addField(fieldDescriptorProtoBuilder2);
         fileDescriptorProtoBuilder.addMessageType(descriptor);
 
         ArrayList<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
@@ -124,7 +132,9 @@ public class ProtoLanguageFileWriterTest {
                 "\n" +
                 "\n" +
                 "message TestMessage {\n\n" +
-                "\tstring string = 123 [(anemos.metastore.core.test.field_option_1) = 123, (anemos.metastore.core.test.field_option_2) = something];\n" +
+                "\tstring string = 123 [(anemos.metastore.core.test.field_option_1) = 123, (anemos.metastore.core.test.field_option_2) = \"something\"];\n" +
+                "\n" +
+                "\tstring field2 = 124;\n" +
                 "}\n";
         Assert.assertEquals(expected, outputStream.toString());
     }
