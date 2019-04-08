@@ -57,8 +57,11 @@ public class ProtoDescriptor {
     }
 
     public ProtoDescriptor(Descriptors.Descriptor descriptor) throws IOException {
+        this(descriptor.getFile());
+    }
+
+    public ProtoDescriptor(Descriptors.FileDescriptor fileDescriptor) throws IOException {
         fileDescriptorMap = new HashMap<>();
-        Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
         fileDescriptorMap.put(fileDescriptor.getFullName(), fileDescriptor);
         indexDescriptorByName();
         indexOptionsByNumber();

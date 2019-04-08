@@ -168,10 +168,9 @@ public class ProtoLint {
         return true;
     }
 
-    public void lintOnPackage(Descriptors.Descriptor ref) {
-        Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(ref.getFile().getName());
+    public void lintOnPackage(Descriptors.FileDescriptor fileDescriptor) {
         String protoPackageName = fileDescriptor.getPackage();
-        String fileName = ref.getFile().getFullName();
+        String fileName = fileDescriptor.getFile().getFullName();
         String dirName = fileName.substring(0, fileName.lastIndexOf("/")).replace("/", ".");
         if (!dirName.equals(protoPackageName)) {
             results.addResult(fileDescriptor, RuleInfo.newBuilder()

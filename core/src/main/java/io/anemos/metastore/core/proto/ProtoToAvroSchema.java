@@ -47,9 +47,6 @@ public class ProtoToAvroSchema {
                 return "float";
             case BYTES:
                 return "bytes";
-            default:
-                // TODO
-                break;
         }
         return null;
     }
