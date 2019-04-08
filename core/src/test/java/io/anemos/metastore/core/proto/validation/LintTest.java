@@ -215,7 +215,7 @@ public class LintTest {
         ValidationResults results = new ValidationResults();
 
         ProtoLint lint = new ProtoLint(pd, results);
-        lint.lintOnPackage(ref);
+        lint.lintOnPackage(ref.getFile());
         return results.getReport();
     }
 

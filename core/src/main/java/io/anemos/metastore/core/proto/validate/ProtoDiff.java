@@ -111,10 +111,12 @@ public class ProtoDiff {
         diffFiles(fdRef, fdNew);
     }
 
+    //TODO implement diff services
     private void diffServices(List<Descriptors.ServiceDescriptor> s_ref, List<Descriptors.ServiceDescriptor> s_new) {
 
     }
 
+    //TODO implement diff enum types
     private void diffEnumTypes(List<Descriptors.EnumDescriptor> e_ref, List<Descriptors.EnumDescriptor> e_new) {
 
     }

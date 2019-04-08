@@ -103,7 +103,7 @@ public class ProtoLanguageFileWriter {
                     writer.print("string");
                     break;
                 case GROUP:
-                    // TODO
+                    // TODO figure out if we need to support this (proto2)
                     writer.print("GROUP");
                     break;
                 case MESSAGE: {
