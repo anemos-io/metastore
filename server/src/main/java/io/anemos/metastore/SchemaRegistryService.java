@@ -1,7 +1,6 @@
 package io.anemos.metastore;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
 import io.anemos.metastore.core.proto.profile.ValidationProfile;
@@ -25,7 +24,6 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
 
     @Override
     public void submitSchema(Schemaregistry.SubmitSchemaRequest request, StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
-        DescriptorProtos.FileDescriptorSet fileDescriptorProto = null;
         ProtoDescriptor in = null;
         try {
             in = new ProtoDescriptor(request.getFdProtoSet().newInput());
@@ -33,9 +31,19 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
             e.printStackTrace();
         }
 
-        metaStore.repo = in;
-        metaStore.write();
-
+        if ("shadowDelta".equals(request.getRegistryName())) {
+            //Regenerate report
+            Report report = validateShadow(request, in);
+            try {
+                metaStore.shadowRegistry.setDelta(report);
+                metaStore.writeShadow();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            metaStore.repo = in;
+            metaStore.writeDefault();
+        }
 
         responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
                 .newBuilder()
@@ -53,7 +61,21 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
             return;
         }
 
+        Report report;
+        if ("shadowDelta".equals(request.getRegistryName())) {
+            report = validateShadow(request, in);
+        } else {
+            report = validateDefault(request, in);
+        }
 
+        responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
+                .newBuilder()
+                .setReport(report)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    private Report validateDefault(Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor in) {
         ValidationResults results = new ValidationResults();
         ProtoDiff diff = new ProtoDiff(metaStore.repo, in, results);
         ProtoLint lint = new ProtoLint(in, results);
@@ -80,13 +102,40 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
         });
 
         ValidationProfile profile = new ProfileAvroEvolve();
-        Report report = profile.validate(results.getReport());
+        return profile.validate(results.getReport());
+    }
 
-        responseObserver.onNext(Schemaregistry.SubmitSchemaResponse
-                .newBuilder()
-                .setReport(report)
-                .build());
-        responseObserver.onCompleted();
+    private Report validateShadow(Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor in) {
+        //TODO validate on options
+
+        ValidationResults results = new ValidationResults();
+        //TODO metaStore.shadowDelta should contain cache (default + delta's)
+        ProtoDiff diff = new ProtoDiff(metaStore.shadowRegistry.getShadow(), in, results);
+        ProtoLint lint = new ProtoLint(in, results);
+
+        request.getScopeList().forEach(scope -> {
+            switch (scope.getEntityScopeCase()) {
+                case FILE_NAME:
+                    diff.diffOnFileName(scope.getFileName());
+                    lint.lintOnFileName(scope.getFileName());
+                    break;
+                case MESSAGE_NAME:
+                    lint.lintOnMessage(scope.getMessageName());
+                    break;
+                case SERVICE_NAME:
+                    lint.lintOnService(scope.getServiceName());
+                    break;
+                case ENUM_NAME:
+                    lint.lintOnEnum(scope.getEnumName());
+                    break;
+                default:
+                    diff.diffOnPackagePrefix(scope.getPackagePrefix());
+                    lint.lintOnPackagePrefix(scope.getPackagePrefix());
+            }
+        });
+
+        ValidationProfile profile = new ProfileAvroEvolve();
+        return profile.validate(results.getReport());
     }
 
     @Override

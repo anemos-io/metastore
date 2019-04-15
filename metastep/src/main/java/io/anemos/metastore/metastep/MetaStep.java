@@ -15,6 +15,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class MetaStep {
@@ -27,7 +28,7 @@ public class MetaStep {
     private Namespace res;
 
     public MetaStep(String... args) throws IOException, ArgumentParserException {
-        ArgumentParser parser = ArgumentParsers.newFor("metastrep")
+        ArgumentParser parser = ArgumentParsers.newFor("metastep")
                 .build();
 
         Subparsers subparsers = parser.addSubparsers().help("sub-command help");
@@ -38,6 +39,9 @@ public class MetaStep {
         submitParser.addArgument("-d", "--descriptor_set").required(false);
         submitParser.addArgument("-w", "--workspace").required(false);
         submitParser.addArgument("-s", "--server").required(true);
+        submitParser.addArgument("-r", "--registry").required(false);
+
+
 
         Subparser validateParser = subparsers.addParser("validate").help("validate help");
         validateParser.setDefault("sub-command", "validate");
@@ -46,6 +50,7 @@ public class MetaStep {
         validateParser.addArgument("-f", "--profile").required(false);
         validateParser.addArgument("-w", "--workspace").required(false);
         validateParser.addArgument("-s", "--server").required(true);
+        validateParser.addArgument("-r", "--registry").required(false);
 
 
 //        streamParser.addArgument("-e", "--env")
@@ -215,14 +220,8 @@ public class MetaStep {
 
     private void validate() throws IOException {
         System.out.println("Contract Validation started");
-        ProtoDescriptor protoContainer = createDescriptorSet();
 
-        Schemaregistry.SubmitSchemaResponse verifySchemaResponse = schemaRegistry.verifySchema(Schemaregistry.SubmitSchemaRequest.newBuilder()
-                .setFdProtoSet(protoContainer.toByteString())
-                .addScope(Schemaregistry.Scope.newBuilder()
-                        .setPackagePrefix(res.getString("package_prefix"))
-                        .build())
-                .build());
+        Schemaregistry.SubmitSchemaResponse verifySchemaResponse = schemaRegistry.verifySchema(createSchemaRequest());
 
         Report report = verifySchemaResponse.getReport();
 
@@ -244,13 +243,23 @@ public class MetaStep {
 
     private void publish() throws IOException {
         System.out.println("Contract Push started");
-        ProtoDescriptor protoContainer = createDescriptorSet();
-        schemaRegistry.submitSchema(Schemaregistry.SubmitSchemaRequest.newBuilder()
-                .setFdProtoSet(ByteString.copyFrom(protoContainer.toByteArray()))
+        schemaRegistry.submitSchema(createSchemaRequest());
+
+    }
+
+    private Schemaregistry.SubmitSchemaRequest createSchemaRequest() throws IOException {
+    ProtoDescriptor protoContainer = createDescriptorSet();
+
+        Schemaregistry.SubmitSchemaRequest.Builder schemaRequestBuilder = Schemaregistry.SubmitSchemaRequest.newBuilder()
+                .setFdProtoSet(protoContainer.toByteString())
                 .addScope(Schemaregistry.Scope.newBuilder()
                         .setPackagePrefix(res.getString("package_prefix"))
-                        .build())
-                .build());
+                        .build());
 
+        Map<String, Object> attributes = res.getAttrs();
+        if (attributes.containsKey("registry") && attributes.get("registry") != null) {
+            schemaRequestBuilder.setRegistryName((String) attributes.get("registry"));
+        }
+        return schemaRequestBuilder.build();
     }
 }

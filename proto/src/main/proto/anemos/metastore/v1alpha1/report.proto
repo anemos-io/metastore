@@ -54,6 +54,9 @@ message FileResult {
     ChangeInfo change = 4;
 
     //ResultCount result_count = 6;
+
+    repeated OptionChangeInfo option_change = 10;
+
 }
 
 message MessageResult {
@@ -64,9 +67,12 @@ message MessageResult {
 
     ChangeInfo change = 4;
 
+
     repeated FieldResult field_results = 5;
 
     //ResultCount result_count = 6;
+
+    repeated OptionChangeInfo option_change = 10;
 }
 
 message FieldResult {
@@ -77,7 +83,33 @@ message FieldResult {
 
     FieldChangeInfo change = 4;
 
-    //ResultCount result_count = 5;
+    //ResultCount result_count = 6;
+
+    repeated OptionChangeInfo option_change = 10;
+}
+
+message OptionChangeInfo {
+    enum OptionType {
+        OPTION_TYPE_UNSET = 0;
+        FILE_OPTION = 1;
+        MESSAGE_OPTION = 2;
+        FIELD_OPTION = 3;
+    }
+
+    enum OptionChangeType {
+        OPTION_UNCHANGED = 0;
+        OPTION_ADDED = 1;
+        OPTION_REMOVED = 2;
+        OPTION_PAYLOAD_CHANGED = 3;
+    }
+    OptionChangeType change_type = 1;
+    OptionType type = 2;
+
+    bytes payload_old = 5;
+    bytes payload_new = 6;
+
+    int32 option_number = 7;
+
 }
 
 message FieldChangeInfo {

@@ -96,6 +96,21 @@ public class ValidationResults {
         fileResult.setPatch(patch);
     }
 
+    void addOptionChange(Descriptors.FileDescriptor fileDescriptor, OptionChangeInfo info) {
+        FileResultContainer fileResultContainer = getOrCreateFile(fileDescriptor.getFullName());
+        fileResultContainer.addOptionChange(info);
+    }
+
+    void addOptionChange(Descriptors.Descriptor descriptor, OptionChangeInfo info) {
+        MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+        messageResult.addOptionChange(info);
+    }
+
+    void addOptionChange(Descriptors.FieldDescriptor fieldDescriptor, OptionChangeInfo info) {
+        MessageResultContainer messageResult = getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
+        messageResult.addOptionChange(fieldDescriptor, info);
+    }
+
     public Report getReport() {
         Report.Builder builder = Report.newBuilder();
         fileMap.values().forEach(file -> {
@@ -113,6 +128,7 @@ public class ValidationResults {
 
     class FieldResultContainer {
         List<RuleInfo> info = new ArrayList();
+        List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
         FieldChangeInfo patch;
         String name;
         int number;
@@ -125,7 +141,8 @@ public class ValidationResults {
             FieldResult.Builder builder = FieldResult.newBuilder()
                     .setName(name)
                     .setNumber(number)
-                    .addAllInfo(info);
+                    .addAllInfo(info)
+                    .addAllOptionChange(optionChangeInfos);
             if (patch != null) {
                 builder.setChange(patch);
             }
@@ -135,6 +152,10 @@ public class ValidationResults {
         public void addPatch(FieldChangeInfo patch) {
             this.patch = patch;
         }
+
+        public void addOptionChange(OptionChangeInfo optionChangeInfo) {
+            this.optionChangeInfos.add(optionChangeInfo);
+        }
     }
 
     class MessageResultContainer {
@@ -143,6 +164,7 @@ public class ValidationResults {
         List<RuleInfo> info = new ArrayList<>();
         Map<String, FieldResultContainer> fieldMap = new HashMap<>();
         ChangeInfo patch;
+        List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
 
         public void add(Descriptors.FieldDescriptor field, RuleInfo ruleInfo) {
             FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
@@ -153,6 +175,8 @@ public class ValidationResults {
             FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
             fieldResultContainer.addPatch(patch);
         }
+
+
 
         private FieldResultContainer getOrCreateFieldContainer(Descriptors.FieldDescriptor field) {
             FieldResultContainer fieldResultContainer = fieldMap.get(field.getName());
@@ -173,6 +197,7 @@ public class ValidationResults {
             }
             fieldMap.values().forEach(field -> messageInfo.addFieldResults(field.getResult()));
             messageInfo.addAllInfo(info);
+            messageInfo.addAllOptionChange(optionChangeInfos);
             return messageInfo.build();
         }
 
@@ -183,6 +208,15 @@ public class ValidationResults {
         public void setPatch(ChangeInfo patch) {
             this.patch = patch;
         }
+
+        public void addOptionChange(OptionChangeInfo info) {
+            optionChangeInfos.add(info);
+        }
+
+        public void addOptionChange(Descriptors.FieldDescriptor field, OptionChangeInfo optionChangeInfo) {
+            FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
+            fieldResultContainer.addOptionChange(optionChangeInfo);
+        }
     }
 
     class FileResultContainer {
@@ -191,6 +225,7 @@ public class ValidationResults {
         List<RuleInfo> info = new ArrayList<>();
         //Map<String, FieldResultContainer> fieldMap = new HashMap<>();
         ChangeInfo patch;
+        List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
 
         public void setPatch(ChangeInfo patch) {
             this.patch = patch;
@@ -200,7 +235,8 @@ public class ValidationResults {
 
             FileResult.Builder builder = FileResult.newBuilder()
                     .setFileName(fullName)
-                    .addAllInfo(info);
+                    .addAllInfo(info)
+                    .addAllOptionChange(optionChangeInfos);
             if (patch != null){
                 builder.setChange(patch);
             }
@@ -209,6 +245,10 @@ public class ValidationResults {
 
         public void addResult(RuleInfo ruleInfo) {
             info.add(ruleInfo);
+        }
+
+        public void addOptionChange(OptionChangeInfo optionChangeInfo) {
+            this.optionChangeInfos.add(optionChangeInfo);
         }
     }
 

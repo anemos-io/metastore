@@ -14,6 +14,8 @@ public class ProtoDescriptorTest {
     @Test
     public void optionsTest() throws Exception {
         ProtoDescriptor protoDescriptor = new ProtoDescriptor("src/test/proto/test.pb");
+        protoDescriptor.registerOptions();
+
         Descriptors.Descriptor descriptor = protoDescriptor.getDescriptorByName("io.anemos.protobeam.examples.ToFlatten");
         Descriptors.FieldDescriptor fieldDescriptor = descriptor.findFieldByName("meta");
 //
