@@ -2,6 +2,8 @@ package io.anemos.metastore;
 
 import com.google.cloud.storage.*;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.shadow.ShadowRegistry;
+import io.anemos.metastore.v1alpha1.Report;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -17,6 +19,7 @@ public class MetaStore {
 
     //    MonoRegistry registry;
     public ProtoDescriptor repo;
+    public ShadowRegistry shadowRegistry;
 
     private String bucket;
     private String path;
@@ -29,30 +32,51 @@ public class MetaStore {
     public MetaStore() throws IOException {
 
         String provider = System.getenv("METASTORE_STORAGE_PROVIDER");
-        if (!"io.amemos.metastore.provider.GoogleCloudStorage".equals(provider)) {
+        //TODO create class from provider, use reflection to invoke constructor.
+        if (!"io.anemos.metastore.provider.GoogleCloudStorage".equals(provider)) {
             throw new RuntimeException("Unsupported provider");
         }
         bucket = System.getenv("METASTORE_BUCKET");
         path = System.getenv("METASTORE_PATH");
         project = System.getenv("GOOGLE_PROJECT_ID");
 
-        read();
+        repo = read("default.pb");
+        Report shadowDelta = readDelta();
+        shadowRegistry = new ShadowRegistry(repo, shadowDelta);
+        shadowRegistry.sync(repo);
     }
 
-    public void write() {
-        Blob blob = storage.create(BlobInfo
+    public void writeDefault() {
+        storage.create(BlobInfo
                         .newBuilder(bucket, path + "default.pb")
                         .build(),
                 repo.toByteArray());
     }
 
-    private void read() throws IOException {
-        BlobId blobId = BlobId.of(bucket, path + "default.pb");
-        if (storage.get(blobId).exists()) {
+    public void writeShadow() {
+        storage.create(BlobInfo
+                        .newBuilder(bucket, path + "shadow.pb")
+                        .build(),
+                shadowRegistry.getDelta().toByteArray());
+    }
+
+    private ProtoDescriptor read(String filename) throws IOException {
+        BlobId blobId = BlobId.of(bucket, path + filename);
+        if (storage.get(blobId) != null && storage.get(blobId).exists()) {
             byte[] buffer = storage.readAllBytes(blobId, Storage.BlobSourceOption.userProject(project));
-            repo = new ProtoDescriptor(buffer);
+            return new ProtoDescriptor(buffer);
         } else {
-            repo = new ProtoDescriptor();
+            return new ProtoDescriptor();
+        }
+    }
+
+    private Report readDelta() {
+        BlobId blobId = BlobId.of(bucket, path + "shadow.pb");
+        try {
+            byte[] buffer = storage.readAllBytes(blobId, Storage.BlobSourceOption.userProject(project));
+            return Report.parseFrom(buffer);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read delta from storage", e);
         }
     }
 

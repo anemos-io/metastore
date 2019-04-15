@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "test/v1/option.proto";
+
+package test.v1;
+
+option (test.v1.file_option).string = "changed";
+
+message ProtoBeamBasicMessage {
+    string test_name = 1;
+    int32 test_index = 2;
+
+    double primitive_double = 3;
+    float primitive_float = 4;
+    int32 primitive_int32 = 5;
+    int64 primitive_int64 = 6;
+    uint32 primitive_uint32 = 7;
+    uint64 primitive_uint64 = 8;
+    sint32 primitive_sint32 = 9;
+    sint64 primitive_sint64 = 10;
+    fixed32 primitive_fixed32 = 11;
+    fixed64 primitive_fixed64 = 12;
+    sfixed32 primitive_sfixed32 = 13;
+    sfixed64 primitive_sfixed64 = 14;
+    bool primitive_bool = 15;
+    string primitive_string = 16;
+    bytes primitive_bytes = 17;
+}
+

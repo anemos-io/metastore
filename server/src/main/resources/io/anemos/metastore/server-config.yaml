@@ -1,0 +1,8 @@
+#TODO wire with Metastore
+
+schemaRegistry:
+  - default
+
+shadowRegistry:
+  - datalake:
+      from: default

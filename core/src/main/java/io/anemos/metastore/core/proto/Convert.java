@@ -25,19 +25,25 @@ public class Convert {
         if (outMap.containsKey(name)) {
             return outMap.get(name);
         }
-        DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
-        List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
-        if (fileDescriptorProto.getDependencyCount() > 0) {
-            fileDescriptorProto.getDependencyList().forEach(dependencyName ->
-                    dependencies.add(convertToFileDescriptorMap(dependencyName, inMap, outMap, extensionRegistry)));
+        Descriptors.FileDescriptor fileDescriptor;
+        if ("google/protobuf/descriptor.proto".equals(name)) {
+            fileDescriptor = DescriptorProtos.getDescriptor();
+        } else {
+            DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
+            List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
+            if (fileDescriptorProto.getDependencyCount() > 0) {
+                fileDescriptorProto.getDependencyList().forEach(dependencyName ->
+                        dependencies.add(convertToFileDescriptorMap(dependencyName, inMap, outMap, extensionRegistry)));
+            }
+            try {
+                fileDescriptor = Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
+
+            } catch (Descriptors.DescriptorValidationException e) {
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            Descriptors.FileDescriptor fileDescriptor = Descriptors.FileDescriptor.buildFrom(fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
-            outMap.put(name, fileDescriptor);
-            return fileDescriptor;
-        } catch (Descriptors.DescriptorValidationException e) {
-            throw new RuntimeException(e);
-        }
+        outMap.put(name, fileDescriptor);
+        return fileDescriptor;
     }
 
     public static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
@@ -46,17 +52,24 @@ public class Convert {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
 
-        //TODO Find way to do this dynamically
-        Options.registerAllExtensions(registry);
-        Rewrite.registerAllExtensions(registry);
-        Meta.registerAllExtensions(registry);
-        Bigquery.registerAllExtensions(registry);
-
-        outMap.forEach( (k, fileDescriptor) -> {
-            Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);
-        });
-
         return outMap;
     }
 
+    //TODO Find way to do this dynamically
+    public static Map<String, Descriptors.FileDescriptor> registerOptions(Map<String, Descriptors.FileDescriptor> fileDescriptorMap) {
+        Map<String, DescriptorProtos.FileDescriptorProto> inMap = new HashMap<>();
+        Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
+
+        fileDescriptorMap.forEach((name, fd) -> inMap.put(name, fd.toProto()));
+
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+
+        Options.registerAllExtensions(registry);
+
+        outMap.forEach((k, fileDescriptor) -> {
+            Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);
+        });
+        return outMap;
+    }
 }
