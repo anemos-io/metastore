@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package anemos.metastore.core.test.v2;
+
+option java_package = "io.anemos.metastore.core.test.v2";
+
+message VersionScopeImportValid {
+    string field1 = 1;
+}

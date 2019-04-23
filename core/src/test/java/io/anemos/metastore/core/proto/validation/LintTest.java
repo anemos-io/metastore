@@ -1,16 +1,15 @@
 package io.anemos.metastore.core.proto.validation;
 
-import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.Service;
 import io.anemos.metastore.core.Lint;
 import io.anemos.metastore.core.proto.*;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.core.test.v1.VersionScopeInvalid;
+import io.anemos.metastore.core.test.v1.VersionScopeValid;
 import io.anemos.metastore.invalid.Invalid;
 import io.anemos.metastore.v1alpha1.*;
 import org.junit.Assert;
-import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -180,21 +179,21 @@ public class LintTest {
     @Test
     public void packageScopeVersionValid() throws IOException {
         Descriptors.Descriptor descriptor = Lint.LintFieldNamesBad.getDescriptor();
-        Report result =  lintPackage(descriptor);
+        Report result = lintPackage(descriptor);
         Assert.assertEquals(0, result.getFileResultsCount());
     }
 
     @Test
     public void packageScopeVersionInvalid() throws IOException {
         Descriptors.Descriptor descriptor = Invalid.InvalidMessage.getDescriptor();
-        Report result =  lintPackage(descriptor);
+        Report result = lintPackage(descriptor);
         FileResult fr = result.getFileResultsOrThrow("anemos/metastore/invalid/invalid.proto");
 
         Assert.assertEquals(1, result.getFileResultsCount());
         assertOnFile(fr, LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT, "L70001/00");
     }
 
-    private void assertOnFile(FileResult fr, LintRule expectedRule, String expectedCode){
+    private void assertOnFile(FileResult fr, LintRule expectedRule, String expectedCode) {
         String code = null;
         LintRule rule = null;
         for (RuleInfo ruleInfo : fr.getInfoList()) {
@@ -218,6 +217,31 @@ public class LintTest {
         return results.getReport();
     }
 
+    @Test
+    public void versionScopeValid() throws IOException {
+        Descriptors.Descriptor descriptor = VersionScopeValid.VersionValid.getDescriptor();
+        Report result = lintVersion(descriptor);
+        Assert.assertEquals(0, result.getFileResultsCount());
+    }
+
+    @Test
+    public void versionScopeInvalid() throws IOException {
+        Descriptors.Descriptor descriptor = VersionScopeInvalid.VersionInValid.getDescriptor();
+        Report result = lintVersion(descriptor);
+        FileResult fr = result.getFileResultsOrThrow("anemos/metastore/core/test/v1/version_scope_invalid.proto");
+
+        Assert.assertEquals(1, result.getFileResultsCount());
+        assertOnFile(fr, LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT, "L70002/00");
+    }
+
+    private Report lintVersion(Descriptors.Descriptor ref) throws IOException {
+        ProtoDescriptor pd = new ProtoDescriptor(ref);
+        ValidationResults results = new ValidationResults();
+
+        ProtoLint lint = new ProtoLint(pd, results);
+        lint.lintOnVersion(ref);
+        return results.getReport();
+    }
 
 
 }
