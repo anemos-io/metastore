@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "anemos/metastore/core/test/v1/version_scope_import.proto";
+
+package anemos.metastore.core.test.v1;
+
+option java_package = "io.anemos.metastore.core.test.v1";
+
+message VersionValid {
+    string field1 = 1;
+}

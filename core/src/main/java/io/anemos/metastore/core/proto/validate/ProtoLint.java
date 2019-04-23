@@ -181,5 +181,24 @@ public class ProtoLint {
         }
     }
 
+    public void lintOnVersion(Descriptors.Descriptor ref) {
+        Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(ref.getFile().getName());
+        List<Descriptors.FileDescriptor> dependencies = ref.getFile().getDependencies();
+        for (Descriptors.FileDescriptor dependency : dependencies) {
+            String dependencyPackage = dependency.getFile().getPackage();
+            String protoPackage = ref.getFile().getPackage();
+
+            String protoVersion = protoPackage.substring(protoPackage.lastIndexOf(".") + 1, protoPackage.length());
+            String dependencyVersion = dependencyPackage.substring(dependencyPackage.lastIndexOf(".") + 1, dependencyPackage.length());
+            if (!dependencyVersion.equals(protoVersion) ) {
+                results.addResult(fileDescriptor, RuleInfo.newBuilder()
+                        .setLintRule(LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT)
+                        .setCode(String.format("L%d/00", LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT_VALUE))
+                        .build()
+                );
+            }
+        }
+    }
+
 
 }
