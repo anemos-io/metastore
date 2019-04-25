@@ -8,6 +8,8 @@ import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.test.v1.VersionScopeInvalid;
 import io.anemos.metastore.core.test.v1.VersionScopeValid;
 import io.anemos.metastore.invalid.Invalid;
+import io.anemos.metastore.unused.UsedValidImport;
+import io.anemos.metastore.unused.invalid.UnusedInvalidImport;
 import io.anemos.metastore.v1alpha1.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -243,5 +245,28 @@ public class LintTest {
         return results.getReport();
     }
 
+    @Test
+    public void unusedImportValid() throws IOException {
+        Descriptors.Descriptor descriptor = UsedValidImport.Valid.getDescriptor();
+        Report result = lintImport(descriptor);
+        Assert.assertEquals(0, result.getFileResultsCount());
+    }
+    @Test
+    public void unusedImportInvalid() throws IOException {
+        Descriptors.Descriptor descriptor = UnusedInvalidImport.Invalid.getDescriptor();
+        Report result = lintImport(descriptor);
+        FileResult fr = result.getFileResultsOrThrow("anemos/metastore/unused/invalid/unused_invalid_import.proto");
+        Assert.assertEquals(1, result.getFileResultsCount());
+        assertOnFile(fr, LintRule.LINT_IMPORT_NO_ALIGNMENT, "L80001/00");
+    }
+
+    private Report lintImport(Descriptors.Descriptor ref) throws IOException {
+        ProtoDescriptor pd = new ProtoDescriptor(ref);
+        ValidationResults results = new ValidationResults();
+
+        ProtoLint lint = new ProtoLint(pd, results);
+        lint.lintOnImport(ref);
+        return results.getReport();
+    }
 
 }

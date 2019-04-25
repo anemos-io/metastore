@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package anemos.metastore.unused;
+
+option java_package = "io.anemos.metastore.unused";
+
+enum EnumerationTest {
+    UNKNOWN = 0;
+    STARTED = 1;
+    RUNNING = 2;
+}

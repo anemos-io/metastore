@@ -6,6 +6,7 @@ import io.anemos.metastore.v1alpha1.LintRule;
 import io.anemos.metastore.v1alpha1.RuleInfo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProtoLint {
@@ -190,7 +191,7 @@ public class ProtoLint {
 
             String protoVersion = protoPackage.substring(protoPackage.lastIndexOf(".") + 1, protoPackage.length());
             String dependencyVersion = dependencyPackage.substring(dependencyPackage.lastIndexOf(".") + 1, dependencyPackage.length());
-            if (!dependencyVersion.equals(protoVersion) ) {
+            if (!dependencyVersion.equals(protoVersion)) {
                 results.addResult(fileDescriptor, RuleInfo.newBuilder()
                         .setLintRule(LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT)
                         .setCode(String.format("L%d/00", LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT_VALUE))
@@ -200,5 +201,42 @@ public class ProtoLint {
         }
     }
 
+    public void lintOnImport(Descriptors.Descriptor ref) {
+        Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(ref.getFile().getName());
+
+        List<Descriptors.FileDescriptor> dependencies = fileDescriptor.getDependencies();
+        List<Descriptors.Descriptor> protoMessages = fileDescriptor.getMessageTypes();
+
+        List<String> fieldTypes = new ArrayList<>();
+
+        for (Descriptors.Descriptor message : protoMessages) {
+            List<Descriptors.FieldDescriptor> fields = message.getFields();
+            for (Descriptors.FieldDescriptor field : fields) {
+                if (field.getType().name().equals("MESSAGE")) {
+                    fieldTypes.add(field.getMessageType().getFile().getFullName());
+                } else if (field.getType().name().equals("ENUM")) {
+                    fieldTypes.add(field.getEnumType().getFile().getFullName());
+                }
+            }
+        }
+
+        for (Descriptors.FileDescriptor dependency : dependencies) {
+            String dependencyName = dependency.getFullName();
+            boolean dependencyUsed = false;
+            for (String fieldType : fieldTypes) {
+                if (dependencyName.equals(fieldType)) {
+                    dependencyUsed = true;
+                }
+            }
+            if (!dependencyUsed) {
+                results.addResult(fileDescriptor, RuleInfo.newBuilder()
+                        .setLintRule(LintRule.LINT_IMPORT_NO_ALIGNMENT)
+                        .setCode(String.format("L%d/00", LintRule.LINT_IMPORT_NO_ALIGNMENT_VALUE))
+                        .build()
+                );
+            }
+        }
+
+    }
 
 }
