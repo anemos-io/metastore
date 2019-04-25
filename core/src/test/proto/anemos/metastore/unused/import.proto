@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package anemos.metastore.unused;
+
+option java_package = "io.anemos.metastore.unused";
+
+message UnusedImportTest {
+    string test = 1;
+}
