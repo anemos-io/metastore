@@ -1,9 +1,10 @@
 plugins {
-    id("net.ltgt.apt") version "0.20"
-    id("com.google.protobuf") version "0.8.8"
-    id 'java'
-    id 'idea'
-    id 'maven-publish'
+    id "net.ltgt.apt" version "0.20"
+    id "com.diffplug.gradle.spotless" version "3.23.0"
+    id "com.google.protobuf"  version "0.8.8"
+    id "java"
+    id "idea"
+    id "maven-publish"
 }
 
 repositories {
@@ -39,6 +40,16 @@ protobuf {
 
         }
         ofSourceSet("test")
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.7')
+        target project.fileTree(project.projectDir) {
+            include "**/*.java"
+            exclude "build/**/*.java"
+        }
     }
 }
 
