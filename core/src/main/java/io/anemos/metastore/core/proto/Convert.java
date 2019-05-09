@@ -3,7 +3,6 @@ package io.anemos.metastore.core.proto;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.ExtensionRegistry;
-import io.anemos.Options;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +73,6 @@ public class Convert {
 
     ExtensionRegistry registry = ExtensionRegistry.newInstance();
     inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
-
-    Options.registerAllExtensions(registry);
 
     outMap.forEach(
         (k, fileDescriptor) -> {
