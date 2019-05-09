@@ -99,6 +99,13 @@ protoc \
  test/v1/simple.proto \
  test/v1/option.proto
 
+protoc \
+ -Itestsets/base_multiple_options \
+ -I/usr/local/include \
+ -I$GOOGLEAPIS_DIR \
+ --descriptor_set_out=core/src/test/resources/io/anemos/metastore/core/proto/base_multiple_options.pb \
+ test/v1/simple.proto \
+ test/v1/option.proto
 
 
 
