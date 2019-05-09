@@ -72,4 +72,9 @@ public class TestSets {
     InputStream resourceAsStream = TestSets.class.getResourceAsStream("base_change_file_option.pb");
     return new ProtoDescriptor(resourceAsStream);
   }
+
+  public static ProtoDescriptor baseMultipleOptions() throws IOException {
+    InputStream resourceAsStream = TestSets.class.getResourceAsStream("base_multiple_options.pb");
+    return new ProtoDescriptor(resourceAsStream);
+  }
 }

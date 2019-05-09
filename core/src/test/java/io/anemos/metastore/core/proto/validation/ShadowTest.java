@@ -83,4 +83,27 @@ public class ShadowTest {
     Descriptors.FileDescriptor actualDescriptor = shadow.getFileDescriptorByFileName(fileName);
     Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
   }
+
+  @Test
+  public void multipleOptionsTest() throws Exception {
+    String fileName = "test/v1/simple.proto";
+    ProtoDescriptor baseMultipleOptions = TestSets.baseMultipleOptions();
+    ProtoDescriptor base = TestSets.baseKnownOption();
+
+    ValidationResults results = new ValidationResults();
+    ProtoDiff diff = new ProtoDiff(base, baseMultipleOptions, results);
+    diff.diffOnFileName(fileName);
+
+    Report result = results.getReport();
+    System.out.println(result);
+
+    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
+    shadowRegistry.setDelta(result);
+    ProtoDescriptor shadow = shadowRegistry.getShadow();
+
+    Descriptors.FileDescriptor expectedDescriptor =
+        baseMultipleOptions.getFileDescriptorByFileName(fileName);
+    Descriptors.FileDescriptor actualDescriptor = shadow.getFileDescriptorByFileName(fileName);
+    Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
+  }
 }
