@@ -8,12 +8,22 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.Report;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class ShadowTest {
+
+  @Rule public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+
+  @Before
+  public void before() throws Exception {
+    environmentVariables.set("DEBUG", "true");
+  }
 
   @Test
   public void addMessageOptionDeltaTest() throws Exception {
