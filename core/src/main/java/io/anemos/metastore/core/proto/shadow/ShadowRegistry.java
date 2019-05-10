@@ -34,8 +34,8 @@ public class ShadowRegistry {
   public ShadowRegistry(ProtoDescriptor defaultDescriptor, Report delta) {
     this.defaultDescriptor = defaultDescriptor;
     this.delta = delta;
-    //        applyDelta(delta);
-    //        initRepo();
+    applyDelta(delta);
+    initRepo();
   }
 
   public void applyDelta(Report delta) {
@@ -217,6 +217,9 @@ public class ShadowRegistry {
   }
 
   private void initRepo() {
+    if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
+      return;
+    }
     final File localPath = new File(path);
     try {
       if (localPath.exists()) {
@@ -233,6 +236,9 @@ public class ShadowRegistry {
   }
 
   public void sync(ProtoDescriptor defaultDescriptor) {
+    if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
+      return;
+    }
     try {
       defaultDescriptor.writeToDirectory(path);
 

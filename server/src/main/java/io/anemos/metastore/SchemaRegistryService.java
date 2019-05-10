@@ -37,7 +37,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
       Report report = validateShadow(request, in);
       try {
         metaStore.shadowRegistry.setDelta(report);
-        metaStore.writeShadow();
+        metaStore.writeShadowDelta();
       } catch (Exception e) {
         e.printStackTrace();
       }

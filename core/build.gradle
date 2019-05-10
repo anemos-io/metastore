@@ -30,7 +30,8 @@ dependencies {
     testImplementation("junit:junit:4.12")
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
     testCompile(project(':proto'))
-
+    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
+    
 }
 
 protobuf {
