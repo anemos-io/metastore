@@ -3,7 +3,7 @@ package io.anemos.metastore.core.proto.validation;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.TestSets;
-import io.anemos.metastore.core.proto.shadow.ShadowRegistry;
+import io.anemos.metastore.core.proto.shadow.ShadowApply;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.Report;
@@ -37,9 +37,9 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
-    shadowRegistry.setDelta(result);
-    ProtoDescriptor shadow = shadowRegistry.getShadow();
+    //    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
+    //    shadowRegistry.setDelta(result);
+    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddMessageOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -60,9 +60,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
-    shadowRegistry.setDelta(result);
-    ProtoDescriptor shadow = shadowRegistry.getShadow();
+    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddFieldOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -84,9 +82,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
-    shadowRegistry.setDelta(result);
-    ProtoDescriptor shadow = shadowRegistry.getShadow();
+    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseAddFileOption.getFileDescriptorByFileName(fileName);
@@ -107,9 +103,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
-    shadowRegistry.setDelta(result);
-    ProtoDescriptor shadow = shadowRegistry.getShadow();
+    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseMultipleOptions.getFileDescriptorByFileName(fileName);

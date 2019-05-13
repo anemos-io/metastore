@@ -8,13 +8,13 @@ extend google.protobuf.FileOptions {
     TestOption file_option = 66666700;
 }
 
+extend google.protobuf.MessageOptions {
+    TestOption test_option = 66666700;
+}
+
 extend google.protobuf.FieldOptions {
     int32 field_option_1 = 66666708;
     string field_option_2 = 66666709;
-}
-
-extend google.protobuf.MessageOptions {
-    TestOption test_option = 66666700;
 }
 
 message TestOption {

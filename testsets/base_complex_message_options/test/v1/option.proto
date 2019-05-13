@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package test.v1;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+    TestOption test_file_option = 66666700;
+    string string_file_option = 66666800;
+    repeated string repeated_string_file_option = 66666801;
+    int32 int32_file_option = 66666810;
+    repeated int32 repeated_int32_file_option = 66666811;
+    int64 int64_file_option = 66666812;
+    repeated int64 repeated_int64_file_option = 66666813;
+
+    bool bool_file_option = 66666814;
+    double double_file_option = 66666815;
+    float float_file_option = 66666816;
+}
+
+extend google.protobuf.MessageOptions {
+    TestOption test_option = 66666700;
+    string string_option = 66666800;
+    repeated string repeated_string_option = 66666801;
+    int32 int32_option = 66666810;
+    repeated int32 repeated_int32_option = 66666811;
+    int64 int64_option = 66666812;
+    repeated int64 repeated_int64_option = 66666813;
+
+    bool bool_option = 66666814;
+    double double_option = 66666815;
+    float float_option = 66666816;
+}
+
+extend google.protobuf.FieldOptions {
+    TestOption test_field_option = 66666700;
+    string string_field_option = 66666800;
+    repeated string repeated_string_field_option = 66666801;
+    int32 int32_field_option = 66666810;
+    repeated int32 repeated_int32_field_option = 66666811;
+    int64 int64_field_option = 66666812;
+    repeated int64 repeated_int64_field_option = 66666813;
+
+    bool bool_field_option = 66666814;
+    double double_field_option = 66666815;
+    float float_field_option = 66666816;
+}
+
+message TestOption {
+    string string = 1;
+    repeated string repeated_string = 2;
+
+    int32 int32 = 3;
+    repeated int32 repeated_int32 = 4;
+
+    int64 int64 = 5;
+
+    enum TestEnum {
+        ENUM1 = 0;
+        ENUM2 = 1;
+    }
+    TestEnum test_enum = 6;
+}

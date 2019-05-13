@@ -140,7 +140,7 @@ public class AvroToProtoSchemaTest {
 
   private JsonNode getJsonNode(String jsonName) {
     InputStream resourceAsStream =
-        AvroToProtoSchemaTest.class.getResourceAsStream(jsonName.concat(".json"));
+        AvroToProtoSchemaTest.class.getResourceAsStream("../".concat(jsonName.concat(".json")));
     ObjectMapper mapper = new ObjectMapper();
     JsonNode node = null;
     try {
