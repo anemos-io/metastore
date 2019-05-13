@@ -17,7 +17,7 @@ public class LocalFileProvider implements MetaStoreStorageProvider {
       throw new RuntimeException("METASTORE_PATH variable not set");
     }
     if (!new File(path).isDirectory()) {
-      throw new RuntimeException(path + "is not a directory");
+      throw new RuntimeException(path + " is not a directory");
     }
     File file = new File(path);
     path = file.getPath();
@@ -25,7 +25,7 @@ public class LocalFileProvider implements MetaStoreStorageProvider {
 
   @Override
   public ByteString read(String fileName) {
-    String filePath = path + fileName;
+    String filePath = path + "/" + fileName;
     try {
       if (!new File(filePath).exists()) {
         return ByteString.EMPTY;
@@ -38,7 +38,7 @@ public class LocalFileProvider implements MetaStoreStorageProvider {
 
   @Override
   public void write(String fileName, ByteString payload) {
-    String filePath = path + fileName;
+    String filePath = path + "/" + fileName;
     try {
       FileUtils.writeByteArrayToFile(new File(filePath), payload.toByteArray());
     } catch (IOException e) {

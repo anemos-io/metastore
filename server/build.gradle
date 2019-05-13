@@ -32,6 +32,7 @@ dependencies {
 
     testImplementation("junit:junit:4.12")
     testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
+    testCompile group: 'io.grpc', name: 'grpc-testing', version: '1.20.0'
 
 }
 

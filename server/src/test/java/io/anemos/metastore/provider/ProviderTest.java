@@ -88,13 +88,13 @@ public class ProviderTest {
 
   public static ProtoDescriptor baseKnownOption() throws IOException {
     InputStream resourceAsStream =
-        ProviderTest.class.getResourceAsStream("../base_known_option.pb");
+        ProviderTest.class.getResourceAsStream("../server/base_known_option.pb");
     return new ProtoDescriptor(resourceAsStream);
   }
 
   public static ProtoDescriptor baseAddMessageOption() throws IOException {
     InputStream resourceAsStream =
-        ProviderTest.class.getResourceAsStream("../base_add_message_option.pb");
+        ProviderTest.class.getResourceAsStream("../server/base_add_message_option.pb");
     return new ProtoDescriptor(resourceAsStream);
   }
 

@@ -10,37 +10,18 @@ import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
 import io.anemos.metastore.v1alpha1.Report;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.Status;
 
-public class ShadowRegistry {
+public class ShadowApply {
 
-  private static final Logger LOG = Logger.getLogger(ShadowRegistry.class.getName());
-
-  private ProtoDescriptor defaultDescriptor;
   private ProtoDescriptor shadow;
-  private Report delta;
-  private Git shadowRepo;
-  private String path = "/tmp/shadow-contracts";
 
-  public ShadowRegistry(ProtoDescriptor defaultDescriptor, Report delta) {
-    this.defaultDescriptor = defaultDescriptor;
-    this.delta = delta;
-    applyDelta(delta);
-    initRepo();
-  }
-
-  public void applyDelta(Report delta) {
+  public ProtoDescriptor applyDelta(ProtoDescriptor defaultDescriptor, Report delta) {
     try {
-      initShadow();
+      shadow = defaultDescriptor;
 
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders =
           new HashMap<>();
@@ -51,7 +32,7 @@ public class ShadowRegistry {
           (name, fd) -> {
             fileDescriptorProtos.add(fd.build());
           });
-      shadow = shadow.update(fileDescriptorProtos);
+      return shadow.update(fileDescriptorProtos);
     } catch (Exception e) {
       throw new RuntimeException("Failed to apply delta", e);
     }
@@ -210,69 +191,5 @@ public class ShadowRegistry {
     } catch (Exception e) {
       throw new RuntimeException("merge of unknown field failed", e);
     }
-  }
-
-  private void initShadow() throws IOException {
-    this.shadow = new ProtoDescriptor(defaultDescriptor.toByteArray());
-  }
-
-  private void initRepo() {
-    if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
-      return;
-    }
-    final File localPath = new File(path);
-    try {
-      if (localPath.exists()) {
-        FileUtils.forceDelete(localPath);
-      }
-      this.shadowRepo =
-          Git.cloneRepository()
-              .setURI(System.getenv("METASTORE_SHADOW_REPO_URI"))
-              .setDirectory(localPath)
-              .call();
-    } catch (Exception e) {
-      throw new RuntimeException("Can't init local shadow repo", e);
-    }
-  }
-
-  public void sync(ProtoDescriptor defaultDescriptor) {
-    if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
-      return;
-    }
-    try {
-      defaultDescriptor.writeToDirectory(path);
-
-      // TODO Apply delta's here
-
-      shadowRepo.pull();
-      shadowRepo.add().addFilepattern(".").call();
-      Status status = shadowRepo.status().call();
-      if (status.hasUncommittedChanges()) {
-        shadowRepo.commit().setMessage("contract sync").call();
-        shadowRepo.push().call();
-        LOG.info("contract sync");
-      } else {
-        LOG.info("no changes to commit");
-      }
-
-    } catch (Exception e) {
-      throw new RuntimeException("Failed syncing the shadow repo", e);
-    }
-
-    // Add delta's.
-    // git add, commit, push
-  }
-
-  public Report getDelta() {
-    return this.delta;
-  }
-
-  public ProtoDescriptor getShadow() {
-    applyDelta(this.delta);
-    return this.shadow;
-  }
-
-  public void setDelta(Report delta) {
-    this.delta = delta;
   }
 }

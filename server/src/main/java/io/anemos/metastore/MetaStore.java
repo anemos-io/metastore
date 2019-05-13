@@ -1,7 +1,6 @@
 package io.anemos.metastore;
 
 import io.anemos.metastore.core.proto.ProtoDescriptor;
-import io.anemos.metastore.core.proto.shadow.ShadowRegistry;
 import io.anemos.metastore.provider.MetaStoreStorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
@@ -32,8 +31,7 @@ public class MetaStore {
 
     repo = new ProtoDescriptor(provider.read("default.pb").toByteArray());
     Report shadowDelta = Report.parseFrom(provider.read("shadow.pb"));
-    shadowRegistry = new ShadowRegistry(repo, shadowDelta);
-    shadowRegistry.sync(repo);
+    shadowRegistry = new ShadowRegistry(this, shadowDelta);
   }
 
   public void writeDefault() {
@@ -44,11 +42,19 @@ public class MetaStore {
     provider.write("shadow.pb", shadowRegistry.getDelta().toByteString());
   }
 
-  public void readDefault() throws IOException {
-    this.repo = new ProtoDescriptor(provider.read("default.pb").toByteArray());
+  public void readDefault() {
+    try {
+      this.repo = new ProtoDescriptor(provider.read("default.pb").toByteArray());
+    } catch (IOException e) {
+      throw new RuntimeException("failed to read default.pb", e);
+    }
   }
 
-  public void readShadowDelta() throws IOException {
-    shadowRegistry.setDelta(Report.parseFrom(provider.read("shadow.pb")));
+  public void readShadowDelta() {
+    try {
+      shadowRegistry.setDelta(Report.parseFrom(provider.read("shadow.pb")));
+    } catch (IOException e) {
+      throw new RuntimeException("failed to read shadow.pb", e);
+    }
   }
 }

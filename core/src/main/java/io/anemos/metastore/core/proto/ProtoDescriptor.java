@@ -9,8 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,9 +24,13 @@ public class ProtoDescriptor {
   private Map<String, Descriptors.Descriptor> descriptorMap;
   private Map<String, Descriptors.ServiceDescriptor> serviceMap;
   private Map<String, Descriptors.EnumDescriptor> enumMap;
-  private Map<Integer, Descriptors.FileDescriptor> fileOptionMap;
-  private Map<Integer, Descriptors.FileDescriptor> messageOptionMap;
-  private Map<Integer, Descriptors.FileDescriptor> fieldOptionMap;
+  private Map<Integer, Descriptors.FileDescriptor> fileOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> messageOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> fieldOptionDependencyMap;
+
+  private Map<Integer, Descriptors.FieldDescriptor> fileOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> messageOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> fieldOptionMap;
 
   public ProtoDescriptor(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
     fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorSet);
@@ -65,6 +69,18 @@ public class ProtoDescriptor {
     indexOptionsByNumber();
   }
 
+  public Map<Integer, Descriptors.FieldDescriptor> getFileOptionMap() {
+    return Collections.unmodifiableMap(fileOptionMap);
+  }
+
+  public Map<Integer, Descriptors.FieldDescriptor> getMessageOptionMap() {
+    return Collections.unmodifiableMap(messageOptionMap);
+  }
+
+  public Map<Integer, Descriptors.FieldDescriptor> getFieldOptionMap() {
+    return Collections.unmodifiableMap(fieldOptionMap);
+  }
+
   public Descriptors.FileDescriptor getFileDescriptorByFileName(String fileName) {
     return fileDescriptorMap.get(fileName);
   }
@@ -86,15 +102,17 @@ public class ProtoDescriptor {
   public void writeToDirectory(String root) throws IOException {
     for (Map.Entry<String, Descriptors.FileDescriptor> entry : fileDescriptorMap.entrySet()) {
       String packageDir = entry.getValue().getPackage().replaceAll("\\.", "/");
-      String fileName = entry.getValue().getName();
-      if (fileName.contains("/")) {
-        fileName =
-            entry.getValue().getName().substring(entry.getValue().getName().lastIndexOf("/") + 1);
-      }
-      File file = new File(String.format("%s/%s/%s", root, packageDir, fileName));
-      file.getParentFile().mkdirs();
-      try (OutputStream out = new FileOutputStream(file)) {
-        ProtoLanguageFileWriter.write(entry.getValue(), out);
+      if (!packageDir.startsWith("google/protobuf")) {
+        String fileName = entry.getValue().getName();
+        if (fileName.contains("/")) {
+          fileName =
+              entry.getValue().getName().substring(entry.getValue().getName().lastIndexOf("/") + 1);
+        }
+        File file = new File(String.format("%s/%s/%s", root, packageDir, fileName));
+        file.getParentFile().mkdirs();
+        try (OutputStream out = new FileOutputStream(file)) {
+          ProtoLanguageFileWriter.write(entry.getValue(), this, out);
+        }
       }
     }
   }
@@ -168,9 +186,12 @@ public class ProtoDescriptor {
   }
 
   private void indexOptionsByNumber() {
+    fileOptionDependencyMap = new HashMap<>();
+    messageOptionDependencyMap = new HashMap<>();
+    fieldOptionMap = new HashMap<>();
     fileOptionMap = new HashMap<>();
     messageOptionMap = new HashMap<>();
-    fieldOptionMap = new HashMap<>();
+    fieldOptionDependencyMap = new HashMap<>();
     fileDescriptorMap.forEach(
         (fileName, fileDescriptor) -> {
           fileDescriptor
@@ -179,13 +200,16 @@ public class ProtoDescriptor {
                   extension -> {
                     switch (extension.toProto().getExtendee()) {
                       case ".google.protobuf.FileOptions":
-                        fileOptionMap.put(extension.getNumber(), fileDescriptor);
+                        fileOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        fileOptionMap.put(extension.getNumber(), extension);
                         break;
                       case ".google.protobuf.MessageOptions":
-                        messageOptionMap.put(extension.getNumber(), fileDescriptor);
+                        messageOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        messageOptionMap.put(extension.getNumber(), extension);
                         break;
                       case ".google.protobuf.FieldOptions":
-                        fieldOptionMap.put(extension.getNumber(), fileDescriptor);
+                        fieldOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        fieldOptionMap.put(extension.getNumber(), extension);
                         break;
                     }
                   });
@@ -223,40 +247,42 @@ public class ProtoDescriptor {
       Set<Integer> fieldOptionDependencyNumbers = new HashSet<>();
       for (DescriptorProtos.DescriptorProto descriptorProto :
           newFileDescriptorProto.getMessageTypeList()) {
-        messageOptionDependencyNumbers.addAll(descriptorProto.getUnknownFields().asMap().keySet());
+        messageOptionDependencyNumbers.addAll(
+            descriptorProto.getOptions().getUnknownFields().asMap().keySet());
         descriptorProto
             .getFieldList()
             .forEach(
                 field ->
-                    fieldOptionDependencyNumbers.addAll(field.getUnknownFields().asMap().keySet()));
+                    fieldOptionDependencyNumbers.addAll(
+                        field.getOptions().getUnknownFields().asMap().keySet()));
       }
 
-      ArrayList<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
+      Set<Descriptors.FileDescriptor> dependencies = new HashSet<>();
       fileOptionDependencyNumbers.forEach(
           number -> {
-            if (this.fileOptionMap.containsKey(number)) {
-              dependencies.add(this.fileOptionMap.get(number));
+            if (this.fileOptionDependencyMap.containsKey(number)) {
+              dependencies.add(this.fileOptionDependencyMap.get(number));
             } else {
               throw new RuntimeException(
-                  "fileOptionMap does not contain option with number " + number);
+                  "fileOptionDependencyMap does not contain option with number " + number);
             }
           });
       messageOptionDependencyNumbers.forEach(
           number -> {
-            if (this.messageOptionMap.containsKey(number)) {
-              dependencies.add(this.messageOptionMap.get(number));
+            if (this.messageOptionDependencyMap.containsKey(number)) {
+              dependencies.add(this.messageOptionDependencyMap.get(number));
             } else {
               throw new RuntimeException(
-                  "messageOptionMap does not contain option with number " + number);
+                  "messageOptionDependencyMap does not contain option with number " + number);
             }
           });
       fieldOptionDependencyNumbers.forEach(
           number -> {
-            if (this.fieldOptionMap.containsKey(number)) {
-              dependencies.add(this.fieldOptionMap.get(number));
+            if (this.fieldOptionDependencyMap.containsKey(number)) {
+              dependencies.add(this.fieldOptionDependencyMap.get(number));
             } else {
               throw new RuntimeException(
-                  "fieldOptionMap does not contain option with number " + number);
+                  "fieldOptionDependencyMap does not contain option with number " + number);
             }
           });
       newFileDescriptorProto

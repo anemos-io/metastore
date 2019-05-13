@@ -32,7 +32,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
       e.printStackTrace();
     }
 
-    if ("shadowDelta".equals(request.getRegistryName())) {
+    if ("shadow".equals(request.getRegistryName())) {
       // Regenerate report
       Report report = validateShadow(request, in);
       try {
@@ -44,6 +44,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     } else {
       metaStore.repo = in;
       metaStore.writeDefault();
+      metaStore.shadowRegistry.sync();
     }
 
     responseObserver.onNext(Schemaregistry.SubmitSchemaResponse.newBuilder().build());
@@ -63,7 +64,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     }
 
     Report report;
-    if ("shadowDelta".equals(request.getRegistryName())) {
+    if ("shadow".equals(request.getRegistryName())) {
       report = validateShadow(request, in);
     } else {
       report = validateDefault(request, in);

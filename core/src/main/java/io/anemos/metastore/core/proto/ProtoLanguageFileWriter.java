@@ -1,20 +1,45 @@
 package io.anemos.metastore.core.proto;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
+import com.google.protobuf.UnknownFieldSet;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.util.*;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
-  private DescriptorProtos.FileDescriptorProto fdp;
+  private ProtoDescriptor protoDescriptor;
 
-  public ProtoLanguageFileWriter(Descriptors.FileDescriptor fd) {
-    this.fd = fd;
-    this.fdp = fd.toProto();
+  ProtoLanguageFileWriter(
+      Descriptors.FileDescriptor fileDescriptor, ProtoDescriptor protoDescriptor) {
+    this(fileDescriptor);
+    this.protoDescriptor = protoDescriptor;
+  }
+
+  ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor) {
+    this.fd = fileDescriptor;
+  }
+
+  public static void write(
+      Descriptors.FileDescriptor fd, ProtoDescriptor protoDescriptor, OutputStream outputStream) {
+    PrintWriter printWriter = new PrintWriter(outputStream);
+    new ProtoLanguageFileWriter(fd, protoDescriptor).write(printWriter);
+    printWriter.flush();
+  }
+
+  public static String write(Descriptors.FileDescriptor fd, ProtoDescriptor protoDescriptor) {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    write(fd, protoDescriptor, byteArrayOutputStream);
+    return byteArrayOutputStream.toString();
   }
 
   public static void write(Descriptors.FileDescriptor fd, OutputStream outputStream) {
@@ -42,23 +67,72 @@ public class ProtoLanguageFileWriter {
     }
 
     private void fileOptions() {
-      DescriptorProtos.FileOptions options = fdp.getOptions();
+      DescriptorProtos.FileOptions options = fd.toProto().getOptions();
 
       for (Map.Entry<Descriptors.FieldDescriptor, Object> field :
           options.getAllFields().entrySet()) {
-        writer.print("option ");
-        writer.print(field.getKey().getName());
-        writer.print(" = ");
-        if (field.getKey().getType() == Descriptors.FieldDescriptor.Type.STRING) {
-          writer.print("\"");
-          writer.print(field.getValue());
-          writer.print("\"");
-        } else {
-          writer.print(field.getValue());
+        writeFileOption(field.getKey(), field.getValue(), false);
+      }
+      if (!options.getUnknownFields().asMap().isEmpty()) {
+        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
+            getUnknownFieldValues(
+                options.getUnknownFields(), protoDescriptor.getFileOptionMap(), 0);
+        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
+        for (Descriptors.FieldDescriptor fd : keys) {
+          Collection<String> values = unknownOptionsMap.get(fd);
+          for (String value : values) {
+            writeFileOption(fd, value, true);
+          }
         }
-        writer.println(";");
       }
       writer.println();
+    }
+
+    private void writeFileOption(Descriptors.FieldDescriptor fd, Object value, boolean unknown) {
+      writer.print("option ");
+      if (unknown) {
+        writer.print("(");
+      }
+      writer.print(fd.getName());
+      if (unknown) {
+        writer.print(")");
+      }
+      writer.print(" = ");
+      if (fd.getType() == Descriptors.FieldDescriptor.Type.STRING) {
+        if (!unknown) {
+          writer.print("\"");
+        }
+        writer.print(value);
+        if (!unknown) {
+          writer.print("\"");
+        }
+      } else {
+        writer.print(value);
+      }
+      writer.println(";");
+    }
+
+    private void extensions() {
+      Map<String, List<Descriptors.FieldDescriptor>> extensions = new HashMap<>();
+      for (Descriptors.FieldDescriptor fieldDescriptor : fd.getExtensions()) {
+        String toExtend = fieldDescriptor.getContainingType().getFullName();
+        if (extensions.containsKey(toExtend)) {
+          extensions.get(toExtend).add(fieldDescriptor);
+        } else {
+          ArrayList<Descriptors.FieldDescriptor> fdList = new ArrayList<>();
+          fdList.add(fieldDescriptor);
+          extensions.put(toExtend, fdList);
+        }
+      }
+
+      for (String toExtend : extensions.keySet()) {
+        writer.println();
+        writer.println("extend " + toExtend + " {");
+        for (Descriptors.FieldDescriptor fieldDescriptor : extensions.get(toExtend)) {
+          field(fieldDescriptor, 1);
+        }
+        writer.println("}\n");
+      }
     }
 
     private void indent(int indent) {
@@ -167,8 +241,10 @@ public class ProtoLanguageFileWriter {
       writer.print(" = ");
       writer.print(field.getNumber());
 
-      boolean hasFieldOptions = field.getOptions().getAllFields().size() > 0;
-      if (hasFieldOptions) writer.print(" [");
+      boolean hasFieldOptions =
+          field.getOptions().getAllFields().size() > 0
+              || field.getOptions().getUnknownFields().asMap().keySet().size() > 0;
+      if (hasFieldOptions) writer.print(" [\n");
 
       Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iter =
           field.getOptions().getAllFields().entrySet().iterator();
@@ -176,6 +252,7 @@ public class ProtoLanguageFileWriter {
         Map.Entry<Descriptors.FieldDescriptor, Object> fieldOption = iter.next();
         Descriptors.FieldDescriptor fieldDescriptor = fieldOption.getKey();
         Object value = fieldOption.getValue();
+        indent(indent + 1);
         if (fieldDescriptor.getFullName().startsWith("google.protobuf.FieldOptions")) {
           writer.print(fieldDescriptor.getName());
         } else {
@@ -188,12 +265,39 @@ public class ProtoLanguageFileWriter {
         value(value, fieldDescriptor);
 
         if (iter.hasNext()) writer.print(", ");
+        writer.print("\n");
+      }
+      if (!field.getOptions().getUnknownFields().asMap().isEmpty()) {
+        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
+            getUnknownFieldValues(
+                field.getOptions().getUnknownFields(),
+                protoDescriptor.getFieldOptionMap(),
+                indent + 1);
+        Iterator<Map.Entry<Descriptors.FieldDescriptor, String>> unknownIter =
+            unknownOptionsMap.entries().iterator();
+        while (unknownIter.hasNext()) {
+          Map.Entry<Descriptors.FieldDescriptor, String> fieldOption = unknownIter.next();
+          Descriptors.FieldDescriptor fd = fieldOption.getKey();
+          String value = fieldOption.getValue();
+          indent(indent + 1);
+          writer.print("(");
+          writer.print(fd.getName());
+          writer.print(")");
+
+          writer.print(" = ");
+          writer.print(value);
+
+          if (unknownIter.hasNext()) writer.print(",");
+          writer.print("\n");
+        }
       }
 
-      if (hasFieldOptions) writer.print("]");
+      if (hasFieldOptions) {
+        indent(indent);
+        writer.print("]");
+      }
 
       writer.println(";");
-
       if (hasFieldOptions) writer.println();
     }
 
@@ -253,6 +357,8 @@ public class ProtoLanguageFileWriter {
         writer.print(fd.getPackage());
         writer.println(";");
       }
+
+      extensions();
 
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
         writer.println();
@@ -359,6 +465,20 @@ public class ProtoLanguageFileWriter {
               }
             }
           });
+      if (!messageDescriptor.getOptions().getUnknownFields().asMap().isEmpty()) {
+        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
+            getUnknownFieldValues(
+                messageDescriptor.getOptions().getUnknownFields(),
+                protoDescriptor.getMessageOptionMap(),
+                indent + 1);
+        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
+        for (Descriptors.FieldDescriptor fd : keys) {
+          Collection<String> values = unknownOptionsMap.get(fd);
+          for (String value : values) {
+            printMessageOption("", fd.getName(), value, indent + 1);
+          }
+        }
+      }
       writer.println();
     }
 
@@ -366,7 +486,10 @@ public class ProtoLanguageFileWriter {
         String packageName, String optionName, String value, int indent) {
       if (!value.isEmpty()) {
         indent(indent);
-        writer.println(String.format("option (%s).%s = %s;", packageName, optionName, value));
+        if (!packageName.isEmpty()) {
+          packageName = packageName + ".";
+        }
+        writer.println(String.format("option %s(%s) = %s;", packageName, optionName, value));
       }
     }
 
@@ -383,6 +506,129 @@ public class ProtoLanguageFileWriter {
           return valueDescriptor.toString();
       }
       return "";
+    }
+
+    private String getUnknownPrimitiveFieldValue(
+        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
+      switch (fieldDescriptor.getType()) {
+        case MESSAGE:
+          try {
+            StringBuilder stringBuilder = new StringBuilder();
+            DynamicMessage dynamicMessage =
+                DynamicMessage.parseFrom(fieldDescriptor.getMessageType(), (ByteString) value);
+            stringBuilder.append("{\n");
+
+            Iterator<Descriptors.FieldDescriptor> iter =
+                dynamicMessage.getAllFields().keySet().iterator();
+            while (iter.hasNext()) {
+              Descriptors.FieldDescriptor fd = iter.next();
+              Object fieldValue = dynamicMessage.getField(fd);
+              for (int i = 0; i < indent + 1; i++) {
+                stringBuilder.append("\t");
+              }
+              stringBuilder.append(fd.getName());
+              stringBuilder.append(": ");
+
+              if (fd.isRepeated()) {
+                stringBuilder.append("[");
+                List<Object> repeatedValues = (List<Object>) fieldValue;
+                Iterator<Object> repeatedIt = repeatedValues.iterator();
+                while (repeatedIt.hasNext()) {
+                  stringBuilder.append(getOptionValue(fd, repeatedIt.next()));
+                  if (repeatedIt.hasNext()) {
+                    stringBuilder.append(",");
+                  } else {
+                    stringBuilder.append("]");
+                  }
+                }
+              } else {
+                String optionValue = getOptionValue(fd, fieldValue);
+                stringBuilder.append(optionValue);
+              }
+              if (iter.hasNext()) {
+                stringBuilder.append(",");
+              }
+              stringBuilder.append("\n");
+            }
+            for (int i = 0; i < indent; i++) {
+              stringBuilder.append("\t");
+            }
+            stringBuilder.append("}");
+            return stringBuilder.toString();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        case BOOL:
+          return value.equals(1L) ? "true" : "false";
+        case ENUM:
+        case STRING:
+          ByteString byteString = (ByteString) value;
+          return "\"" + byteString.toStringUtf8() + "\"";
+        case INT32:
+        case INT64:
+          return unsignedToString((Long) value);
+        case DOUBLE:
+          Double d = Double.longBitsToDouble((Long) value);
+          return d.toString();
+        case FLOAT:
+          Float f = Float.intBitsToFloat((Integer) value);
+          return f.toString();
+      }
+      throw new RuntimeException(
+          "conversion of unknownfield for type "
+              + fieldDescriptor.getType().toString()
+              + " not implemented");
+    }
+
+    private HashMultimap<Descriptors.FieldDescriptor, String> getUnknownFieldValues(
+        UnknownFieldSet unknownFieldSet,
+        Map<Integer, Descriptors.FieldDescriptor> optionsMap,
+        int indent) {
+      HashMultimap<Descriptors.FieldDescriptor, String> unknownFieldValues = HashMultimap.create();
+      unknownFieldSet
+          .asMap()
+          .forEach(
+              (number, field) -> {
+                Descriptors.FieldDescriptor fieldDescriptor = optionsMap.get(number);
+                unknownFieldValues.putAll(getUnknownFieldValue(fieldDescriptor, field, indent));
+              });
+      return unknownFieldValues;
+    }
+
+    private Multimap<Descriptors.FieldDescriptor, String> getUnknownFieldValue(
+        Descriptors.FieldDescriptor fieldDescriptor, UnknownFieldSet.Field field, int indent) {
+      HashMultimap<Descriptors.FieldDescriptor, String> unknownFieldValues = HashMultimap.create();
+      for (Object value : field.getLengthDelimitedList()) {
+        unknownFieldValues.put(
+            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      }
+      for (Object value : field.getFixed32List()) {
+        unknownFieldValues.put(
+            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      }
+      for (Object value : field.getFixed64List()) {
+        unknownFieldValues.put(
+            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      }
+      for (Object value : field.getVarintList()) {
+        unknownFieldValues.put(
+            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      }
+      for (Object value : field.getGroupList()) {
+        unknownFieldValues.put(
+            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      }
+      return unknownFieldValues;
+    }
+  }
+
+  private static String unsignedToString(final long value) {
+    if (value >= 0) {
+      return Long.toString(value);
+    } else {
+      // Pull off the most-significant bit so that BigInteger doesn't think
+      // the number is negative, then set it again using setBit().
+      return BigInteger.valueOf(value & 0x7FFFFFFFFFFFFFFFL).setBit(63).toString();
     }
   }
 }
