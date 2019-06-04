@@ -4,13 +4,12 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
-import io.anemos.metastore.core.proto.shadow.ShadowApply;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class ShadowRegistry extends AbstractRegistry {
+class ShadowRegistry extends AbstractRegistry {
 
   private static final Logger LOG = Logger.getLogger(ShadowRegistry.class.getName());
 

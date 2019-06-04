@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * PContainer is a wrapper around the FileDescriptor set. It's meant to have have easy
- * access to each Message, Enum, API, etc... that are contained within the set.
+ * PContainer is a wrapper around the FileDescriptor set. It's meant to have have easy access to
+ * each Message, Enum, API, etc... that are contained within the set.
  *
- * PCollections are immutable.
+ * <p>PCollections are immutable.
  */
 public class PContainer {
 

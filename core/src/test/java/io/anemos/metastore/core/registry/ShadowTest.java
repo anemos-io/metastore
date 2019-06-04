@@ -1,9 +1,8 @@
-package io.anemos.metastore.core.proto.validation;
+package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
-import io.anemos.metastore.core.proto.shadow.ShadowApply;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.Report;

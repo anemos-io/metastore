@@ -81,7 +81,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
   }
 
   private Report validate(
-          Schemaregistry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
+      Schemaregistry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);

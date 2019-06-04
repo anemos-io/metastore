@@ -1,4 +1,4 @@
-package io.anemos.metastore.core.proto.shadow;
+package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShadowApply {
+class ShadowApply {
 
   private PContainer shadow;
 

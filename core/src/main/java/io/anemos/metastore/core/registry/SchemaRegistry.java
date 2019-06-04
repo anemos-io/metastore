@@ -7,7 +7,7 @@ import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
-public class SchemaRegistry extends AbstractRegistry {
+class SchemaRegistry extends AbstractRegistry {
   private final StorageProvider storageProvider;
   private final String name;
 

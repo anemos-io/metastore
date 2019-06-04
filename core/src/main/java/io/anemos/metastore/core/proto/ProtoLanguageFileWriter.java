@@ -19,8 +19,7 @@ public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
   private PContainer PContainer;
 
-  ProtoLanguageFileWriter(
-      Descriptors.FileDescriptor fileDescriptor, PContainer PContainer) {
+  ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor, PContainer PContainer) {
     this(fileDescriptor);
     this.PContainer = PContainer;
   }
@@ -30,7 +29,7 @@ public class ProtoLanguageFileWriter {
   }
 
   public static void write(
-          Descriptors.FileDescriptor fd, PContainer PContainer, OutputStream outputStream) {
+      Descriptors.FileDescriptor fd, PContainer PContainer, OutputStream outputStream) {
     PrintWriter printWriter = new PrintWriter(outputStream);
     new ProtoLanguageFileWriter(fd, PContainer).write(printWriter);
     printWriter.flush();
@@ -75,8 +74,7 @@ public class ProtoLanguageFileWriter {
       }
       if (!options.getUnknownFields().asMap().isEmpty()) {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
-            getUnknownFieldValues(
-                options.getUnknownFields(), PContainer.getFileOptionMap(), 0);
+            getUnknownFieldValues(options.getUnknownFields(), PContainer.getFileOptionMap(), 0);
         Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
         for (Descriptors.FieldDescriptor fd : keys) {
           Collection<String> values = unknownOptionsMap.get(fd);
@@ -270,9 +268,7 @@ public class ProtoLanguageFileWriter {
       if (!field.getOptions().getUnknownFields().asMap().isEmpty()) {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
             getUnknownFieldValues(
-                field.getOptions().getUnknownFields(),
-                PContainer.getFieldOptionMap(),
-                indent + 1);
+                field.getOptions().getUnknownFields(), PContainer.getFieldOptionMap(), indent + 1);
         Iterator<Map.Entry<Descriptors.FieldDescriptor, String>> unknownIter =
             unknownOptionsMap.entries().iterator();
         while (unknownIter.hasNext()) {

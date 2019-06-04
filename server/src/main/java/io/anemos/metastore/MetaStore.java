@@ -42,6 +42,9 @@ public class MetaStore {
       config.storage = new StorageProviderConfig();
       config.storage.providerClass = "io.anemos.metastore.provider.InMemoryProvider";
     }
+    if (config.storage.parameters == null) {
+      config.storage.parameters = new StorageProviderConfig.Parameters[] {};
+    }
 
     try {
       Map<String, String> parameters = new HashMap<>();

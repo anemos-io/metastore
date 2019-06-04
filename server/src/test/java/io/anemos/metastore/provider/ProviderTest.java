@@ -4,7 +4,6 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.anemos.metastore.core.proto.PContainer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,8 +83,7 @@ public class ProviderTest {
   private void writeReadTest(StorageProvider provider) throws Exception {
     provider.write("default.pb", baseKnownOption().toByteString());
     PContainer PContainer = new PContainer(provider.read("default.pb"));
-    Assert.assertEquals(
-        baseKnownOption().toFileDescriptorSet(), PContainer.toFileDescriptorSet());
+    Assert.assertEquals(baseKnownOption().toFileDescriptorSet(), PContainer.toFileDescriptorSet());
   }
 
   private void clearGcs(String bucket, String path) {
