@@ -1,0 +1,15 @@
+storage:
+  providerClass: xx
+  parameters:
+    - name: a
+      value: b
+    - name: c
+      value: d
+registries:
+  - name: default
+  - name: shadow
+    shadowOf: default
+  - name: git
+    git:
+      remote: ssh://foo
+      path: /home/foo

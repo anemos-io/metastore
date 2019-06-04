@@ -4,17 +4,18 @@ import com.google.protobuf.ByteString;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-public class LocalFileProvider implements MetaStoreStorageProvider {
+public class LocalFileProvider implements StorageProvider {
 
   private String path;
 
-  public LocalFileProvider() {
-    this.path = System.getenv("METASTORE_PATH");
+  public LocalFileProvider(Map<String, String> config) {
+    this.path = config.get("path");
     if (path == null) {
-      throw new RuntimeException("METASTORE_PATH variable not set");
+      throw new RuntimeException("path variable not set");
     }
     if (!new File(path).isDirectory()) {
       throw new RuntimeException(path + " is not a directory");
@@ -28,7 +29,7 @@ public class LocalFileProvider implements MetaStoreStorageProvider {
     String filePath = path + "/" + fileName;
     try {
       if (!new File(filePath).exists()) {
-        return ByteString.EMPTY;
+        return null;
       }
       return ByteString.copyFrom(IOUtils.toByteArray(new FileInputStream(filePath)));
     } catch (IOException e) {

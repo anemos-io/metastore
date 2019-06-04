@@ -12,15 +12,9 @@ service SchemaRegistyService {
     rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
 
-    rpc BroadcastComponentSchema (BroadcastComponentSchemaRequest) returns (BroadcastComponentSchemaResponse);
-}
-
-enum Purpose {
-    PURPOSE_UNSET = 0;
-    PURPOSE_PRODUCER = 1;
-    PURPOSE_CONSUMER = 2;
-    PURPOSE_API_SERVER = 3;
-    PURPOSE_API_CLIENT = 4;
+    rpc AssignSchemaToResource (AssignSchemaToResourceRequest) returns (AssignSchemaToResourceResponse);
+    rpc GetSchemaForResource (GetSchemaForResourceRequest) returns (GetSchemaForResourceResponse);
+    rpc UseSchemaOnResource (UseSchemaOnResourceRequest) returns (UseSchemaOnResourceResponse);
 }
 
 message Scope {
@@ -44,7 +38,6 @@ message SubmitSchemaRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
-    string branch_name = 2;
     string environment_name = 5;
 
     // These are proto2 type google.protobuf.FileDescriptorProto, but
@@ -68,7 +61,6 @@ message GetSchemaRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
-    string branch_name = 2;
     string environment_name = 5;
 
     repeated Scope scope = 4;
@@ -84,34 +76,76 @@ message GetSchemaResponse {
     int32 error_code = 3;
 }
 
-message BroadcastComponentSchemaRequest {
+message AssignSchemaToResourceRequest {
+    string registry_name = 1;
+    string environment_name = 2;
+    string resource_name = 3;
+    string package_name = 4;
+    string message_name = 5;
+}
+message AssignSchemaToResourceResponse {
+}
 
-    // Probably don't need registry selection. Use joined registry
-    //string registry_name = 1;
-    //string branch_name = 2;
+message GetSchemaForResourceRequest {
+    string registry_name = 1;
+    string environment_name = 2;
+    string resource_name = 3;
+}
+
+message GetSchemaForResourceResponse {
+    // These are proto2 type google.protobuf.FileDescriptorProto, but
+    // we avoid taking a dependency on descriptor.proto, which uses
+    // proto2 only features, by making them opaque
+    // bytes instead
+    string package_name = 1;
+    string message_name = 2;
+    bytes fd_proto_set = 6;
+
+}
+message UseSchemaOnResourceRequest {
+
     string environment_name = 3;
-
     string component_instance = 4;
     map<string, string> component_labels = 5;
+
+    message x {
+        string usage_name = 8;
+        string registry_name = 1;
+        string resource_name = 2;
+        string package_name = 3;
+        string message_name = 4;
+
+        // These are proto2 type google.protobuf.FileDescriptorProto, but
+        // we avoid taking a dependency on descriptor.proto, which uses
+        // proto2 only features, by making them opaque
+        // bytes instead
+        bytes fd_proto_set = 6;
+
+        Purpose purpose = 5;
+        google.protobuf.Timestamp since = 7;
+        map<string, LivenessMetrics> metrics = 9;
+    }
 
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
     bytes fd_proto_set = 6;
-
-    google.protobuf.Timestamp since = 7;
-    repeated Scope scopes = 8;
-    map<string, LivenessMetrics> metrics = 9;
 }
-
-message BroadcastComponentSchemaResponse {
+message UseSchemaOnResourceResponse {
 }
 
 message LivenessMetrics {
-    Scope scope = 1;
     int64 data_bytes = 2;
     int64 data_messages = 3;
     int64 data_errors = 4;
     int64 data_warnings = 5;
+}
+
+enum Purpose {
+    PURPOSE_UNSET = 0;
+    PURPOSE_PRODUCER = 1;
+    PURPOSE_CONSUMER = 2;
+    PURPOSE_API_SERVER = 3;
+    PURPOSE_API_CLIENT = 4;
 }

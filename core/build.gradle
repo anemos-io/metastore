@@ -18,6 +18,7 @@ dependencies {
     compile("io.grpc:grpc-stub:1.18.0")
     compile("io.grpc:grpc-protobuf:1.18.0")
     runtime("io.grpc:grpc-netty-shaded:1.18.0")
+    compile("org.yaml:snakeyaml:1.21")
     compile("io.grpc:grpc-services:1.18.0")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
     // Support common types like, color, date, latlng, ...

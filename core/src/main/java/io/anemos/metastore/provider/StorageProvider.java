@@ -2,7 +2,7 @@ package io.anemos.metastore.provider;
 
 import com.google.protobuf.ByteString;
 
-public interface MetaStoreStorageProvider {
+public interface StorageProvider {
 
   ByteString read(String fileName);
 

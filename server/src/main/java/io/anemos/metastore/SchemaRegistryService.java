@@ -1,21 +1,23 @@
 package io.anemos.metastore;
 
-import com.google.protobuf.ByteString;
 import io.anemos.metastore.core.proto.ProtoDescriptor;
 import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
 import io.anemos.metastore.core.proto.profile.ValidationProfile;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.core.registry.AbstractRegistry;
 import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.ResultCount;
 import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
 import io.anemos.metastore.v1alpha1.Schemaregistry;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 
 public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
 
-  MetaStore metaStore;
+  private MetaStore metaStore;
 
   public SchemaRegistryService(MetaStore metaStore) {
     this.metaStore = metaStore;
@@ -25,49 +27,44 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
   public void submitSchema(
       Schemaregistry.SubmitSchemaRequest request,
       StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
-    ProtoDescriptor in = null;
-    try {
-      in = new ProtoDescriptor(request.getFdProtoSet().newInput());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    if ("shadow".equals(request.getRegistryName())) {
-      // Regenerate report
-      Report report = validateShadow(request, in);
-      try {
-        metaStore.shadowRegistry.setDelta(report);
-        metaStore.writeShadowDelta();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    } else {
-      metaStore.repo = in;
-      metaStore.writeDefault();
-      metaStore.shadowRegistry.sync();
-    }
-
-    responseObserver.onNext(Schemaregistry.SubmitSchemaResponse.newBuilder().build());
-    responseObserver.onCompleted();
+    schema(request, responseObserver, true);
   }
 
   @Override
   public void verifySchema(
       Schemaregistry.SubmitSchemaRequest request,
       StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
+    schema(request, responseObserver, false);
+  }
+
+  public void schema(
+      Schemaregistry.SubmitSchemaRequest request,
+      StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver,
+      boolean submit) {
     ProtoDescriptor in;
     try {
       in = new ProtoDescriptor(request.getFdProtoSet().newInput());
     } catch (IOException e) {
-      responseObserver.onError(e);
+      responseObserver.onError(
+          Status.fromCode(Status.Code.INVALID_ARGUMENT)
+              .withDescription("Invalid FileDescriptor Set.")
+              .withCause(e)
+              .asRuntimeException());
       return;
     }
 
-    Report report;
-    if ("shadow".equals(request.getRegistryName())) {
-      report = validateShadow(request, in);
-    } else {
-      report = validateDefault(request, in);
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    Report report = validate(request, registry.get(), in);
+
+    if (submit) {
+      if (hasErrors(report)) {
+        responseObserver.onError(
+            Status.fromCode(Status.Code.FAILED_PRECONDITION)
+                .withDescription("Incompatible schema, us verify to get errors.")
+                .asRuntimeException());
+        return;
+      }
+      registry.update(report, in);
     }
 
     responseObserver.onNext(
@@ -75,45 +72,18 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     responseObserver.onCompleted();
   }
 
-  private Report validateDefault(Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor in) {
-    ValidationResults results = new ValidationResults();
-    ProtoDiff diff = new ProtoDiff(metaStore.repo, in, results);
-    ProtoLint lint = new ProtoLint(in, results);
-
-    request
-        .getScopeList()
-        .forEach(
-            scope -> {
-              switch (scope.getEntityScopeCase()) {
-                case FILE_NAME:
-                  diff.diffOnFileName(scope.getFileName());
-                  lint.lintOnFileName(scope.getFileName());
-                  break;
-                case MESSAGE_NAME:
-                  lint.lintOnMessage(scope.getMessageName());
-                  break;
-                case SERVICE_NAME:
-                  lint.lintOnService(scope.getServiceName());
-                  break;
-                case ENUM_NAME:
-                  lint.lintOnEnum(scope.getEnumName());
-                  break;
-                default:
-                  diff.diffOnPackagePrefix(scope.getPackagePrefix());
-                  lint.lintOnPackagePrefix(scope.getPackagePrefix());
-              }
-            });
-
-    ValidationProfile profile = new ProfileAvroEvolve();
-    return profile.validate(results.getReport());
+  private boolean hasErrors(Report report) {
+    if (report.hasResultCount()) {
+      ResultCount resultCount = report.getResultCount();
+      return resultCount.getDiffErrors() > 0 || resultCount.getLintErrors() > 0;
+    }
+    return false;
   }
 
-  private Report validateShadow(Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor in) {
-    // TODO validate on options
-
+  private Report validate(
+      Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor ref, ProtoDescriptor in) {
     ValidationResults results = new ValidationResults();
-    // TODO metaStore.shadowDelta should contain cache (default + delta's)
-    ProtoDiff diff = new ProtoDiff(metaStore.shadowRegistry.getShadow(), in, results);
+    ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
 
     request
@@ -150,7 +120,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
       StreamObserver<Schemaregistry.GetSchemaResponse> responseObserver) {
     responseObserver.onNext(
         Schemaregistry.GetSchemaResponse.newBuilder()
-            .setFdProtoSet(ByteString.copyFrom(metaStore.repo.toByteArray()))
+            .setFdProtoSet(metaStore.registries.get(request.getRegistryName()).raw())
             .build());
     responseObserver.onCompleted();
   }

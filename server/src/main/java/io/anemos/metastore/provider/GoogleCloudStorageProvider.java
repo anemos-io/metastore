@@ -5,8 +5,9 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
+import java.util.Map;
 
-public class GoogleCloudStorageProvider implements MetaStoreStorageProvider {
+public class GoogleCloudStorageProvider implements StorageProvider {
 
   private static Storage storage;
 
@@ -18,19 +19,19 @@ public class GoogleCloudStorageProvider implements MetaStoreStorageProvider {
   private String path;
   private String project;
 
-  public GoogleCloudStorageProvider() {
-    this.bucket = System.getenv("METASTORE_BUCKET");
-    this.path = System.getenv("METASTORE_PATH");
-    this.project = System.getenv("GOOGLE_PROJECT_ID");
+  public GoogleCloudStorageProvider(Map<String, String> config) {
+    this.bucket = config.get("bucket");
+    this.path = config.get("path");
+    this.project = config.get("project");
 
     if (bucket == null) {
-      throw new RuntimeException("METASTORE_BUCKET variable not set");
+      throw new RuntimeException("bucket variable not set");
     }
     if (path == null) {
-      throw new RuntimeException("METASTORE_PATH variable not set");
+      throw new RuntimeException("path variable not set");
     }
     if (project == null) {
-      throw new RuntimeException("GOOGLE_PROJECT_ID variable not set");
+      throw new RuntimeException("project variable not set");
     }
   }
 
@@ -41,7 +42,7 @@ public class GoogleCloudStorageProvider implements MetaStoreStorageProvider {
       byte[] buffer = storage.readAllBytes(blobId, Storage.BlobSourceOption.userProject(project));
       return ByteString.copyFrom(buffer);
     } else {
-      return ByteString.EMPTY;
+      return null;
     }
   }
 

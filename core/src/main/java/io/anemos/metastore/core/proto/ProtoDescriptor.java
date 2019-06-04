@@ -58,6 +58,10 @@ public class ProtoDescriptor {
     this(DescriptorProtos.FileDescriptorSet.parseFrom(buffer));
   }
 
+  public ProtoDescriptor(ByteString buffer) throws IOException {
+    this(DescriptorProtos.FileDescriptorSet.parseFrom(buffer));
+  }
+
   public ProtoDescriptor(Descriptors.Descriptor descriptor) throws IOException {
     this(descriptor.getFile());
   }

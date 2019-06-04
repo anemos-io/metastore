@@ -19,7 +19,6 @@ It can alse be used as a build step in a container based CI system.
 
 ### Known Issues
 
-- Uses some hard dependencies on protobeam.
 - It's not implemented yet.
 
 ### Rules
