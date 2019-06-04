@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ProtocUtil {
 
-  public static ProtoDescriptor createDescriptorSet(String workDir) throws IOException {
+  public static PContainer createDescriptorSet(String workDir) throws IOException {
     File descriptorFile = File.createTempFile("descriptor", ".pb");
 
     String protoInclude = System.getenv("PROTO_INCLUDE");
@@ -42,7 +42,7 @@ public class ProtocUtil {
     } catch (Exception err) {
       err.printStackTrace();
     }
-    return new ProtoDescriptor(descriptorFile);
+    return new PContainer(descriptorFile);
   }
 
   private static int protoc(List<String> command) throws IOException, InterruptedException {

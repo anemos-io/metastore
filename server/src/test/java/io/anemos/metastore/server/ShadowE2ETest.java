@@ -6,7 +6,7 @@ import io.anemos.metastore.config.GitConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.config.StorageProviderConfig;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtocUtil;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
@@ -40,27 +40,27 @@ public class ShadowE2ETest {
 
   @Rule public TemporaryFolder localTempFolder = new TemporaryFolder();
 
-  private static ProtoDescriptor baseKnownOption() throws IOException {
+  private static PContainer baseKnownOption() throws IOException {
     InputStream resourceAsStream = ShadowE2ETest.class.getResourceAsStream("base_known_option.pb");
-    return new ProtoDescriptor(resourceAsStream);
+    return new PContainer(resourceAsStream);
   }
 
-  private static ProtoDescriptor baseKnownOptionAddField() throws IOException {
+  private static PContainer baseKnownOptionAddField() throws IOException {
     InputStream resourceAsStream =
         ShadowE2ETest.class.getResourceAsStream("base_known_option_add_field.pb");
-    return new ProtoDescriptor(resourceAsStream);
+    return new PContainer(resourceAsStream);
   }
 
-  private static ProtoDescriptor baseAddMessageOption() throws IOException {
+  private static PContainer baseAddMessageOption() throws IOException {
     InputStream resourceAsStream =
         ShadowE2ETest.class.getResourceAsStream("base_add_message_option.pb");
-    return new ProtoDescriptor(resourceAsStream);
+    return new PContainer(resourceAsStream);
   }
 
-  private static ProtoDescriptor shadowDefaultFieldAdded() throws IOException {
+  private static PContainer shadowDefaultFieldAdded() throws IOException {
     InputStream resourceAsStream =
         ShadowE2ETest.class.getResourceAsStream("shadow_default_field_added.pb");
-    return new ProtoDescriptor(resourceAsStream);
+    return new PContainer(resourceAsStream);
   }
 
   @Before
@@ -99,13 +99,13 @@ public class ShadowE2ETest {
             .build());
 
     // check default registry insides
-    ProtoDescriptor actualDefaultRegistry =
-        new ProtoDescriptor(metastorePath.toAbsolutePath().toString().concat("/default.pb"));
+    PContainer actualDefaultRegistry =
+        new PContainer(metastorePath.toAbsolutePath().toString().concat("/default.pb"));
     Assert.assertEquals(
         baseKnownOption().toFileDescriptorSet(), actualDefaultRegistry.toFileDescriptorSet());
 
     // compile shadow repo files and compare
-    ProtoDescriptor actualShadowRepo =
+    PContainer actualShadowRepo =
         ProtocUtil.createDescriptorSet(shadowrepoPath.toAbsolutePath().toString());
     Assert.assertEquals(
         baseKnownOption().toFileDescriptorSet(), actualShadowRepo.toFileDescriptorSet());

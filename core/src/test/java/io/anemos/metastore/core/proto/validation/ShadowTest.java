@@ -1,7 +1,7 @@
 package io.anemos.metastore.core.proto.validation;
 
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.shadow.ShadowApply;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -27,8 +27,8 @@ public class ShadowTest {
 
   @Test
   public void addMessageOptionDeltaTest() throws Exception {
-    ProtoDescriptor baseAddMessageOption = TestSets.baseAddMessageOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
+    PContainer base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddMessageOption, results);
@@ -39,7 +39,7 @@ public class ShadowTest {
 
     //    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
     //    shadowRegistry.setDelta(result);
-    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
+    PContainer shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddMessageOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -50,8 +50,8 @@ public class ShadowTest {
 
   @Test
   public void addFieldOptionDeltaTest() throws Exception {
-    ProtoDescriptor baseAddFieldOption = TestSets.baseAddFieldOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddFieldOption = TestSets.baseAddFieldOption();
+    PContainer base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddFieldOption, results);
@@ -60,7 +60,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
+    PContainer shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddFieldOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -72,8 +72,8 @@ public class ShadowTest {
   @Test
   public void addFileOptionDeltaTest() throws Exception {
     String fileName = "test/v1/simple.proto";
-    ProtoDescriptor baseAddFileOption = TestSets.baseAddFileOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddFileOption = TestSets.baseAddFileOption();
+    PContainer base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddFileOption, results);
@@ -82,7 +82,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
+    PContainer shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseAddFileOption.getFileDescriptorByFileName(fileName);
@@ -93,8 +93,8 @@ public class ShadowTest {
   @Test
   public void multipleOptionsTest() throws Exception {
     String fileName = "test/v1/simple.proto";
-    ProtoDescriptor baseMultipleOptions = TestSets.baseMultipleOptions();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseMultipleOptions = TestSets.baseMultipleOptions();
+    PContainer base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseMultipleOptions, results);
@@ -103,7 +103,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    ProtoDescriptor shadow = new ShadowApply().applyDelta(base, result);
+    PContainer shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseMultipleOptions.getFileDescriptorByFileName(fileName);

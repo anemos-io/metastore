@@ -151,16 +151,16 @@ public class AvroToProtoSchemaTest {
     return node;
   }
 
-  private ProtoDescriptor getProtoDescriptor(Object input) throws IOException {
+  private PContainer getProtoDescriptor(Object input) throws IOException {
     if (input instanceof DescriptorProtos.FileDescriptorProto) {
       DescriptorProtos.FileDescriptorProto descriptorNew =
           (DescriptorProtos.FileDescriptorProto) input;
       DescriptorProtos.FileDescriptorSet theSet =
           DescriptorProtos.FileDescriptorSet.newBuilder().addFile(descriptorNew).build();
-      return new ProtoDescriptor(theSet.toByteArray());
+      return new PContainer(theSet.toByteArray());
     } else if (input instanceof Descriptors.Descriptor) {
       Descriptors.Descriptor descriptorRef = (Descriptors.Descriptor) input;
-      return new ProtoDescriptor(descriptorRef);
+      return new PContainer(descriptorRef);
     }
     return null;
   }

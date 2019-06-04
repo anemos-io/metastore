@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class MetaStore {
   private static final Logger logger = Logger.getLogger(MetaStore.class.getName());
   Registries registries;
-  // public ProtoDescriptor repo;
+  // public PContainer repo;
   // public AbstractRegistry.ShadowRegistry shadowRegistry;
   private StorageProvider provider;
 
@@ -65,7 +65,7 @@ public class MetaStore {
 
     registries = new Registries(config, provider);
 
-    // repo = new ProtoDescriptor(provider.read("default.pb").toByteArray());
+    // repo = new PContainer(provider.read("default.pb").toByteArray());
     // Report shadowDelta = Report.parseFrom(provider.read("shadow.pb"));
 
     // shadowRegistry = new ShadowRegistry(this, registries, con);

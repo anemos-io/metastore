@@ -1,7 +1,7 @@
 package io.anemos.metastore.core.proto.validation;
 
 import com.google.protobuf.ByteString;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
@@ -18,8 +18,8 @@ public class OptionDiffTest {
 
   @Test
   public void addMessageOptionTest() throws IOException {
-    ProtoDescriptor baseAddMessageOption = TestSets.baseAddMessageOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
+    PContainer base = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseAddMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -34,8 +34,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeMessageOptionTest() throws IOException {
-    ProtoDescriptor base = TestSets.baseAddMessageOption();
-    ProtoDescriptor baseRemoveFieldOption = TestSets.baseKnownOption();
+    PContainer base = TestSets.baseAddMessageOption();
+    PContainer baseRemoveFieldOption = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -50,8 +50,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeMessageOptionTest() throws IOException {
-    ProtoDescriptor baseAddMessageOption = TestSets.baseAddMessageOption();
-    ProtoDescriptor baseChangeMessageOption = TestSets.baseChangeMessageOption();
+    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
+    PContainer baseChangeMessageOption = TestSets.baseChangeMessageOption();
 
     MessageResult messageResult = diffMessage(baseAddMessageOption, baseChangeMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -69,8 +69,8 @@ public class OptionDiffTest {
 
   @Test
   public void addFieldOptionTest() throws IOException {
-    ProtoDescriptor baseAddFieldOption = TestSets.baseAddFieldOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddFieldOption = TestSets.baseAddFieldOption();
+    PContainer base = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseAddFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -86,8 +86,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeFieldOptionTest() throws IOException {
-    ProtoDescriptor base = TestSets.baseAddFieldOption();
-    ProtoDescriptor baseRemoveFieldOption = TestSets.baseKnownOption();
+    PContainer base = TestSets.baseAddFieldOption();
+    PContainer baseRemoveFieldOption = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -103,8 +103,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeFieldOptionTest() throws IOException {
-    ProtoDescriptor base = TestSets.baseAddFieldOption();
-    ProtoDescriptor baseChangeFieldOption = TestSets.baseChangeFieldOption();
+    PContainer base = TestSets.baseAddFieldOption();
+    PContainer baseChangeFieldOption = TestSets.baseChangeFieldOption();
 
     MessageResult messageResult = diffMessage(base, baseChangeFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -123,8 +123,8 @@ public class OptionDiffTest {
 
   @Test
   public void addFileOptionTest() throws IOException {
-    ProtoDescriptor baseAddFileOption = TestSets.baseAddFileOption();
-    ProtoDescriptor base = TestSets.baseKnownOption();
+    PContainer baseAddFileOption = TestSets.baseAddFileOption();
+    PContainer base = TestSets.baseKnownOption();
 
     FileResult fileResult = diffFile(base, baseAddFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -139,8 +139,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeFileOptionTest() throws IOException {
-    ProtoDescriptor baseRemoveFileOption = TestSets.baseKnownOption();
-    ProtoDescriptor base = TestSets.baseAddFileOption();
+    PContainer baseRemoveFileOption = TestSets.baseKnownOption();
+    PContainer base = TestSets.baseAddFileOption();
 
     FileResult fileResult = diffFile(base, baseRemoveFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -155,8 +155,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeFileOptionTest() throws IOException {
-    ProtoDescriptor baseChangeFileOption = TestSets.baseChangeFileOption();
-    ProtoDescriptor base = TestSets.baseAddFileOption();
+    PContainer baseChangeFileOption = TestSets.baseChangeFileOption();
+    PContainer base = TestSets.baseAddFileOption();
 
     FileResult fileResult = diffFile(base, baseChangeFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -169,7 +169,7 @@ public class OptionDiffTest {
     TestOption option = TestOption.parseFrom(payload);
   }
 
-  private MessageResult diffMessage(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
+  private MessageResult diffMessage(PContainer dRef, PContainer dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
@@ -179,7 +179,7 @@ public class OptionDiffTest {
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage");
   }
 
-  private FileResult diffFile(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
+  private FileResult diffFile(PContainer dRef, PContainer dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnFileName("test/v1/simple.proto");

@@ -2,7 +2,7 @@ package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.File;
@@ -18,7 +18,7 @@ public abstract class AbstractRegistry {
   protected final String name;
   protected final RegistryConfig config;
   final StorageProvider storageProvider;
-  ProtoDescriptor protoContainer;
+  PContainer protoContainer;
   private Git gitRepo;
 
   AbstractRegistry(StorageProvider storageProvider, Registries registries, RegistryConfig config) {
@@ -34,9 +34,9 @@ public abstract class AbstractRegistry {
 
   public abstract ByteString raw();
 
-  public abstract ProtoDescriptor get();
+  public abstract PContainer get();
 
-  public abstract void update(Report report, ProtoDescriptor in);
+  public abstract void update(Report report, PContainer in);
 
   void syncGitRepo() {
     if (config.git == null) {

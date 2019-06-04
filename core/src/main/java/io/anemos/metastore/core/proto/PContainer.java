@@ -18,7 +18,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ProtoDescriptor {
+/**
+ * PContainer is a wrapper around the FileDescriptor set. It's meant to have have easy
+ * access to each Message, Enum, API, etc... that are contained within the set.
+ *
+ * PCollections are immutable.
+ */
+public class PContainer {
 
   private Map<String, Descriptors.FileDescriptor> fileDescriptorMap;
   private Map<String, Descriptors.Descriptor> descriptorMap;
@@ -32,41 +38,41 @@ public class ProtoDescriptor {
   private Map<Integer, Descriptors.FieldDescriptor> messageOptionMap;
   private Map<Integer, Descriptors.FieldDescriptor> fieldOptionMap;
 
-  public ProtoDescriptor(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
+  public PContainer(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
     fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorSet);
     indexDescriptorByName();
     indexOptionsByNumber();
   }
 
-  public ProtoDescriptor(String file) throws IOException {
+  public PContainer(String file) throws IOException {
     this(new File(file));
   }
 
-  public ProtoDescriptor(File file) throws IOException {
+  public PContainer(File file) throws IOException {
     this(new FileInputStream(file));
   }
 
-  public ProtoDescriptor() {
+  public PContainer() {
     this(DescriptorProtos.FileDescriptorSet.newBuilder().build());
   }
 
-  public ProtoDescriptor(InputStream inputStream) throws IOException {
+  public PContainer(InputStream inputStream) throws IOException {
     this(DescriptorProtos.FileDescriptorSet.parseFrom(inputStream));
   }
 
-  public ProtoDescriptor(byte[] buffer) throws IOException {
+  public PContainer(byte[] buffer) throws IOException {
     this(DescriptorProtos.FileDescriptorSet.parseFrom(buffer));
   }
 
-  public ProtoDescriptor(ByteString buffer) throws IOException {
+  public PContainer(ByteString buffer) throws IOException {
     this(DescriptorProtos.FileDescriptorSet.parseFrom(buffer));
   }
 
-  public ProtoDescriptor(Descriptors.Descriptor descriptor) throws IOException {
+  public PContainer(Descriptors.Descriptor descriptor) {
     this(descriptor.getFile());
   }
 
-  public ProtoDescriptor(Descriptors.FileDescriptor fileDescriptor) throws IOException {
+  public PContainer(Descriptors.FileDescriptor fileDescriptor) {
     fileDescriptorMap = new HashMap<>();
     fileDescriptorMap.put(fileDescriptor.getFullName(), fileDescriptor);
     indexDescriptorByName();
@@ -232,8 +238,8 @@ public class ProtoDescriptor {
     return setBuilder.build();
   }
 
-  public ProtoDescriptor update(
-      Collection<DescriptorProtos.FileDescriptorProto> newFileDescriptorProtos) throws IOException {
+  public PContainer update(
+      Collection<DescriptorProtos.FileDescriptorProto> newFileDescriptorProtos) {
     DescriptorProtos.FileDescriptorSet fileDescriptorSet = this.toFileDescriptorSet();
     Map<String, Integer> fileIndices = new HashMap<>();
     for (int i = 0; i < fileDescriptorSet.getFileCount(); i++) {
@@ -311,6 +317,6 @@ public class ProtoDescriptor {
       setBuilder.setFile(
           fileIndices.get(newFileDescriptor.getFullName()), newFileDescriptorProtoBuilder.build());
     }
-    return new ProtoDescriptor(setBuilder.build());
+    return new PContainer(setBuilder.build());
   }
 }

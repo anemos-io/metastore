@@ -3,7 +3,7 @@ package io.anemos.metastore.core.registry;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.shadow.ShadowApply;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
@@ -33,7 +33,7 @@ public class ShadowRegistry extends AbstractRegistry {
   }
 
   private void updateShadowCache() {
-    ProtoDescriptor original = registries.get(shadowOf).get();
+    PContainer original = registries.get(shadowOf).get();
     protoContainer = new ShadowApply().applyDelta(original, this.delta);
     protoContainer.registerOptions();
   }
@@ -44,12 +44,12 @@ public class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public ProtoDescriptor get() {
+  public PContainer get() {
     return protoContainer;
   }
 
   @Override
-  public void update(Report report, ProtoDescriptor in) {
+  public void update(Report report, PContainer in) {
     this.delta = report;
     update();
   }

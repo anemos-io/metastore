@@ -1,6 +1,6 @@
 package io.anemos.metastore;
 
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
 import io.anemos.metastore.core.proto.profile.ValidationProfile;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -41,9 +41,9 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
       Schemaregistry.SubmitSchemaRequest request,
       StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver,
       boolean submit) {
-    ProtoDescriptor in;
+    PContainer in;
     try {
-      in = new ProtoDescriptor(request.getFdProtoSet().newInput());
+      in = new PContainer(request.getFdProtoSet().newInput());
     } catch (IOException e) {
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
@@ -81,7 +81,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
   }
 
   private Report validate(
-      Schemaregistry.SubmitSchemaRequest request, ProtoDescriptor ref, ProtoDescriptor in) {
+          Schemaregistry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);

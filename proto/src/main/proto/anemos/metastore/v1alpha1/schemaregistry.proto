@@ -30,7 +30,6 @@ message Scope {
         string file_name = 7;
     }
     bool transitive = 8;
-    Purpose purpose = 9;
 }
 
 message SubmitSchemaRequest {
@@ -38,32 +37,26 @@ message SubmitSchemaRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
-    string environment_name = 5;
 
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    bytes fd_proto_set = 3;
-
-    repeated Scope scope = 4;
+    bytes fd_proto_set = 2;
+    repeated Scope scope = 3;
 }
 
 message SubmitSchemaResponse {
     string schema_profile = 1;
     Report report = 2;
     int32 error_code = 3;
-    //SchemaDiff diff = 1;
 }
 
 message GetSchemaRequest {
-
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
-    string environment_name = 5;
-
-    repeated Scope scope = 4;
+    repeated Scope scope = 2;
 }
 
 message GetSchemaResponse {
@@ -72,24 +65,21 @@ message GetSchemaResponse {
     // proto2 only features, by making them opaque
     // bytes instead
     bytes fd_proto_set = 1;
-
-    int32 error_code = 3;
+    int32 error_code = 2;
 }
 
 message AssignSchemaToResourceRequest {
     string registry_name = 1;
-    string environment_name = 2;
-    string resource_name = 3;
-    string package_name = 4;
-    string message_name = 5;
+    string resource_name = 2;
+    string package_name = 3;
+    string message_name = 4;
 }
 message AssignSchemaToResourceResponse {
 }
 
 message GetSchemaForResourceRequest {
     string registry_name = 1;
-    string environment_name = 2;
-    string resource_name = 3;
+    string resource_name = 2;
 }
 
 message GetSchemaForResourceResponse {
@@ -99,53 +89,50 @@ message GetSchemaForResourceResponse {
     // bytes instead
     string package_name = 1;
     string message_name = 2;
-    bytes fd_proto_set = 6;
+    bytes fd_proto_set = 3;
 
 }
+
 message UseSchemaOnResourceRequest {
+    enum Purpose {
+        PURPOSE_UNSET = 0;
+        PURPOSE_PRODUCER = 1;
+        PURPOSE_CONSUMER = 2;
+        PURPOSE_API_SERVER = 3;
+        PURPOSE_API_CLIENT = 4;
+    }
 
-    string environment_name = 3;
-    string component_instance = 4;
-    map<string, string> component_labels = 5;
+    message Metrics {
+        int64 data_bytes = 2;
+        int64 data_messages = 3;
+        int64 data_errors = 4;
+        int64 data_warnings = 5;
+    }
 
-    message x {
-        string usage_name = 8;
-        string registry_name = 1;
+    message Usage {
+        string usage_name = 1;
         string resource_name = 2;
         string package_name = 3;
         string message_name = 4;
 
-        // These are proto2 type google.protobuf.FileDescriptorProto, but
-        // we avoid taking a dependency on descriptor.proto, which uses
-        // proto2 only features, by making them opaque
-        // bytes instead
-        bytes fd_proto_set = 6;
-
         Purpose purpose = 5;
-        google.protobuf.Timestamp since = 7;
-        map<string, LivenessMetrics> metrics = 9;
+        google.protobuf.Timestamp since = 6;
+        Metrics metrics = 7;
     }
+
+    string registry_name = 2;
+    string component_instance = 4;
+    map<string, string> component_labels = 5;
+
 
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
     bytes fd_proto_set = 6;
+
+    repeated Usage usage = 7;
 }
+
 message UseSchemaOnResourceResponse {
-}
-
-message LivenessMetrics {
-    int64 data_bytes = 2;
-    int64 data_messages = 3;
-    int64 data_errors = 4;
-    int64 data_warnings = 5;
-}
-
-enum Purpose {
-    PURPOSE_UNSET = 0;
-    PURPOSE_PRODUCER = 1;
-    PURPOSE_CONSUMER = 2;
-    PURPOSE_API_SERVER = 3;
-    PURPOSE_API_CLIENT = 4;
 }

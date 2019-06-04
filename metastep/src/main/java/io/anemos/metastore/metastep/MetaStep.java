@@ -1,6 +1,6 @@
 package io.anemos.metastore.metastep;
 
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
 import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
@@ -180,7 +180,7 @@ public class MetaStep {
     }
   }
 
-  private ProtoDescriptor createDescriptorSet() throws IOException {
+  private PContainer createDescriptorSet() throws IOException {
     File file = listProtos(workspace);
 
     try {
@@ -203,7 +203,7 @@ public class MetaStep {
       err.printStackTrace();
     }
 
-    return new ProtoDescriptor(descriptorFile);
+    return new PContainer(descriptorFile);
   }
 
   private void validate() throws IOException {
@@ -236,7 +236,7 @@ public class MetaStep {
   }
 
   private Schemaregistry.SubmitSchemaRequest createSchemaRequest() throws IOException {
-    ProtoDescriptor protoContainer = createDescriptorSet();
+    PContainer protoContainer = createDescriptorSet();
 
     Schemaregistry.SubmitSchemaRequest.Builder schemaRequestBuilder =
         Schemaregistry.SubmitSchemaRequest.newBuilder()

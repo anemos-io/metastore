@@ -14,7 +14,7 @@ public class ProtoToAvroSchema {
     this.descriptor = descriptor;
   }
 
-  public static String convert(ProtoDescriptor pd, String messageName) {
+  public static String convert(PContainer pd, String messageName) {
     Descriptors.Descriptor descriptor = pd.getDescriptorByName(messageName);
     Gson gson = new Gson();
     return gson.toJson(new ProtoToAvroSchema(descriptor).toRecord(descriptor));

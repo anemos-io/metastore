@@ -96,7 +96,7 @@ public class LintTest {
   }
 
   private Report lintMessage(Descriptors.Descriptor d) throws IOException {
-    ProtoDescriptor pd = new ProtoDescriptor(d);
+    PContainer pd = new PContainer(d);
     String message = d.getFullName();
 
     ValidationResults results = new ValidationResults();
@@ -106,7 +106,7 @@ public class LintTest {
   }
 
   private Report lintService(Descriptors.Descriptor ref, String name) throws IOException {
-    ProtoDescriptor pd = new ProtoDescriptor(ref);
+    PContainer pd = new PContainer(ref);
 
     ValidationResults results = new ValidationResults();
     ProtoLint lint = new ProtoLint(pd, results);
@@ -212,7 +212,7 @@ public class LintTest {
   }
 
   private Report lintPackage(Descriptors.Descriptor ref) throws IOException {
-    ProtoDescriptor pd = new ProtoDescriptor(ref);
+    PContainer pd = new PContainer(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);
@@ -239,7 +239,7 @@ public class LintTest {
   }
 
   private Report lintVersion(Descriptors.Descriptor ref) throws IOException {
-    ProtoDescriptor pd = new ProtoDescriptor(ref);
+    PContainer pd = new PContainer(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);
@@ -265,7 +265,7 @@ public class LintTest {
   }
 
   private Report lintImport(Descriptors.Descriptor ref) throws IOException {
-    ProtoDescriptor pd = new ProtoDescriptor(ref);
+    PContainer pd = new PContainer(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);

@@ -4,7 +4,7 @@ import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_STRING;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_UNSET;
 
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
@@ -189,7 +189,7 @@ public class DiffTest {
         report.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
-  private FieldResult diff(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
+  private FieldResult diff(PContainer dRef, PContainer dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
@@ -199,7 +199,7 @@ public class DiffTest {
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
   }
 
-  private Report diffOnPackage(ProtoDescriptor dRef, ProtoDescriptor dNew) throws IOException {
+  private Report diffOnPackage(PContainer dRef, PContainer dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnPackagePrefix("test.v1");

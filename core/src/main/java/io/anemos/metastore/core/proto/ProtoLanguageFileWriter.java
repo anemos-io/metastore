@@ -17,12 +17,12 @@ import java.util.*;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
-  private ProtoDescriptor protoDescriptor;
+  private PContainer PContainer;
 
   ProtoLanguageFileWriter(
-      Descriptors.FileDescriptor fileDescriptor, ProtoDescriptor protoDescriptor) {
+      Descriptors.FileDescriptor fileDescriptor, PContainer PContainer) {
     this(fileDescriptor);
-    this.protoDescriptor = protoDescriptor;
+    this.PContainer = PContainer;
   }
 
   ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor) {
@@ -30,15 +30,15 @@ public class ProtoLanguageFileWriter {
   }
 
   public static void write(
-      Descriptors.FileDescriptor fd, ProtoDescriptor protoDescriptor, OutputStream outputStream) {
+          Descriptors.FileDescriptor fd, PContainer PContainer, OutputStream outputStream) {
     PrintWriter printWriter = new PrintWriter(outputStream);
-    new ProtoLanguageFileWriter(fd, protoDescriptor).write(printWriter);
+    new ProtoLanguageFileWriter(fd, PContainer).write(printWriter);
     printWriter.flush();
   }
 
-  public static String write(Descriptors.FileDescriptor fd, ProtoDescriptor protoDescriptor) {
+  public static String write(Descriptors.FileDescriptor fd, PContainer PContainer) {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    write(fd, protoDescriptor, byteArrayOutputStream);
+    write(fd, PContainer, byteArrayOutputStream);
     return byteArrayOutputStream.toString();
   }
 
@@ -76,7 +76,7 @@ public class ProtoLanguageFileWriter {
       if (!options.getUnknownFields().asMap().isEmpty()) {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
             getUnknownFieldValues(
-                options.getUnknownFields(), protoDescriptor.getFileOptionMap(), 0);
+                options.getUnknownFields(), PContainer.getFileOptionMap(), 0);
         Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
         for (Descriptors.FieldDescriptor fd : keys) {
           Collection<String> values = unknownOptionsMap.get(fd);
@@ -271,7 +271,7 @@ public class ProtoLanguageFileWriter {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
             getUnknownFieldValues(
                 field.getOptions().getUnknownFields(),
-                protoDescriptor.getFieldOptionMap(),
+                PContainer.getFieldOptionMap(),
                 indent + 1);
         Iterator<Map.Entry<Descriptors.FieldDescriptor, String>> unknownIter =
             unknownOptionsMap.entries().iterator();
@@ -469,7 +469,7 @@ public class ProtoLanguageFileWriter {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
             getUnknownFieldValues(
                 messageDescriptor.getOptions().getUnknownFields(),
-                protoDescriptor.getMessageOptionMap(),
+                PContainer.getMessageOptionMap(),
                 indent + 1);
         Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
         for (Descriptors.FieldDescriptor fd : keys) {

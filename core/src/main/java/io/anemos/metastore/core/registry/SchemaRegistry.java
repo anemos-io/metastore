@@ -2,7 +2,7 @@ package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
@@ -29,12 +29,12 @@ public class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public ProtoDescriptor get() {
+  public PContainer get() {
     return protoContainer;
   }
 
   @Override
-  public void update(Report report, ProtoDescriptor in) {
+  public void update(Report report, PContainer in) {
     protoContainer = in;
     storageProvider.write(name + ".pb", raw());
     syncGitRepo();
@@ -50,9 +50,9 @@ public class SchemaRegistry extends AbstractRegistry {
     try {
       ByteString buffer = storageProvider.read(name + ".pb");
       if (buffer == null) {
-        this.protoContainer = new ProtoDescriptor();
+        this.protoContainer = new PContainer();
       } else {
-        this.protoContainer = new ProtoDescriptor(buffer);
+        this.protoContainer = new PContainer(buffer);
       }
     } catch (IOException e) {
       throw new RuntimeException("failed to read default.pb", e);

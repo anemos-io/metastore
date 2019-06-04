@@ -190,12 +190,12 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void unknownMessageOptionsTest() throws Exception {
-    ProtoDescriptor protoDescriptor = TestSets.baseComplexMessageOptions();
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
-        protoDescriptor.getFileDescriptorByFileName("test/v1/complex.proto");
+        PContainer.getFileDescriptorByFileName("test/v1/complex.proto");
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, protoDescriptor, outputStream);
+    ProtoLanguageFileWriter.write(fileDescriptor, PContainer, outputStream);
 
     String expected =
         "syntax = \"proto3\";\n"

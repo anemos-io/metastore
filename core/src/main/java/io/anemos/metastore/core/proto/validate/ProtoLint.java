@@ -1,7 +1,7 @@
 package io.anemos.metastore.core.proto.validate;
 
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.ProtoDescriptor;
+import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.v1alpha1.LintRule;
 import io.anemos.metastore.v1alpha1.RuleInfo;
 import java.util.ArrayList;
@@ -9,10 +9,10 @@ import java.util.List;
 
 public class ProtoLint {
 
-  private ProtoDescriptor proto;
+  private PContainer proto;
   private ValidationResults results;
 
-  public ProtoLint(ProtoDescriptor fd_ref, ValidationResults results) {
+  public ProtoLint(PContainer fd_ref, ValidationResults results) {
     this.proto = fd_ref;
     this.results = results;
   }
