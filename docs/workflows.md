@@ -1,3 +1,7 @@
 ## Workflows
 
-TODO
+### CI/CD driven workflow
+
+### Data pipeline
+
+TODO explain more

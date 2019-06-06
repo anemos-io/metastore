@@ -36,6 +36,7 @@ manager.
 real contract owners (example data organisation).
 - Multiple storage providers for Memory, Local and Google Cloud Storage. Or write 
 your own.
+- Support multiple registries through one server/API.
 
 ### Documentation
 
@@ -73,4 +74,5 @@ ext {
 }
 ```
 
-Build the base images that jib uses, see README.md in base directory.
+Build the base images that jib uses, see [README.md](base/README.md) in base 
+directory.
