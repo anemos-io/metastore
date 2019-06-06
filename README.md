@@ -14,12 +14,13 @@ can keep track of the contracts that are in use throughout the organisation.
 
 It can alse be used as a build step in a container based CI system.
 
+[Tutiorial](docs/tutorial.md)
+
 ### Features
 
 
 ### Known Issues
 
-- It's not implemented yet.
 
 ### Rules
 
@@ -28,6 +29,8 @@ It can alse be used as a build step in a container based CI system.
 ## Roadmap
 
 ## Quick setup
+
+
 
 Create a file `gradle/properties.gradle`
 

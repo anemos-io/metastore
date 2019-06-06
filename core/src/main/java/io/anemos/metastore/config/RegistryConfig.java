@@ -4,7 +4,7 @@ public class RegistryConfig {
 
   public String name;
   public String shadowOf;
-  public GitConfig git;
+  public GitRegistryConfig git;
 
   public RegistryConfig() {}
 

@@ -5,4 +5,6 @@ public class MetaStoreConfig {
   public StorageProviderConfig storage;
 
   public RegistryConfig registries[];
+
+  public GitGlobalConfig git;
 }

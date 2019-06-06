@@ -1,6 +1,7 @@
 package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
+import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.StorageProvider;
@@ -12,15 +13,22 @@ class SchemaRegistry extends AbstractRegistry {
   private final String name;
 
   public SchemaRegistry(
-      StorageProvider storageProvider, Registries registries, RegistryConfig config) {
-    super(storageProvider, registries, config);
+      StorageProvider storageProvider,
+      Registries registries,
+      RegistryConfig config,
+      GitGlobalConfig global) {
+    super(storageProvider, registries, config, global);
     this.storageProvider = storageProvider;
     this.name = config.name;
   }
 
   @Override
   public void init() {
-    read();
+    if (read()) {
+      write();
+    }
+    initGitRepo();
+    syncGitRepo("Initialising repository");
   }
 
   @Override
@@ -34,25 +42,41 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
+  public PContainer ref() {
+    return protoContainer;
+  }
+
+  @Override
+  public boolean isShadow() {
+    return true;
+  }
+
+  @Override
   public void update(Report report, PContainer in) {
     protoContainer = in;
-    storageProvider.write(name + ".pb", raw());
-    syncGitRepo();
     update();
+    syncGitRepo("Change detected");
   }
 
   @Override
   public void update() {
+    write();
     registries.notifyShadows(this.name);
   }
 
-  private void read() {
+  void write() {
+    storageProvider.write(name + ".pb", raw());
+  }
+
+  private boolean read() {
     try {
       ByteString buffer = storageProvider.read(name + ".pb");
       if (buffer == null) {
         this.protoContainer = new PContainer();
+        return true;
       } else {
         this.protoContainer = new PContainer(buffer);
+        return false;
       }
     } catch (IOException e) {
       throw new RuntimeException("failed to read default.pb", e);

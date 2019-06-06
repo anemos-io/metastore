@@ -1,7 +1,7 @@
 package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.StorageProvider;
@@ -17,18 +17,22 @@ class ShadowRegistry extends AbstractRegistry {
   private String shadowOf;
 
   public ShadowRegistry(
-      StorageProvider storageProvider, Registries registries, RegistryConfig config)
-      throws InvalidProtocolBufferException {
-    super(storageProvider, registries, config);
+      StorageProvider storageProvider,
+      Registries registries,
+      RegistryConfig config,
+      GitGlobalConfig global) {
+    super(storageProvider, registries, config, global);
     this.shadowOf = config.shadowOf;
   }
 
   @Override
   public void init() {
-    read();
+    if (read()) {
+      write();
+    }
     updateShadowCache();
     initGitRepo();
-    syncGitRepo();
+    syncGitRepo("Initialising repository");
   }
 
   private void updateShadowCache() {
@@ -48,6 +52,16 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
+  public PContainer ref() {
+    return registries.get(shadowOf).get();
+  }
+
+  @Override
+  public boolean isShadow() {
+    return true;
+  }
+
+  @Override
   public void update(Report report, PContainer in) {
     this.delta = report;
     update();
@@ -55,18 +69,24 @@ class ShadowRegistry extends AbstractRegistry {
 
   @Override
   public void update() {
-    storageProvider.write(name + ".pb", raw());
+    write();
     updateShadowCache();
-    syncGitRepo();
+    syncGitRepo("Updated.");
   }
 
-  private void read() {
+  private void write() {
+    storageProvider.write(name + ".pb", raw());
+  }
+
+  private boolean read() {
     try {
       ByteString buffer = storageProvider.read(name + ".pb");
       if (buffer == null) {
         delta = Report.parseFrom(ByteString.EMPTY);
+        return true;
       } else {
         delta = Report.parseFrom(buffer);
+        return false;
       }
     } catch (IOException e) {
       throw new RuntimeException("failed to read shadowCache.pb", e);

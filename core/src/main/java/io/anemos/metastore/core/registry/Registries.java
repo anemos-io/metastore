@@ -1,6 +1,5 @@
 package io.anemos.metastore.core.registry;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.provider.StorageProvider;
@@ -18,17 +17,16 @@ public class Registries {
   private Map<String, AbstractRegistry> shadows = new HashMap<>();
   private Map<String, AbstractRegistry> defaults = new HashMap<>();
 
-  public Registries(MetaStoreConfig config, StorageProvider storageProvider)
-      throws InvalidProtocolBufferException {
+  public Registries(MetaStoreConfig config, StorageProvider storageProvider) {
     this.config = config;
 
     for (RegistryConfig registry : this.config.registries) {
       AbstractRegistry intance;
       if (registry.shadowOf != null) {
-        intance = new ShadowRegistry(storageProvider, this, registry);
+        intance = new ShadowRegistry(storageProvider, this, registry, config.git);
         shadows.put(registry.name, intance);
       } else {
-        intance = new SchemaRegistry(storageProvider, this, registry);
+        intance = new SchemaRegistry(storageProvider, this, registry, config.git);
         defaults.put(registry.name, intance);
       }
       registries.put(registry.name, intance);

@@ -4,6 +4,8 @@ import com.google.protobuf.ByteString;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -12,16 +14,14 @@ public class LocalFileProvider implements StorageProvider {
 
   private String path;
 
-  public LocalFileProvider(Map<String, String> config) {
+  public LocalFileProvider(Map<String, String> config) throws IOException {
     this.path = config.get("path");
     if (path == null) {
       throw new RuntimeException("path variable not set");
     }
     if (!new File(path).isDirectory()) {
-      throw new RuntimeException(path + " is not a directory");
+      Files.createDirectories(new File(path).toPath(), new FileAttribute[] {});
     }
-    File file = new File(path);
-    path = file.getPath();
   }
 
   @Override

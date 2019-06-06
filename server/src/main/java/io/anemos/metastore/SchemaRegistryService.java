@@ -64,7 +64,11 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
                 .asRuntimeException());
         return;
       }
-      registry.update(report, in);
+      if (registry.isShadow()) {
+        registry.update(delta(registry.ref(), in), in);
+      } else {
+        registry.update(report, in);
+      }
     }
 
     responseObserver.onNext(
@@ -80,35 +84,47 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     return false;
   }
 
+  private Report delta(PContainer ref, PContainer in) {
+    ValidationResults results = new ValidationResults();
+    ProtoDiff diff = new ProtoDiff(ref, in, results);
+    diff.diffOnPackagePrefix("");
+    return results.getReport();
+  }
+
   private Report validate(
       Schemaregistry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
 
-    request
-        .getScopeList()
-        .forEach(
-            scope -> {
-              switch (scope.getEntityScopeCase()) {
-                case FILE_NAME:
-                  diff.diffOnFileName(scope.getFileName());
-                  lint.lintOnFileName(scope.getFileName());
-                  break;
-                case MESSAGE_NAME:
-                  lint.lintOnMessage(scope.getMessageName());
-                  break;
-                case SERVICE_NAME:
-                  lint.lintOnService(scope.getServiceName());
-                  break;
-                case ENUM_NAME:
-                  lint.lintOnEnum(scope.getEnumName());
-                  break;
-                default:
-                  diff.diffOnPackagePrefix(scope.getPackagePrefix());
-                  lint.lintOnPackagePrefix(scope.getPackagePrefix());
-              }
-            });
+    if (request.getScopeCount() == 0) {
+      diff.diffOnPackagePrefix("");
+      lint.lintOnPackagePrefix("");
+    } else {
+      request
+          .getScopeList()
+          .forEach(
+              scope -> {
+                switch (scope.getEntityScopeCase()) {
+                  case FILE_NAME:
+                    diff.diffOnFileName(scope.getFileName());
+                    lint.lintOnFileName(scope.getFileName());
+                    break;
+                  case MESSAGE_NAME:
+                    lint.lintOnMessage(scope.getMessageName());
+                    break;
+                  case SERVICE_NAME:
+                    lint.lintOnService(scope.getServiceName());
+                    break;
+                  case ENUM_NAME:
+                    lint.lintOnEnum(scope.getEnumName());
+                    break;
+                  default:
+                    diff.diffOnPackagePrefix(scope.getPackagePrefix());
+                    lint.lintOnPackagePrefix(scope.getPackagePrefix());
+                }
+              });
+    }
 
     ValidationProfile profile = new ProfileAvroEvolve();
     return profile.validate(results.getReport());
