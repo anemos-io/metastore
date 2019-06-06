@@ -1,4 +1,4 @@
-
+## Tutorial
 
 This tutorial walks you tru the simplest, most bare-bones configuration of 
 the Metastore.

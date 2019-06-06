@@ -34,12 +34,17 @@ manager.
 - Lint and guard against protobuf/gRPC best practices.
 - Shadow registry, let other users annotate contracts with options, aside from the 
 real contract owners (example data organisation).
+- Multiple storage providers for Memory, Local and Google Cloud Storage. Or write 
+your own.
 
 ### Documentation
 
 - [Tutorial](docs/tutorial.md)
 - [Workflows](docs/workflows.md)
 - [Shadow registry](docs/shadow.md)
+- [Architecture](docs/architecture.md)
+- [Configuration](docs/config.md)
+- [SSH](docs/ssh.md)
 
 ### Known Issues
 
@@ -69,6 +74,3 @@ ext {
 ```
 
 Build the base images that jib uses, see README.md in base directory.
-
-Build protobeam (metastore has a dependency, but is not published to mavenrepo) and
-publish to local maven repo.
