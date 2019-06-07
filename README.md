@@ -37,6 +37,8 @@ real contract owners (example data organisation).
 - Multiple storage providers for Memory, Local and Google Cloud Storage. Or write 
 your own.
 - Support multiple registries through one server/API.
+- Finegrained update/verify support though well defined scopes (package prefix, 
+package name, file name, ...)
 
 ### Documentation
 
@@ -47,6 +49,10 @@ your own.
 - [Configuration](docs/config.md)
 - [SSH](docs/ssh.md)
 
+#### References
+
+[Metastore presentation at gRPC conf 2019](https://storage.googleapis.com/alex-van-boxel-public/metastore/metastore_presentation_grpcconf.pdf)
+
 ### Known Issues
 
 - SSH key still need to be configured locally.
@@ -55,7 +61,10 @@ your own.
 ## Roadmap
 
 - Implement the resource (example Pub/Sub or Kafka topic) to contract mapping
-(Message descriptor) .
+(Message descriptor).
+- Better Git commit messages.
+- Donate the registry API to the gRPC project.
+- Act as a global gRPC Seflection Server.
 
 ## Quick setup
 
