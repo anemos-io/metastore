@@ -70,7 +70,7 @@ Now it's time to play.
 ### Simple registry update
 
 First of all it's important to know that metastore does not work with the textual
-prepresentation of protobuf, but with it's binary counterpart 
+representation of protobuf, but with it's binary counterpart 
 (see [Architecture](architecture.md)) called a FileDescriptorSet. Getting this 
 form is done through compiling them to the binary form through `protoc` or other
 means (later will introduce `metastep`. For now we have pre-compiled binary examples
@@ -96,7 +96,7 @@ Leave `scope` as is and invoke. Now have a look at both configurated git
 repositories. They should contain the textual version of the contracts.
 
 Now let's enhance the contracts with some options we'll be using in the next
-excersise. Do the same as above, again to the **default** registry:
+exercise. Do the same as above, again to the **default** registry:
 
 `base64 server/src/test/resources/io/anemos/metastore/server/base_known_option.pb`
 
@@ -111,9 +111,33 @@ After verifying the git repositories it's time to play with the shadow registry.
 
 ### Shadow update
 
-shadow
+Now, say you are in another team and want to enhance the contract with some metadata
+but are not allowed to tough the original contracts. No worries, we've configured
+a shadow registry.
+
+Let's add a field option and submit it to the shadow repository.
+
 `base64 server/src/test/resources/io/anemos/metastore/server/base_add_field_option.pb`
 
+**SchemaRegistryService->SubmitSchema()**
 
-default
+* registry_name : **shadow**
+* fd_proto_set: `base64 representation`
+
+Now have a look at both git repositories, they should now be deverged. The shadow
+one should have a field with a field option.
+
+Now let's see what happens when you add something to the default repository.
+
 `base64 server/src/test/resources/io/anemos/metastore/server/shadow_default_field_added.pb`
+
+**SchemaRegistryService->SubmitSchema()**
+
+* registry_name : **default**
+* fd_proto_set: `base64 representation`
+
+Go and look at both the repositories, you will see that the shadow repo also has
+the extra field applied, and the field option unique to the shadow also keeps on
+being applied.
+
+This concludes the first training, more tutorials to come...
