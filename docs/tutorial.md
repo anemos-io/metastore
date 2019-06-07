@@ -87,7 +87,7 @@ Get the base64 version of the base contracts:
 
 Now submit them through grpcui to the **default** repo. Fill in:
 
-`SchemaRegistryService->SubmitSchema()`
+**SchemaRegistryService->SubmitSchema()**
 
 * registry_name : **default**
 * fd_proto_set: `base64 representation`
@@ -102,7 +102,7 @@ exercise. Do the same as above, again to the **default** registry:
 
 and submit:
 
-`SchemaRegistryService->SubmitSchema()`
+**SchemaRegistryService->SubmitSchema()**
 
 * registry_name : **default**
 * fd_proto_set: `base64 representation`
