@@ -1,9 +1,12 @@
 package io.anemos.metastore.core.registry;
 
+import com.jcraft.jsch.HostKey;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 import io.anemos.metastore.config.GitGlobalConfig;
+import io.anemos.metastore.config.GitHostConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import java.io.File;
@@ -97,14 +100,52 @@ class MetaGit {
               @Override
               protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);
+                defaultJSch.setConfig("HashKnownHosts", "yes");
                 defaultJSch.addIdentity(ssh.getPath());
-                // defaultJSch.setKnownHosts()
+                if(global.hosts != null) {
+                    for (GitHostConfig host : global.hosts) {
+                        defaultJSch.getHostKeyRepository().add(
+                                new HostKey(host.host, HostKey.ECDSA256, Base64.getDecoder().decode(host.key)),
+                                null);
+                    }
+                }
                 return defaultJSch;
               }
 
               @Override
               protected void configure(OpenSshConfig.Host host, Session session) {
+                System.out.println(host);
+                session.setUserInfo(new UserInfo() {
+                    @Override
+                    public String getPassphrase() {
+                        return null;
+                    }
 
+                    @Override
+                    public String getPassword() {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean promptPassword(String message) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean promptPassphrase(String message) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean promptYesNo(String message) {
+                        return true;
+                    }
+
+                    @Override
+                    public void showMessage(String message) {
+
+                    }
+                });
                 // do nothing
               }
             };

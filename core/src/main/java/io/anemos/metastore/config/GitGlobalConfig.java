@@ -1,6 +1,6 @@
 package io.anemos.metastore.config;
 
 public class GitGlobalConfig {
-  public String hosts;
+  public GitHostConfig hosts[];
   public String privateKey;
 }

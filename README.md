@@ -64,7 +64,7 @@ package name, file name, ...)
 (Message descriptor).
 - Better Git commit messages.
 - Donate the registry API to the gRPC project.
-- Act as a global gRPC Seflection Server.
+- Act as a global gRPC reflection Server.
 
 ## Quick setup
 
