@@ -42,8 +42,11 @@ registries:
       remote: ssh://user@example.com@source.developers.google.com:2022/p/example-project/r/metastore-test-shadow
       path: /path_to/work/test/git/shadow
 git:
-  privateKey: LS0tLS1CRUdJT....EtFWS0tLS0tCg==
-  hosts: qwerty
+  privateKey: LS0tLS1CR...LS0tCg==
+  hosts:
+    - host: "[source.developers.google.com]:2022"
+      key: AGvEpqYNMqs...ZsBn434
+      type: SHA256
 ```
 
 ### Server Startup

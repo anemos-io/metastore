@@ -18,23 +18,31 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.TransportConfigCallback;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.util.FS;
 
 class MetaGit {
   private static final Logger LOG = Logger.getLogger(MetaGit.class.getName());
-
-  private Git gitRepo;
   private final RegistryConfig config;
   private final GitGlobalConfig global;
+  private Git gitRepo;
+  private TransportConfigCallback transportConfigCallback;
 
   MetaGit(RegistryConfig config, GitGlobalConfig global) {
     this.config = config;
     this.global = global;
+  }
+
+  private void push() throws GitAPIException {
+    gitRepo.push().setTransportConfigCallback(transportConfigCallback).call();
+  }
+
+  private void pull() throws GitAPIException {
+    gitRepo.pull().setTransportConfigCallback(transportConfigCallback).call();
   }
 
   void sync(PContainer protoContainer, String message) {
@@ -48,13 +56,13 @@ class MetaGit {
         return;
       }
 
-      gitRepo.pull();
+      pull();
       protoContainer.writeToDirectory(new File(config.git.path).toPath().toString());
       gitRepo.add().addFilepattern(".").call();
       Status status = gitRepo.status().call();
       if (status.hasUncommittedChanges()) {
         gitRepo.commit().setMessage(message).call();
-        gitRepo.push().call();
+        push();
         LOG.info("shadowCache apply");
       } else {
         LOG.info("no changes to commit");
@@ -95,58 +103,68 @@ class MetaGit {
           FileUtils.forceDelete(new File(config.git.path));
         }
 
-        SshSessionFactory sshSessionFactory =
+        JschConfigSessionFactory sshSessionFactory =
             new JschConfigSessionFactory() {
               @Override
               protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);
                 defaultJSch.setConfig("HashKnownHosts", "yes");
+                defaultJSch.setConfig("StrictHostKeyChecking", "no");
                 defaultJSch.addIdentity(ssh.getPath());
-                if(global.hosts != null) {
-                    for (GitHostConfig host : global.hosts) {
-                        defaultJSch.getHostKeyRepository().add(
-                                new HostKey(host.host, HostKey.ECDSA256, Base64.getDecoder().decode(host.key)),
-                                null);
-                    }
+                if (global.hosts != null) {
+                  for (GitHostConfig host : global.hosts) {
+                    defaultJSch
+                        .getHostKeyRepository()
+                        .add(
+                            new HostKey(
+                                host.host, HostKey.ECDSA256, Base64.getDecoder().decode(host.key)),
+                            null);
+                  }
                 }
                 return defaultJSch;
               }
 
               @Override
               protected void configure(OpenSshConfig.Host host, Session session) {
-                System.out.println(host);
-                session.setUserInfo(new UserInfo() {
-                    @Override
-                    public String getPassphrase() {
+                session.setUserInfo(
+                    new UserInfo() {
+                      @Override
+                      public String getPassphrase() {
                         return null;
-                    }
+                      }
 
-                    @Override
-                    public String getPassword() {
+                      @Override
+                      public String getPassword() {
                         return null;
-                    }
+                      }
 
-                    @Override
-                    public boolean promptPassword(String message) {
+                      @Override
+                      public boolean promptPassword(String message) {
                         return false;
-                    }
+                      }
 
-                    @Override
-                    public boolean promptPassphrase(String message) {
+                      @Override
+                      public boolean promptPassphrase(String message) {
                         return false;
-                    }
+                      }
 
-                    @Override
-                    public boolean promptYesNo(String message) {
+                      @Override
+                      public boolean promptYesNo(String message) {
                         return true;
-                    }
+                      }
 
-                    @Override
-                    public void showMessage(String message) {
-
-                    }
-                });
+                      @Override
+                      public void showMessage(String message) {}
+                    });
                 // do nothing
+              }
+            };
+        transportConfigCallback =
+            new TransportConfigCallback() {
+              @Override
+              public void configure(Transport transport) {
+                SshTransport sshTransport = (SshTransport) transport;
+                sshTransport.setSshSessionFactory(sshSessionFactory);
               }
             };
 
@@ -154,14 +172,7 @@ class MetaGit {
             Git.cloneRepository()
                 .setURI(config.git.remote)
                 .setDirectory(new File(config.git.path))
-                .setTransportConfigCallback(
-                    new TransportConfigCallback() {
-                      @Override
-                      public void configure(Transport transport) {
-                        SshTransport sshTransport = (SshTransport) transport;
-                        sshTransport.setSshSessionFactory(sshSessionFactory);
-                      }
-                    })
+                .setTransportConfigCallback(transportConfigCallback)
                 .call();
       } catch (Exception e) {
         throw new RuntimeException("Can't init local shadowCache repo", e);

@@ -37,7 +37,7 @@ Next, get the host infomation to get the remote host information. Execute a clon
 >>> git clone ssh://user@example.com@source.developers.google.com:2022/p/example-project/r/example-repo
 Cloning into 'metastore-test-shadow'...
 The authenticity of host '[source.developers.google.com]:2022 ([108.177.126.82]:2022)' can't be established.
-ECDSA key fingerprint is SHA256:AGvEpqYNMqsRNIviwyk4J4HM0lEylomDBKOWZsBn434.
+ECDSA key fingerprint is SHA256:AGvEpqYNMqs...ZsBn434.
 Are you sure you want to continue connecting (yes/no)? yes
 ```
 
