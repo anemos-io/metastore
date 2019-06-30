@@ -2,7 +2,6 @@ package io.anemos.metastore.core.proto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
@@ -23,7 +22,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleInt.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleInt");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -35,7 +34,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleBoolean.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleBoolean");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -47,7 +46,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleLong.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleLong");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -59,7 +58,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleFloat.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleFloat");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -71,7 +70,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleDouble.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleDouble");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -83,7 +82,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleBytes.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleBytes");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -95,7 +94,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestSingleString.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleString");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -107,7 +106,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestComplexArrayInt.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexArrayInt");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -119,10 +118,17 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestComplexEnum.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexEnum");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
+  }
+
+  @Test
+  public void testDebeziumExample1() throws IOException {
+    JsonNode node = getJsonNode("testDebeziumExample1");
+    PContainer descriptor = new AvroToProtoSchema(node).get();
+    System.out.println(descriptor);
   }
 
   @Test
@@ -132,7 +138,7 @@ public class AvroToProtoSchemaTest {
     ValidationResults result = new ValidationResults();
     new ProtoDiff(
             getProtoDescriptor(TestComplexEnum.getDescriptor()),
-            getProtoDescriptor(new AvroToProtoSchema(node).toDescriptor()),
+            new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexMap");
     Assert.assertEquals(0, result.getReport().getMessageResultsCount());
@@ -151,17 +157,20 @@ public class AvroToProtoSchemaTest {
     return node;
   }
 
-  private PContainer getProtoDescriptor(Object input) throws IOException {
-    if (input instanceof DescriptorProtos.FileDescriptorProto) {
-      DescriptorProtos.FileDescriptorProto descriptorNew =
-          (DescriptorProtos.FileDescriptorProto) input;
-      DescriptorProtos.FileDescriptorSet theSet =
-          DescriptorProtos.FileDescriptorSet.newBuilder().addFile(descriptorNew).build();
-      return new PContainer(theSet.toByteArray());
-    } else if (input instanceof Descriptors.Descriptor) {
-      Descriptors.Descriptor descriptorRef = (Descriptors.Descriptor) input;
-      return new PContainer(descriptorRef);
-    }
-    return null;
+  private PContainer getProtoDescriptor(Descriptors.Descriptor input) throws IOException {
+    return new PContainer(input);
   }
+
+  //    if (input instanceof DescriptorProtos.FileDescriptorProto) {
+  //      DescriptorProtos.FileDescriptorProto descriptorNew =
+  //          (DescriptorProtos.FileDescriptorProto) input;
+  //      DescriptorProtos.FileDescriptorSet theSet =
+  //          DescriptorProtos.FileDescriptorSet.newBuilder().addFile(descriptorNew).build();
+  //      return new PContainer(theSet.toByteArray());
+  //    } else if (input instanceof Descriptors.Descriptor) {
+  //      Descriptors.Descriptor descriptorRef = (Descriptors.Descriptor) input;
+  //      return new PContainer(descriptorRef);
+  //    }
+  //    return null;
+
 }

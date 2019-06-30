@@ -1,0 +1,445 @@
+{
+  "type": "record",
+  "name": "Envelope",
+  "namespace": "south_legacy_it.sacarino_it.members",
+  "fields": [
+    {
+      "name": "before",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "Value",
+          "fields": [
+            {
+              "name": "member_PK",
+              "type": "int"
+            },
+            {
+              "name": "member_FK_memtypes_PK",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_list",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "connect.version": 1,
+                  "connect.parameters": {
+                    "allowed": "W,G,B"
+                  },
+                  "connect.name": "io.debezium.data.EnumSet"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_vip",
+              "type": {
+                "type": "string",
+                "connect.version": 1,
+                "connect.parameters": {
+                  "allowed": "1,0"
+                },
+                "connect.default": "0",
+                "connect.name": "io.debezium.data.EnumSet"
+              },
+              "default": "0"
+            },
+            {
+              "name": "member_name",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_lastname_1",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_lastname_2",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_sex",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "connect.version": 1,
+                  "connect.parameters": {
+                    "allowed": "m,f"
+                  },
+                  "connect.name": "io.debezium.data.EnumSet"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_FK_profession_PK",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_email",
+              "type": "string"
+            },
+            {
+              "name": "member_password",
+              "type": "string"
+            },
+            {
+              "name": "member_passwordchange",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_saludation",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_birthdate",
+              "type": [
+                "null",
+                {
+                  "type": "int",
+                  "connect.version": 1,
+                  "connect.name": "io.debezium.time.Date"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_phone",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_mobile",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_registered",
+              "type": {
+                "type": "long",
+                "connect.version": 1,
+                "connect.name": "io.debezium.time.Timestamp"
+              }
+            },
+            {
+              "name": "member_modified",
+              "type": {
+                "type": "string",
+                "connect.version": 1,
+                "connect.default": "1970-01-01T00:00:00Z",
+                "connect.name": "io.debezium.time.ZonedTimestamp"
+              },
+              "default": "1970-01-01T00:00:00Z"
+            },
+            {
+              "name": "member_doptin",
+              "type": [
+                {
+                  "type": "string",
+                  "connect.version": 1,
+                  "connect.parameters": {
+                    "allowed": "0,1"
+                  },
+                  "connect.default": "0",
+                  "connect.name": "io.debezium.data.EnumSet"
+                },
+                "null"
+              ],
+              "default": "0"
+            },
+            {
+              "name": "member_frequency",
+              "type": {
+                "type": "string",
+                "connect.version": 1,
+                "connect.parameters": {
+                  "allowed": "PRV0,PRV1,PRV2,PRV3,PRV4,PRV5,PRV6,PRV7,PRV8,PRV9,PRV51,PRV52,PRV53,PRV54"
+                },
+                "connect.default": "PRV7",
+                "connect.name": "io.debezium.data.EnumSet"
+              },
+              "default": "PRV7"
+            },
+            {
+              "name": "member_godfather",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_publisher_code",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_FK_mcampepu_PK",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_partner_code",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "member_advertising",
+              "type": {
+                "type": "string",
+                "connect.version": 1,
+                "connect.parameters": {
+                  "allowed": "0,1"
+                },
+                "connect.default": "0",
+                "connect.name": "io.debezium.data.EnumSet"
+              },
+              "default": "0"
+            },
+            {
+              "name": "member_status_modified",
+              "type": [
+                "null",
+                {
+                  "type": "long",
+                  "connect.version": 1,
+                  "connect.name": "io.debezium.time.Timestamp"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_activated",
+              "type": [
+                "null",
+                {
+                  "type": "long",
+                  "connect.version": 1,
+                  "connect.name": "io.debezium.time.Timestamp"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_oneclick_active",
+              "type": {
+                "type": "int",
+                "connect.default": 1,
+                "connect.type": "int16"
+              },
+              "default": 1
+            },
+            {
+              "name": "member_pending_sponsorship_benefit",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "connect.version": 1,
+                  "connect.parameters": {
+                    "allowed": "0,1,2"
+                  },
+                  "connect.name": "io.debezium.data.EnumSet"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "member_oneclick_paypal",
+              "type": {
+                "type": "int",
+                "connect.default": 1,
+                "connect.type": "int16"
+              },
+              "default": 1
+            },
+            {
+              "name": "member_accepttrv_conditions",
+              "type": "int"
+            },
+            {
+              "name": "member_vp_registration",
+              "type": {
+                "type": "int",
+                "connect.default": 0,
+                "connect.type": "int16"
+              },
+              "default": 0
+            }
+          ],
+          "connect.name": "south_legacy_it.sacarino_it.members.Value"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "after",
+      "type": [
+        "null",
+        "Value"
+      ],
+      "default": null
+    },
+    {
+      "name": "source",
+      "type": {
+        "type": "record",
+        "name": "Source",
+        "namespace": "io.debezium.connector.mysql",
+        "fields": [
+          {
+            "name": "version",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "connector",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "server_id",
+            "type": "long"
+          },
+          {
+            "name": "ts_sec",
+            "type": "long"
+          },
+          {
+            "name": "gtid",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "file",
+            "type": "string"
+          },
+          {
+            "name": "pos",
+            "type": "long"
+          },
+          {
+            "name": "row",
+            "type": "int"
+          },
+          {
+            "name": "snapshot",
+            "type": [
+              {
+                "type": "boolean",
+                "connect.default": false
+              },
+              "null"
+            ],
+            "default": false
+          },
+          {
+            "name": "thread",
+            "type": [
+              "null",
+              "long"
+            ],
+            "default": null
+          },
+          {
+            "name": "db",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "table",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "query",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
+        ],
+        "connect.name": "io.debezium.connector.mysql.Source"
+      }
+    },
+    {
+      "name": "op",
+      "type": "string"
+    },
+    {
+      "name": "ts_ms",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    }
+  ],
+  "connect.name": "south_legacy_it.sacarino_it.members.Envelope"
+}

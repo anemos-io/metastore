@@ -3,6 +3,7 @@ package io.anemos.metastore.core.proto;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -318,5 +319,22 @@ public class PContainer {
           fileIndices.get(newFileDescriptor.getFullName()), newFileDescriptorProtoBuilder.build());
     }
     return new PContainer(setBuilder.build());
+  }
+
+  @Override
+  public String toString() {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    fileDescriptorMap.forEach(
+        (name, fd) -> {
+          try {
+            out.write(("[ ------ " + name + " ------ ]\n").getBytes());
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+
+          ProtoLanguageFileWriter.write(fd, this, out);
+        });
+    return out.toString();
   }
 }
