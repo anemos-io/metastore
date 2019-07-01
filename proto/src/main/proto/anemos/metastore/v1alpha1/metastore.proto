@@ -7,7 +7,7 @@ package anemos.metastore.v1alpha1;
 service MetaStoreService {
     rpc GetAvroSchema (GetAvroSchemaRequest) returns (GetAvroSchemaResponse);
 
-    rpc PushAvroSchema (PutAvroSchemaRequest) returns (PutAvroSchemaResponse)
+    //rpc PushAvroSchema (PutAvroSchemaRequest) returns (PutAvroSchemaResponse)
 }
 
 message GetAvroSchemaRequest {

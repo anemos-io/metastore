@@ -46,7 +46,7 @@ public class ProviderTest {
   public void inMemoryProviderTest() throws Exception {
     Map<String, String> config = new HashMap<>();
 
-    StorageProvider provider = new InMemoryProvider(config);
+    StorageProvider provider = new InMemoryStorage(config);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -57,7 +57,7 @@ public class ProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("path", tempFolder.getPath());
 
-    StorageProvider provider = new LocalFileProvider(config);
+    StorageProvider provider = new LocalFileStorage(config);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -71,7 +71,7 @@ public class ProviderTest {
 
     clearGcs(config.get("bucket"), config.get("path"));
 
-    StorageProvider provider = new GoogleCloudStorageProvider(config);
+    StorageProvider provider = new GoogleCloudStorage(config);
     readNewTest(provider);
     writeReadTest(provider);
   }

@@ -3,6 +3,7 @@ package io.anemos.metastore.core.proto;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,6 +77,13 @@ public class PContainer {
   public PContainer(Descriptors.FileDescriptor fileDescriptor) {
     fileDescriptorMap = new HashMap<>();
     fileDescriptorMap.put(fileDescriptor.getFullName(), fileDescriptor);
+    indexDescriptorByName();
+    indexOptionsByNumber();
+  }
+
+  public PContainer(List<ByteString> fileDescriptorProtoList)
+      throws InvalidProtocolBufferException {
+    fileDescriptorMap = Convert.convertFileDescriptorByteStringList(fileDescriptorProtoList);
     indexDescriptorByName();
     indexOptionsByNumber();
   }
@@ -336,5 +344,9 @@ public class PContainer {
           ProtoLanguageFileWriter.write(fd, this, out);
         });
     return out.toString();
+  }
+
+  public Collection<Descriptors.FileDescriptor> iterator() {
+    return fileDescriptorMap.values();
   }
 }

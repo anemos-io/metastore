@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-import "anemos/metastore/v1alpha1/rules.proto";
+import "grpc/registry/v1alpha1/rules.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
 option java_multiple_files = true;
 
-package anemos.metastore.v1alpha1;
+package grpc.registry.v1alpha1;
 
 enum ChangeType {
     UNCHANGED = 0;

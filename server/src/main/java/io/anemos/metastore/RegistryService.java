@@ -7,43 +7,43 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.registry.AbstractRegistry;
+import io.anemos.metastore.v1alpha1.Registry;
+import io.anemos.metastore.v1alpha1.RegistyGrpc;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
-import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
-import io.anemos.metastore.v1alpha1.Schemaregistry;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 
-public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegistyServiceImplBase {
+public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   private MetaStore metaStore;
 
-  public SchemaRegistryService(MetaStore metaStore) {
+  public RegistryService(MetaStore metaStore) {
     this.metaStore = metaStore;
   }
 
   @Override
   public void submitSchema(
-      Schemaregistry.SubmitSchemaRequest request,
-      StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
+      Registry.SubmitSchemaRequest request,
+      StreamObserver<Registry.SubmitSchemaResponse> responseObserver) {
     schema(request, responseObserver, true);
   }
 
   @Override
   public void verifySchema(
-      Schemaregistry.SubmitSchemaRequest request,
-      StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver) {
+      Registry.SubmitSchemaRequest request,
+      StreamObserver<Registry.SubmitSchemaResponse> responseObserver) {
     schema(request, responseObserver, false);
   }
 
   public void schema(
-      Schemaregistry.SubmitSchemaRequest request,
-      StreamObserver<Schemaregistry.SubmitSchemaResponse> responseObserver,
+      Registry.SubmitSchemaRequest request,
+      StreamObserver<Registry.SubmitSchemaResponse> responseObserver,
       boolean submit) {
     PContainer in;
     try {
-      in = new PContainer(request.getFdProtoSet().newInput());
+      in = new PContainer(request.getFileDescriptorProtoList());
     } catch (IOException e) {
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
@@ -71,8 +71,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
       }
     }
 
-    responseObserver.onNext(
-        Schemaregistry.SubmitSchemaResponse.newBuilder().setReport(report).build());
+    responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());
     responseObserver.onCompleted();
   }
 
@@ -91,8 +90,7 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
     return results.getReport();
   }
 
-  private Report validate(
-      Schemaregistry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
+  private Report validate(Registry.SubmitSchemaRequest request, PContainer ref, PContainer in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
@@ -132,12 +130,21 @@ public class SchemaRegistryService extends SchemaRegistyServiceGrpc.SchemaRegist
 
   @Override
   public void getSchema(
-      Schemaregistry.GetSchemaRequest request,
-      StreamObserver<Schemaregistry.GetSchemaResponse> responseObserver) {
-    responseObserver.onNext(
-        Schemaregistry.GetSchemaResponse.newBuilder()
-            .setFdProtoSet(metaStore.registries.get(request.getRegistryName()).raw())
-            .build());
+      Registry.GetSchemaRequest request,
+      StreamObserver<Registry.GetSchemaResponse> responseObserver) {
+
+    Registry.GetSchemaResponse.Builder schemaResponseBuilder =
+        Registry.GetSchemaResponse.newBuilder();
+    metaStore
+        .registries
+        .get(request.getRegistryName())
+        .get()
+        .iterator()
+        .forEach(fd -> schemaResponseBuilder.addFileDescriptorProto(fd.toProto().toByteString()));
+
+    // .setFdProtoSet(metaStore.registries.get(request.getRegistryName()).raw())
+
+    responseObserver.onNext(schemaResponseBuilder.build());
     responseObserver.onCompleted();
   }
 }

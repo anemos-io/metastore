@@ -1,27 +1,32 @@
 package io.anemos.metastore.metastep;
 
 import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.core.proto.ProtocUtil;
+import io.anemos.metastore.v1alpha1.Registry;
+import io.anemos.metastore.v1alpha1.RegistyGrpc;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
-import io.anemos.metastore.v1alpha1.SchemaRegistyServiceGrpc;
-import io.anemos.metastore.v1alpha1.Schemaregistry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.*;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
+import net.sourceforge.argparse4j.inf.Subparsers;
 
 public class MetaStep {
 
-  File workspace;
-  String protoInclude;
-  SchemaRegistyServiceGrpc.SchemaRegistyServiceBlockingStub schemaRegistry;
-  private boolean descriptorIsTemp = false;
+  private File workspace;
+  private String protoInclude;
+  private RegistyGrpc.RegistyBlockingStub schemaRegistry;
   private File descriptorFile;
   private Namespace res;
 
@@ -54,12 +59,11 @@ public class MetaStep {
     res = parser.parseArgs(args);
 
     descriptorFile = File.createTempFile("descriptor", ".pb");
-    descriptorIsTemp = true;
 
     String server = res.getString("server");
     String[] sp = server.split(":");
     String host = sp[0];
-    Integer port = Integer.parseInt(sp[1]);
+    int port = Integer.parseInt(sp[1]);
 
     String protoWorkspace = res.getString("workspace");
     if (protoWorkspace == null) {
@@ -74,7 +78,7 @@ public class MetaStep {
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
 
-    schemaRegistry = SchemaRegistyServiceGrpc.newBlockingStub(channel);
+    schemaRegistry = RegistyGrpc.newBlockingStub(channel);
 
     //        Schemaregistry.GetSchemaResponse response = schemaRegistry
     //                .getSchema(Schemaregistry.GetSchemaRequest.newBuilder().build());
@@ -122,51 +126,6 @@ public class MetaStep {
     System.err.println();
   }
 
-  private static void iterateProtoFiles(File[] files, PrintWriter writer) throws IOException {
-    for (File file : files) {
-      if (file.isDirectory()) {
-        iterateProtoFiles(file.listFiles(), writer); // Calls same method again.
-      } else {
-        if (file.getName().toLowerCase().endsWith(".proto")) {
-          System.out.println(file.getCanonicalPath());
-          writer.println(file.getCanonicalPath());
-        }
-      }
-    }
-  }
-
-  private static File listProtos(File workspace) throws IOException {
-    File f = File.createTempFile("protofiles", ".txt");
-    f.deleteOnExit();
-    OutputStream outputStream = new FileOutputStream(f);
-    PrintWriter printWriter = new PrintWriter(outputStream);
-
-    iterateProtoFiles(workspace.listFiles(), printWriter);
-    printWriter.flush();
-    printWriter.close();
-    return f;
-  }
-
-  private static int protoc(List<String> command) throws IOException, InterruptedException {
-    ProcessBuilder builder = new ProcessBuilder(command);
-    Process p = builder.start();
-    try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-      String line;
-      while ((line = input.readLine()) != null) {
-        System.out.println(line);
-      }
-    }
-
-    try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
-      String line;
-      while ((line = input.readLine()) != null) {
-        System.err.println(line);
-      }
-    }
-    p.waitFor();
-    return p.exitValue();
-  }
-
   public void start() throws IOException {
     switch (res.getString("sub-command")) {
       case "validate":
@@ -181,7 +140,7 @@ public class MetaStep {
   }
 
   private PContainer createDescriptorSet() throws IOException {
-    File file = listProtos(workspace);
+    File file = ProtocUtil.listProtos(workspace);
 
     try {
       List<String> command = new ArrayList<>();
@@ -195,7 +154,7 @@ public class MetaStep {
       //            command.add("--include_source_info");
       command.add("@" + file.getCanonicalPath());
 
-      int pcexit = protoc(command);
+      int pcexit = ProtocUtil.protoc(command);
       if (pcexit > 0) {
         System.exit(pcexit);
       }
@@ -209,7 +168,7 @@ public class MetaStep {
   private void validate() throws IOException {
     System.out.println("Contract Validation started");
 
-    Schemaregistry.SubmitSchemaResponse verifySchemaResponse =
+    Registry.SubmitSchemaResponse verifySchemaResponse =
         schemaRegistry.verifySchema(createSchemaRequest());
 
     Report report = verifySchemaResponse.getReport();
@@ -235,16 +194,21 @@ public class MetaStep {
     schemaRegistry.submitSchema(createSchemaRequest());
   }
 
-  private Schemaregistry.SubmitSchemaRequest createSchemaRequest() throws IOException {
+  private Registry.SubmitSchemaRequest createSchemaRequest() throws IOException {
     PContainer protoContainer = createDescriptorSet();
 
-    Schemaregistry.SubmitSchemaRequest.Builder schemaRequestBuilder =
-        Schemaregistry.SubmitSchemaRequest.newBuilder()
-            .setFdProtoSet(protoContainer.toByteString())
+    Registry.SubmitSchemaRequest.Builder schemaRequestBuilder =
+        Registry.SubmitSchemaRequest.newBuilder()
             .addScope(
-                Schemaregistry.Scope.newBuilder()
+                Registry.Scope.newBuilder()
                     .setPackagePrefix(res.getString("package_prefix"))
                     .build());
+    protoContainer
+        .iterator()
+        .forEach(
+            fileDescriptor ->
+                schemaRequestBuilder.addFileDescriptorProto(
+                    fileDescriptor.toProto().toByteString()));
 
     Map<String, Object> attributes = res.getAttrs();
     if (attributes.containsKey("registry") && attributes.get("registry") != null) {

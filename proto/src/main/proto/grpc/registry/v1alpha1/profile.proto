@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-import "anemos/metastore/v1alpha1/report.proto";
+import "grpc/registry/v1alpha1/report.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
 
-package anemos.metastore.v1alpha1;
+package grpc.registry.v1alpha1;
 
 service Profile {
     rpc ProcessReport (ProcessReportRequest) returns (ProcessReportResponse);

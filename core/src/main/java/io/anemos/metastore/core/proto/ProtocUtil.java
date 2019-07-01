@@ -45,7 +45,7 @@ public class ProtocUtil {
     return new PContainer(descriptorFile);
   }
 
-  private static int protoc(List<String> command) throws IOException, InterruptedException {
+  public static int protoc(List<String> command) throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     Process p = builder.start();
     try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
@@ -65,7 +65,7 @@ public class ProtocUtil {
     return p.exitValue();
   }
 
-  private static File listProtos(File workspace) throws IOException {
+  public static File listProtos(File workspace) throws IOException {
     File f = File.createTempFile("protofiles", ".txt");
     f.deleteOnExit();
     OutputStream outputStream = new FileOutputStream(f);
@@ -77,7 +77,7 @@ public class ProtocUtil {
     return f;
   }
 
-  private static void iterateProtoFiles(File[] files, PrintWriter writer) throws IOException {
+  public static void iterateProtoFiles(File[] files, PrintWriter writer) throws IOException {
     for (File file : files) {
       if (file.isDirectory()) {
         iterateProtoFiles(file.listFiles(), writer); // Calls same method again.

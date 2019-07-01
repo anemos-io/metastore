@@ -40,7 +40,7 @@ public class MetaStore {
     if (config.storage == null) {
       System.out.println("Storage Provider not configured, defaulting to in memory provider");
       config.storage = new StorageProviderConfig();
-      config.storage.providerClass = "io.anemos.metastore.provider.InMemoryProvider";
+      config.storage.providerClass = "io.anemos.metastore.provider.InMemoryStorage";
     }
     if (config.storage.parameters == null) {
       config.storage.parameters = new StorageProviderConfig.Parameters[] {};

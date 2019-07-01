@@ -3,7 +3,7 @@ syntax = "proto3";
 option java_package = "io.anemos.metastore.v1alpha1";
 option java_multiple_files = true;
 
-package anemos.metastore.v1alpha1;
+package grpc.registry.v1alpha1;
 
 enum LintRule {
     LINT_OK = 0;

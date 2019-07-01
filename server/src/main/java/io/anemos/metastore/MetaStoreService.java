@@ -8,7 +8,7 @@ import io.grpc.stub.StreamObserver;
 
 public class MetaStoreService extends MetaStoreServiceGrpc.MetaStoreServiceImplBase {
 
-  public MetaStoreService(MetaStore metaStore) {}
+  MetaStoreService(MetaStore metaStore) {}
 
   @Override
   public void getAvroSchema(

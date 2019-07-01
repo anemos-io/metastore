@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-import "anemos/metastore/v1alpha1/report.proto";
+import "grpc/registry/v1alpha1/report.proto";
 import "google/protobuf/timestamp.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
 
-package anemos.metastore.v1alpha1;
+package grpc.registry.v1alpha1;
 
-service SchemaRegistyService {
+service Registy {
     rpc SubmitSchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
@@ -42,7 +42,7 @@ message SubmitSchemaRequest {
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    bytes fd_proto_set = 2;
+    repeated bytes file_descriptor_proto = 2;
     repeated Scope scope = 3;
 }
 
@@ -64,33 +64,43 @@ message GetSchemaResponse {
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    bytes fd_proto_set = 1;
+    repeated bytes file_descriptor_proto = 1;
     int32 error_code = 2;
 }
 
 message AssignSchemaToResourceRequest {
     string registry_name = 1;
-    string resource_name = 2;
-    string package_name = 3;
-    string message_name = 4;
+    string package_name = 2;
+    string message_name = 3;
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    string linked_resource = 4;
 }
+
 message AssignSchemaToResourceResponse {
 }
 
 message GetSchemaForResourceRequest {
+    enum SchemaContext {
+        SCHEMA_CONTEXT_FULL_DOMAIN = 0;
+        SCHEMA_CONTEXT_NONE = 1;
+        SCHEMA_CONTEXT_IN_SCOPE = 2;
+    }
+
     string registry_name = 1;
-    string resource_name = 2;
+    string linked_resource = 2;
+    SchemaContext schema_context = 3;
 }
 
 message GetSchemaForResourceResponse {
+    string package_name = 1;
+    string message_name = 2;
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    string package_name = 1;
-    string message_name = 2;
-    bytes fd_proto_set = 3;
-
+    repeated bytes file_descriptor_proto = 3;
 }
 
 message UseSchemaOnResourceRequest {
@@ -111,7 +121,7 @@ message UseSchemaOnResourceRequest {
 
     message Usage {
         string usage_name = 1;
-        string resource_name = 2;
+        string linked_resource = 2;
         string package_name = 3;
         string message_name = 4;
 
@@ -129,7 +139,7 @@ message UseSchemaOnResourceRequest {
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    bytes fd_proto_set = 6;
+    repeated bytes file_descriptor_proto = 6;
 
     repeated Usage usage = 7;
 }

@@ -1,20 +1,30 @@
 package io.anemos.metastore.core.proto;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Convert {
+class Convert {
 
-  public static Map<String, DescriptorProtos.FileDescriptorProto> extractProtoMap(
+  private static Map<String, DescriptorProtos.FileDescriptorProto> extractProtoMap(
       DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
     HashMap<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
     fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
     return map;
+  }
+
+  private static Map<String, Descriptors.FileDescriptor> convertToFileDescriptorMap(
+      Map<String, DescriptorProtos.FileDescriptorProto> inMap) {
+    Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+    return outMap;
   }
 
   private static Descriptors.FileDescriptor convertToFileDescriptorMap(
@@ -53,18 +63,25 @@ public class Convert {
     return fileDescriptor;
   }
 
-  public static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(
+  static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(
       DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
     Map<String, DescriptorProtos.FileDescriptorProto> inMap = extractProtoMap(fileDescriptorSet);
-    Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
-    ExtensionRegistry registry = ExtensionRegistry.newInstance();
-    inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+    return convertToFileDescriptorMap(inMap);
+  }
 
-    return outMap;
+  static Map<String, Descriptors.FileDescriptor> convertFileDescriptorByteStringList(
+      List<ByteString> fileDescriptorProtoList) throws InvalidProtocolBufferException {
+    Map<String, DescriptorProtos.FileDescriptorProto> inMap = new HashMap<>();
+    for (ByteString byteString : fileDescriptorProtoList) {
+      DescriptorProtos.FileDescriptorProto fileDescriptorProto =
+          DescriptorProtos.FileDescriptorProto.parseFrom(byteString);
+      inMap.put(fileDescriptorProto.getName(), fileDescriptorProto);
+    }
+    return convertToFileDescriptorMap(inMap);
   }
 
   // TODO Find way to do this dynamically
-  public static Map<String, Descriptors.FileDescriptor> registerOptions(
+  static Map<String, Descriptors.FileDescriptor> registerOptions(
       Map<String, Descriptors.FileDescriptor> fileDescriptorMap) {
     Map<String, DescriptorProtos.FileDescriptorProto> inMap = new HashMap<>();
     Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
@@ -75,9 +92,8 @@ public class Convert {
     inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
 
     outMap.forEach(
-        (k, fileDescriptor) -> {
-          Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);
-        });
+        (k, fileDescriptor) ->
+            Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry));
     return outMap;
   }
 }

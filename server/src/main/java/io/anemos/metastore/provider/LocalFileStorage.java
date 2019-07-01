@@ -10,11 +10,11 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-public class LocalFileProvider implements StorageProvider {
+public class LocalFileStorage implements StorageProvider {
 
   private String path;
 
-  public LocalFileProvider(Map<String, String> config) throws IOException {
+  public LocalFileStorage(Map<String, String> config) throws IOException {
     this.path = config.get("path");
     if (path == null) {
       throw new RuntimeException("path variable not set");

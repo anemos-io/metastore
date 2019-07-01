@@ -4,11 +4,11 @@ import com.google.protobuf.ByteString;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InMemoryProvider implements StorageProvider {
+public class InMemoryStorage implements StorageProvider {
 
   private HashMap<String, ByteString> storage;
 
-  public InMemoryProvider(Map<String, String> config) {
+  public InMemoryStorage(Map<String, String> config) {
     this.storage = new HashMap<>();
   }
 

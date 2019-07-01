@@ -17,19 +17,19 @@ public class MetaStoreServer {
   private final Server server;
 
   /** Create a RouteGuide server listening on {@code port} using {@code featureFile} database. */
-  public MetaStoreServer(int port) throws IOException {
+  private MetaStoreServer(int port) throws IOException {
     this(ServerBuilder.forPort(port), port);
   }
 
   /** Create a RouteGuide server using serverBuilder as a base and features as data. */
-  public MetaStoreServer(ServerBuilder<?> serverBuilder, int port) throws IOException {
+  private MetaStoreServer(ServerBuilder<?> serverBuilder, int port) throws IOException {
     this.port = port;
     MetaStore metaStore = new MetaStore();
 
     server =
         serverBuilder
             .addService(new MetaStoreService(metaStore))
-            .addService(new SchemaRegistryService(metaStore))
+            .addService(new RegistryService(metaStore))
             .addService(ProtoReflectionService.newInstance())
             .build();
   }
@@ -54,19 +54,17 @@ public class MetaStoreServer {
     logger.info("Server started, listening on " + port);
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                // Use stderr here since the logger may has been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                MetaStoreServer.this.stop();
-                System.err.println("*** server shut down");
-              }
-            });
+            new Thread(
+                () -> {
+                  // Use stderr here since the logger may has been reset by its JVM shutdown hook.
+                  System.err.println("*** shutting down gRPC server since JVM is shutting down");
+                  MetaStoreServer.this.stop();
+                  System.err.println("*** server shut down");
+                }));
   }
 
   /** Stop serving requests and shutdown resources. */
-  public void stop() {
+  private void stop() {
     if (server != null) {
       server.shutdown();
     }

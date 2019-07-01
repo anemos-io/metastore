@@ -7,7 +7,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
 import java.util.Map;
 
-public class GoogleCloudStorageProvider implements StorageProvider {
+public class GoogleCloudStorage implements StorageProvider {
 
   private static Storage storage;
 
@@ -19,7 +19,7 @@ public class GoogleCloudStorageProvider implements StorageProvider {
   private String path;
   private String project;
 
-  public GoogleCloudStorageProvider(Map<String, String> config) {
+  public GoogleCloudStorage(Map<String, String> config) {
     this.bucket = config.get("bucket");
     this.path = config.get("path");
     this.project = config.get("project");
