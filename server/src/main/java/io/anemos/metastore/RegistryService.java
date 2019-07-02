@@ -64,11 +64,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
                 .asRuntimeException());
         return;
       }
-      if (registry.isShadow()) {
-        registry.update(delta(registry.ref(), in), in);
-      } else {
-        registry.update(report, in);
-      }
+      registry.update(registry.ref(), in);
     }
 
     responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());
@@ -81,13 +77,6 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
       return resultCount.getDiffErrors() > 0 || resultCount.getLintErrors() > 0;
     }
     return false;
-  }
-
-  private Report delta(PContainer ref, PContainer in) {
-    ValidationResults results = new ValidationResults();
-    ProtoDiff diff = new ProtoDiff(ref, in, results);
-    diff.diffOnPackagePrefix("");
-    return results.getReport();
   }
 
   private Report validate(Registry.SubmitSchemaRequest request, PContainer ref, PContainer in) {

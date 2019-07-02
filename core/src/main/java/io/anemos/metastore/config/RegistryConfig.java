@@ -6,6 +6,8 @@ public class RegistryConfig {
   public String shadowOf;
   public GitRegistryConfig git;
 
+  public String[] scope;
+
   public RegistryConfig() {}
 
   public RegistryConfig(String name) {
@@ -13,7 +15,6 @@ public class RegistryConfig {
   }
 
   public RegistryConfig(String name, String shadowOf) {
-
     this.shadowOf = shadowOf;
     this.name = name;
   }

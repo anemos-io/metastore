@@ -5,7 +5,6 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.StorageProvider;
-import io.anemos.metastore.v1alpha1.Report;
 import java.util.logging.Logger;
 
 public abstract class AbstractRegistry {
@@ -42,7 +41,7 @@ public abstract class AbstractRegistry {
 
   public abstract boolean isShadow();
 
-  public abstract void update(Report report, PContainer in);
+  public abstract void update(PContainer ref, PContainer in);
 
   void syncGitRepo(String message) {
     metaGit.sync(protoContainer, message);

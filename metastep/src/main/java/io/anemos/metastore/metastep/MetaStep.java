@@ -67,9 +67,10 @@ public class MetaStep {
 
     String protoWorkspace = res.getString("workspace");
     if (protoWorkspace == null) {
-      protoWorkspace = ".";
+      protoWorkspace = "/var/workspace";
     }
     workspace = new File(protoWorkspace);
+    System.out.println("Workspace set to: " + workspace);
 
     protoInclude = System.getenv("PROTO_INCLUDE");
     if (protoInclude == null) {
@@ -89,7 +90,7 @@ public class MetaStep {
   public static void main(String... args) throws IOException, ArgumentParserException {
 
     System.out.println("MetaStep v0.2");
-    if (args[0].equals("sh")) {
+    if (args.length > 0 && args[0].equals("sh")) {
       GitLabMagic gitLabMagic = new GitLabMagic();
 
       if (gitLabMagic.gitLabEmptyCall) {

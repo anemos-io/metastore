@@ -4,6 +4,8 @@ import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.core.proto.validate.ProtoDiff;
+import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
@@ -62,8 +64,17 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(Report report, PContainer in) {
-    this.delta = report;
+  public void update(PContainer ref, PContainer in) {
+    ValidationResults results = new ValidationResults();
+    ProtoDiff diff = new ProtoDiff(ref, in, results);
+    if (config.scope != null) {
+      for (String packagePrefix : config.scope) {
+        diff.diffOnPackagePrefix(packagePrefix);
+      }
+    } else {
+      throw new RuntimeException("Shadow registry should have package prefix scopes defined.");
+    }
+    delta = results.getReport();
     update();
   }
 
