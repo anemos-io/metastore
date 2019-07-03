@@ -9,6 +9,9 @@ import io.opencensus.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
 import java.util.logging.Logger;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 public class MetaStoreServer {
   private static final Logger logger = Logger.getLogger(MetaStoreServer.class.getName());
@@ -17,14 +20,15 @@ public class MetaStoreServer {
   private final Server server;
 
   /** Create a RouteGuide server listening on {@code port} using {@code featureFile} database. */
-  private MetaStoreServer(int port) throws IOException {
-    this(ServerBuilder.forPort(port), port);
+  private MetaStoreServer(String configPath, int port) throws IOException {
+    this(configPath, ServerBuilder.forPort(port), port);
   }
 
   /** Create a RouteGuide server using serverBuilder as a base and features as data. */
-  private MetaStoreServer(ServerBuilder<?> serverBuilder, int port) throws IOException {
+  private MetaStoreServer(String configPath, ServerBuilder<?> serverBuilder, int port)
+      throws IOException {
+    MetaStore metaStore = new MetaStore(configPath);
     this.port = port;
-    MetaStore metaStore = new MetaStore();
 
     server =
         serverBuilder
@@ -36,6 +40,16 @@ public class MetaStoreServer {
 
   /** Main method. This comment makes the linter happy. */
   public static void main(String[] args) throws Exception {
+    ArgumentParser parser = ArgumentParsers.newFor("metastore").build();
+    parser.addArgument("-c", "--config").required(false);
+
+    Namespace res = parser.parseArgs(args);
+    System.out.println(args);
+
+    String configPath = res.getString("config");
+    if (configPath == null) {
+      configPath = System.getenv("METASTORE_CONFIG_PATH");
+    }
 
     // 2. Configure 100% sample rate, otherwise, few traces will be sampled.
     TraceConfig traceConfig = Tracing.getTraceConfig();
@@ -43,7 +57,7 @@ public class MetaStoreServer {
     traceConfig.updateActiveTraceParams(
         activeTraceParams.toBuilder().setSampler(Samplers.alwaysSample()).build());
 
-    MetaStoreServer server = new MetaStoreServer(8980);
+    MetaStoreServer server = new MetaStoreServer(configPath, 8980);
     server.start();
     server.blockUntilShutdown();
   }

@@ -22,6 +22,7 @@ dependencies {
     runtime("io.grpc:grpc-netty-shaded:1.17.1")
     compile("io.grpc:grpc-services:1.17.1")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
+    compile 'net.sourceforge.argparse4j:argparse4j:0.8.1'
 
     compile("io.opencensus:opencensus-api:0.19.2")
     runtime("io.opencensus:opencensus-impl:0.19.2")
@@ -69,21 +70,31 @@ spotless {
     }
 }
 
+//jib {
+//    from {
+//        image = containerRepoBase + '/distroless/java-gcloud'
+//    }
+//    to {
+//        image = containerRepoTarget + '/metaserver'
+//    }
+//    container {
+//        mainClass = 'io.anemos.metastore.MetaStoreServer'
+//        jvmFlags = ['-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=metaserver',
+//                    '-agentpath:/opt/cdbg/cdbg_java_agent.so',
+//                    '-Dcom.google.cdbg.auth.serviceaccount.enable=true',
+//                    '-Dcom.google.cdbg.module=metaserver',
+//                    '-Dcom.google.cdbg.version=v2019.3.1.1250' ]
+//        volumes = ['/var/run/secrets/google']
+//    }
+//}
 jib {
     from {
-        image = containerRepoBase + '/distroless/java-gcloud'
+        image = containerRepoBase + '/distroless/java-protoc'
     }
     to {
-        image = containerRepoTarget + '/metaserver'
+        image = containerRepoTarget + '/metastore'
     }
     container {
         mainClass = 'io.anemos.metastore.MetaStoreServer'
-        jvmFlags = ['-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=metaserver',
-                    '-agentpath:/opt/cdbg/cdbg_java_agent.so',
-                    '-Dcom.google.cdbg.auth.serviceaccount.enable=true',
-                    '-Dcom.google.cdbg.module=metaserver',
-                    '-Dcom.google.cdbg.version=v2019.3.1.1250' ]
-        volumes = ['/var/run/secrets/google']
     }
 }
-

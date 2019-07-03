@@ -1,7 +1,7 @@
 mkdir tmp
 cd tmp
 
-curl https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip -o protoc.zip -L -s
+curl https://github.com/protocolbuffers/protobuf/releases/download/v3.8.0/protoc-3.8.0-linux-x86_64.zip -o protoc.zip -L -s
 unzip protoc.zip
 
 git clone https://github.com/googleapis/googleapis.git
@@ -21,3 +21,4 @@ cp ./googleapis/google/type/*.proto ../include/google/type/
 
 cd ..
 rm -rf tmp
+rm -rf include/grpc/testing/

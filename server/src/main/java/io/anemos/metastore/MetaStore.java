@@ -18,8 +18,7 @@ public class MetaStore {
   // public AbstractRegistry.ShadowRegistry shadowRegistry;
   private StorageProvider provider;
 
-  public MetaStore() throws IOException {
-    String configPath = System.getenv("METASTORE_CONFIG_PATH");
+  public MetaStore(String configPath) throws IOException {
     MetaStoreConfig config;
     if (configPath == null) {
       System.out.println("Default config not set, running in demo mode");
