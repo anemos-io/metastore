@@ -1,7 +1,7 @@
 plugins {
     id "net.ltgt.apt" version "0.20"
     id "com.diffplug.gradle.spotless" version "3.23.0"
-    id "com.google.protobuf" version "0.8.8"
+    id "com.google.protobuf" version "0.8.10"
     id "java-library"
     id "maven-publish"
     id "idea"
@@ -14,18 +14,18 @@ repositories {
 
 dependencies {
     compile(project(':proto'))
-    compile("com.google.protobuf:protobuf-java:3.6.1")
-    compile("io.grpc:grpc-stub:1.18.0")
-    compile("io.grpc:grpc-protobuf:1.18.0")
-    runtime("io.grpc:grpc-netty-shaded:1.18.0")
+    compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
+    compile("io.grpc:grpc-stub:${versions.grpc}")
+    compile("io.grpc:grpc-protobuf:${versions.grpc}")
+    runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
     compile("org.yaml:snakeyaml:1.21")
-    compile("io.grpc:grpc-services:1.18.0")
+    compile("io.grpc:grpc-services:${versions.grpc}")
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
     // Support common types like, color, date, latlng, ...
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     implementation("com.google.code.gson:gson:2.8.5")
     implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile("commons-io:commons-io:2.6")
 
 
     testImplementation("junit:junit:4.12")
@@ -37,7 +37,7 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.6.1"
+        artifact = "com.google.protobuf:protoc:${versions.protobuf}"
     }
 }
 

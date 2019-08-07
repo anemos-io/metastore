@@ -1,7 +1,6 @@
 package io.anemos.metastore.provider;
 
 import com.google.protobuf.Descriptors;
-
 import java.util.List;
 import java.util.Map;
 

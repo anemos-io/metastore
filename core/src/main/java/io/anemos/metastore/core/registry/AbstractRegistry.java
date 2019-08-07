@@ -12,7 +12,6 @@ import io.anemos.metastore.provider.BindResult;
 import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Registry;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,36 +117,39 @@ public abstract class AbstractRegistry implements RegistryInfo {
     Descriptors.Descriptor descriptor = protoContainer.getDescriptorByName(messageName);
     Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
     this.bindProviders.forEach(
-            provider -> provider.createResourceBinding(linkedResource, descriptor));
+        provider -> provider.createResourceBinding(linkedResource, descriptor));
   }
 
   public void updateResourceBinding(String linkedResource, String messageName) {
     Descriptors.Descriptor descriptor = protoContainer.getDescriptorByName(messageName);
     Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
     this.bindProviders.forEach(
-            provider -> provider.updateResourceBinding(linkedResource, descriptor));
+        provider -> provider.updateResourceBinding(linkedResource, descriptor));
   }
 
   public void deleteResourceBinding(String linkedResource) {
-    this.bindProviders.forEach(
-            provider -> provider.deleteResourceBinding(linkedResource));
+    this.bindProviders.forEach(provider -> provider.deleteResourceBinding(linkedResource));
   }
 
   public Registry.ResourceBinding getResourceBinding(String linkedResource) {
     BindResult bindResult = this.bindProviders.get(0).getResourceBinding(linkedResource);
     return Registry.ResourceBinding.newBuilder()
-            .setMessageName(bindResult.getMessageName())
-            .setLinkedResource(bindResult.getLinkedResource())
-            .build();
+        .setMessageName(bindResult.getMessageName())
+        .setLinkedResource(bindResult.getLinkedResource())
+        .build();
   }
 
   public Collection<Registry.ResourceBinding> listResourceBindings(String nextPagetoken) {
     List<BindResult> bindResults = this.bindProviders.get(0).listResourceBindings(nextPagetoken);
     List<Registry.ResourceBinding> bindings = new ArrayList<>(bindResults.size());
-    bindResults.forEach(result -> {
-      bindings.add(Registry.ResourceBinding.newBuilder().setLinkedResource(result.getLinkedResource())
-              .setMessageName(result.getMessageName()).build());
-    });
+    bindResults.forEach(
+        result -> {
+          bindings.add(
+              Registry.ResourceBinding.newBuilder()
+                  .setLinkedResource(result.getLinkedResource())
+                  .setMessageName(result.getMessageName())
+                  .build());
+        });
     return bindings;
   }
 

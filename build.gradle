@@ -2,7 +2,12 @@ plugins {
     id 'base'
 }
 
-ext.protobufVersion = "3.6.1"
+ext.versions = [
+    "protobuf": "3.9.1",
+    "grpc": "1.22.1",
+    "gcp": '1.85.0',
+    'opencensus': "0.23.0"
+]
 
 allprojects {
     apply from: "${project.rootDir}/gradle/properties.gradle"

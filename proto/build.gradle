@@ -1,7 +1,7 @@
 plugins {
     id "net.ltgt.apt" version "0.20"
     id "com.diffplug.gradle.spotless" version "3.23.0"
-    id "com.google.protobuf"  version "0.8.8"
+    id "com.google.protobuf"  version "0.8.10"
     id "java"
     id "idea"
     id "maven-publish"
@@ -13,20 +13,20 @@ repositories {
 }
 
 dependencies {
-    compile("com.google.protobuf:protobuf-java:3.6.1")
-    compile("io.grpc:grpc-stub:1.17.1")
-    compile("io.grpc:grpc-protobuf:1.17.1")
-    runtime("io.grpc:grpc-netty-shaded:1.17.1")
-    compile("io.grpc:grpc-services:1.17.1")
+    compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
+    compile("io.grpc:grpc-stub:${versions.grpc}")
+    compile("io.grpc:grpc-protobuf:${versions.grpc}")
+    runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
+    compile("io.grpc:grpc-services:${versions.grpc}")
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.6.1"
+        artifact = "com.google.protobuf:protoc:${versions.protobuf}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.15.1"
+            artifact = "io.grpc:protoc-gen-grpc-java:${versions.grpc}"
         }
     }
     
