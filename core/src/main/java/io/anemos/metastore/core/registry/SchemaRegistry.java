@@ -2,23 +2,21 @@ package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.GitGlobalConfig;
+import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
-import io.anemos.metastore.provider.StorageProvider;
 import java.io.IOException;
 
 class SchemaRegistry extends AbstractRegistry {
-  private final StorageProvider storageProvider;
   private final String name;
 
   public SchemaRegistry(
-      StorageProvider storageProvider,
       Registries registries,
-      RegistryConfig config,
+      MetaStoreConfig config,
+      RegistryConfig registryConfig,
       GitGlobalConfig global) {
-    super(storageProvider, registries, config, global);
-    this.storageProvider = storageProvider;
-    this.name = config.name;
+    super(registries, config, registryConfig, global);
+    this.name = registryConfig.name;
   }
 
   @Override
@@ -46,11 +44,6 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public boolean isShadow() {
-    return true;
-  }
-
-  @Override
   public void update(PContainer ref, PContainer in) {
     protoContainer = in;
     update();
@@ -64,12 +57,12 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   void write() {
-    storageProvider.write(name + ".pb", raw());
+    storageProvider.write(raw());
   }
 
   private boolean read() {
     try {
-      ByteString buffer = storageProvider.read(name + ".pb");
+      ByteString buffer = storageProvider.read();
       if (buffer == null) {
         this.protoContainer = new PContainer();
         return true;

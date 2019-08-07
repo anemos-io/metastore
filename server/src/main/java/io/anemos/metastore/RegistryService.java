@@ -136,4 +136,65 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
     responseObserver.onNext(schemaResponseBuilder.build());
     responseObserver.onCompleted();
   }
+
+  @Override
+  public void createResourceBinding(
+      Registry.CreateResourceBindingRequest request,
+      StreamObserver<Registry.CreateResourceBindingResponse> responseObserver) {
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    registry.createResourceBinding(request.getLinkedResource(), request.getMessageName());
+    responseObserver.onNext(Registry.CreateResourceBindingResponse.newBuilder().build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void updateResourceBinding(
+      Registry.UpdateResourceBindingRequest request,
+      StreamObserver<Registry.UpdateResourceBindingResponse> responseObserver) {
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    registry.updateResourceBinding(request.getLinkedResource(), request.getMessageName());
+    responseObserver.onNext(Registry.UpdateResourceBindingResponse.newBuilder().build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void getResourceBinding(
+      Registry.GetResourceBindingeRequest request,
+      StreamObserver<Registry.GetResourceBindingResponse> responseObserver) {
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    Registry.ResourceBinding resourceBinding =
+        registry.getResourceBinding(request.getLinkedResource());
+    responseObserver.onNext(
+        Registry.GetResourceBindingResponse.newBuilder()
+            .setMessageName(resourceBinding.getMessageName())
+            .build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void deleteResourceBinding(
+      Registry.DeleteResourceBindingRequest request,
+      StreamObserver<Registry.DeleteResourceBindingResponse> responseObserver) {
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    registry.deleteResourceBinding(request.getLinkedResource());
+    responseObserver.onNext(Registry.DeleteResourceBindingResponse.newBuilder().build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listResourceBindings(
+      Registry.ListResourceBindingsRequest request,
+      StreamObserver<Registry.ListResourceBindingsResponse> responseObserver) {
+    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+    Registry.ListResourceBindingsResponse.Builder builder =
+        Registry.ListResourceBindingsResponse.newBuilder();
+    registry
+        .listResourceBindings(request.getPageToken())
+        .forEach(
+            binding -> {
+              builder.addBindings(binding);
+            });
+    responseObserver.onNext(builder.build());
+    responseObserver.onCompleted();
+  }
 }

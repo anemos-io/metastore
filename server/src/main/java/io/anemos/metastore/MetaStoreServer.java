@@ -44,11 +44,13 @@ public class MetaStoreServer {
     parser.addArgument("-c", "--config").required(false);
 
     Namespace res = parser.parseArgs(args);
-    System.out.println(args);
-
     String configPath = res.getString("config");
     if (configPath == null) {
+      System.out.println("No configuration file set via argument, setting from environment.");
       configPath = System.getenv("METASTORE_CONFIG_PATH");
+      System.out.println("Taking configuration file: " + configPath);
+    } else {
+      System.out.println("Taking configuration file: " + configPath);
     }
 
     // 2. Configure 100% sample rate, otherwise, few traces will be sampled.

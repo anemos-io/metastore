@@ -12,9 +12,12 @@ service Registy {
     rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
 
-    rpc AssignSchemaToResource (AssignSchemaToResourceRequest) returns (AssignSchemaToResourceResponse);
-    rpc GetSchemaForResource (GetSchemaForResourceRequest) returns (GetSchemaForResourceResponse);
-    rpc UseSchemaOnResource (UseSchemaOnResourceRequest) returns (UseSchemaOnResourceResponse);
+    rpc CreateResourceBinding (CreateResourceBindingRequest) returns (CreateResourceBindingResponse);
+    rpc UpdateResourceBinding (UpdateResourceBindingRequest) returns (UpdateResourceBindingResponse);
+    rpc DeleteResourceBinding (DeleteResourceBindingRequest) returns (DeleteResourceBindingResponse);
+    rpc GetResourceBinding (GetResourceBindingeRequest) returns (GetResourceBindingResponse);
+    rpc ListResourceBindings (ListResourceBindingsRequest) returns (ListResourceBindingsResponse);
+    rpc UseResource (UseResourceRequest) returns (UseResourceResponse);
 }
 
 message Scope {
@@ -68,24 +71,48 @@ message GetSchemaResponse {
     int32 error_code = 2;
 }
 
-message AssignSchemaToResourceRequest {
+message CreateResourceBindingRequest {
     string registry_name = 1;
-    string package_name = 2;
-    string message_name = 3;
     //
     // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
     // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    string linked_resource = 4;
+    string linked_resource = 2;
+    string message_name = 3;
 }
 
-message AssignSchemaToResourceResponse {
+message CreateResourceBindingResponse {
 }
 
-message GetSchemaForResourceRequest {
+message UpdateResourceBindingRequest {
+    string registry_name = 1;
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    string linked_resource = 2;
+    string message_name = 3;
+}
+
+message UpdateResourceBindingResponse {
+}
+
+message DeleteResourceBindingRequest {
+    string registry_name = 1;
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    string linked_resource = 2;
+}
+
+message DeleteResourceBindingResponse {
+}
+
+
+message GetResourceBindingeRequest {
     enum SchemaContext {
         SCHEMA_CONTEXT_FULL_DOMAIN = 0;
         SCHEMA_CONTEXT_NONE = 1;
         SCHEMA_CONTEXT_IN_SCOPE = 2;
+        SCHEMA_CONTEXT_IN_FILE = 3;
     }
 
     string registry_name = 1;
@@ -93,17 +120,42 @@ message GetSchemaForResourceRequest {
     SchemaContext schema_context = 3;
 }
 
-message GetSchemaForResourceResponse {
-    string package_name = 1;
-    string message_name = 2;
+message GetResourceBindingResponse {
+    string file_name = 1;
+    string package_name = 2;
+    string message_name = 3;
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
-    repeated bytes file_descriptor_proto = 3;
+    repeated bytes file_descriptor_proto = 4;
 }
 
-message UseSchemaOnResourceRequest {
+message ResourceBinding {
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    string linked_resource = 1;
+    string message_name = 2;
+}
+
+message ListResourceBindingsRequest {
+    string registry_name = 1;
+    // Maximum number of subscription names to return.
+    int32 page_size = 2;
+
+    // The value returned by the last `ListResourceBindingsRequest`; indicates
+    // that this is a continuation of a prior `ListResourceBindingsRequest` call, and
+    // that the system should return the next page of data.
+    string page_token = 3;
+}
+
+message ListResourceBindingsResponse {
+    repeated ResourceBinding bindings = 1;
+    string next_page_token = 2;
+}
+
+message UseResourceRequest {
     enum Purpose {
         PURPOSE_UNSET = 0;
         PURPOSE_PRODUCER = 1;
@@ -144,5 +196,5 @@ message UseSchemaOnResourceRequest {
     repeated Usage usage = 7;
 }
 
-message UseSchemaOnResourceResponse {
+message UseResourceResponse {
 }

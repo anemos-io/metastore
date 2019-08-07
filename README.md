@@ -80,6 +80,11 @@ ext {
 
     containerRepoBase = "eu.gcr.io/my-repo"
     containerRepoTarget = "eu.gcr.io/my-repo"
+
+    testGoogleCloud = true
+    testGoogleCloudProject = "my-project"
+    testGoogleCloudBucket = "my-bucket"
+    testGoogleCloudBucketPath = "metastore-test/"
 }
 ```
 

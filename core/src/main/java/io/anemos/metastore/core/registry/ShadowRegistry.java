@@ -2,11 +2,11 @@ package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.GitGlobalConfig;
+import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
-import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -19,12 +19,12 @@ class ShadowRegistry extends AbstractRegistry {
   private String shadowOf;
 
   public ShadowRegistry(
-      StorageProvider storageProvider,
       Registries registries,
-      RegistryConfig config,
+      MetaStoreConfig config,
+      RegistryConfig registryConfig,
       GitGlobalConfig global) {
-    super(storageProvider, registries, config, global);
-    this.shadowOf = config.shadowOf;
+    super(registries, config, registryConfig, global);
+    this.shadowOf = registryConfig.shadowOf;
   }
 
   @Override
@@ -59,16 +59,11 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public boolean isShadow() {
-    return true;
-  }
-
-  @Override
   public void update(PContainer ref, PContainer in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
-    if (config.scope != null) {
-      for (String packagePrefix : config.scope) {
+    if (registryConfig.scope != null) {
+      for (String packagePrefix : registryConfig.scope) {
         diff.diffOnPackagePrefix(packagePrefix);
       }
     } else {
@@ -86,12 +81,12 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   private void write() {
-    storageProvider.write(name + ".pb", raw());
+    storageProvider.write(raw());
   }
 
   private boolean read() {
     try {
-      ByteString buffer = storageProvider.read(name + ".pb");
+      ByteString buffer = storageProvider.read();
       if (buffer == null) {
         delta = Report.parseFrom(ByteString.EMPTY);
         return true;

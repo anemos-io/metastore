@@ -82,7 +82,8 @@ public class ShadowE2ETest {
         };
     config.registries =
         new RegistryConfig[] {
-          new RegistryConfig("default"), new RegistryConfig("shadow", "default")
+          new RegistryConfig("default"),
+          new RegistryConfig("shadow", "default", new String[] {"test"})
         };
     config.registries[1].git = new GitRegistryConfig(shadowrepoPath.toAbsolutePath().toString());
 

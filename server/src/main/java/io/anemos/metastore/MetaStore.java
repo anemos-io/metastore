@@ -2,23 +2,12 @@ package io.anemos.metastore;
 
 import io.anemos.metastore.config.ConfigLoader;
 import io.anemos.metastore.config.MetaStoreConfig;
-import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.config.StorageProviderConfig;
 import io.anemos.metastore.core.registry.Registries;
-import io.anemos.metastore.provider.StorageProvider;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
 
 public class MetaStore {
-  private static final Logger logger = Logger.getLogger(MetaStore.class.getName());
   Registries registries;
-  // public PContainer repo;
-  // public AbstractRegistry.ShadowRegistry shadowRegistry;
-  private StorageProvider provider;
 
-  public MetaStore(String configPath) throws IOException {
+  public MetaStore(String configPath) {
     MetaStoreConfig config;
     if (configPath == null) {
       System.out.println("Default config not set, running in demo mode");
@@ -26,50 +15,15 @@ public class MetaStore {
     } else {
       config = ConfigLoader.load(configPath);
     }
-    init(config);
+    init(config.resolve());
   }
 
-  public MetaStore(MetaStoreConfig config) throws IOException {
+  public MetaStore(MetaStoreConfig config) {
     init(config);
   }
 
   /** Create a RouteGuide server listening on {@code port} using {@code featureFile} database. */
-  public void init(MetaStoreConfig config) throws IOException {
-
-    if (config.storage == null) {
-      System.out.println("Storage Provider not configured, defaulting to in memory provider");
-      config.storage = new StorageProviderConfig();
-      config.storage.providerClass = "io.anemos.metastore.provider.InMemoryStorage";
-    }
-    if (config.storage.parameters == null) {
-      config.storage.parameters = new StorageProviderConfig.Parameters[] {};
-    }
-
-    try {
-      Map<String, String> parameters = new HashMap<>();
-      for (StorageProviderConfig.Parameters parameter : config.storage.parameters) {
-        parameters.put(parameter.name, parameter.value);
-      }
-
-      provider =
-          (StorageProvider)
-              Class.forName(config.storage.providerClass)
-                  .getConstructor(Map.class)
-                  .newInstance(parameters);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    if (config.registries == null) {
-      System.out.println("No repositories configured, creating default repo");
-      config.registries = new RegistryConfig[] {new RegistryConfig("default")};
-    }
-
-    registries = new Registries(config, provider);
-
-    // repo = new PContainer(provider.read("default.pb").toByteArray());
-    // Report shadowDelta = Report.parseFrom(provider.read("shadow.pb"));
-
-    // shadowRegistry = new ShadowRegistry(this, registries, con);
+  public void init(MetaStoreConfig config) {
+    registries = new Registries(config);
   }
 }

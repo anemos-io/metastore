@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class ProviderTest {
+public class StorageProviderTest {
 
   @Rule public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
@@ -27,13 +27,13 @@ public class ProviderTest {
 
   public static PContainer baseKnownOption() throws IOException {
     InputStream resourceAsStream =
-        ProviderTest.class.getResourceAsStream("../server/base_known_option.pb");
+        StorageProviderTest.class.getResourceAsStream("../server/base_known_option.pb");
     return new PContainer(resourceAsStream);
   }
 
   public static PContainer baseAddMessageOption() throws IOException {
     InputStream resourceAsStream =
-        ProviderTest.class.getResourceAsStream("../server/base_add_message_option.pb");
+        StorageProviderTest.class.getResourceAsStream("../server/base_add_message_option.pb");
     return new PContainer(resourceAsStream);
   }
 
@@ -46,7 +46,8 @@ public class ProviderTest {
   public void inMemoryProviderTest() throws Exception {
     Map<String, String> config = new HashMap<>();
 
-    StorageProvider provider = new InMemoryStorage(config);
+    StorageProvider provider = new InMemoryStorage();
+    provider.initForStorage(new DummyRegistryInfo(), config);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -57,7 +58,8 @@ public class ProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("path", tempFolder.getPath());
 
-    StorageProvider provider = new LocalFileStorage(config);
+    StorageProvider provider = new LocalFileStorage();
+    provider.initForStorage(new DummyRegistryInfo(), config);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -65,31 +67,32 @@ public class ProviderTest {
   @Test
   public void googleCloudStorageProviderTest() throws Exception {
     Map<String, String> config = new HashMap<>();
-    config.put("path", "metastore-test/");
-    config.put("bucket", "vptech-data-core-test");
-    config.put("project", "vptech-data-core-test");
+    config.put("path", System.getenv("TEST_GOOGLE_CLOUD_BUCKET_PATH"));
+    config.put("bucket", System.getenv("TEST_GOOGLE_CLOUD_BUCKET"));
+    config.put("project", System.getenv("TEST_GOOGLE_CLOUD_PROJECT"));
 
     clearGcs(config.get("bucket"), config.get("path"));
 
-    StorageProvider provider = new GoogleCloudStorage(config);
+    StorageProvider provider = new GoogleCloudStorage();
+    provider.initForStorage(new DummyRegistryInfo(), config);
     readNewTest(provider);
     writeReadTest(provider);
   }
 
   private void readNewTest(StorageProvider provider) throws Exception {
-    Assert.assertNull(provider.read("default.pb"));
+    Assert.assertNull(provider.read());
   }
 
   private void writeReadTest(StorageProvider provider) throws Exception {
-    provider.write("default.pb", baseKnownOption().toByteString());
-    PContainer PContainer = new PContainer(provider.read("default.pb"));
+    provider.write(baseKnownOption().toByteString());
+    PContainer PContainer = new PContainer(provider.read());
     Assert.assertEquals(baseKnownOption().toFileDescriptorSet(), PContainer.toFileDescriptorSet());
   }
 
   private void clearGcs(String bucket, String path) {
     Storage storage = StorageOptions.getDefaultInstance().getService();
     try {
-      storage.delete(BlobInfo.newBuilder(bucket, path + "default.pb").build().getBlobId());
+      storage.delete(BlobInfo.newBuilder(bucket, path + "test.pb").build().getBlobId());
     } catch (Exception e) {
       //
     }
