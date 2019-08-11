@@ -7,7 +7,7 @@ import java.util.Map;
  * A ChangeEventProvider needs to implement this interface, it enables metastore to send
  * notifications about changes in contracts.
  */
-public interface ChangeEventProvider {
+public interface EventingProvider {
 
   void initForChangeEvent(RegistryInfo registryInfo, Map<String, String> config);
 

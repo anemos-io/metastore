@@ -1,5 +1,6 @@
 package io.anemos.metastore.provider;
 
+import com.google.cloud.ServiceOptions;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -21,19 +22,22 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
   public void init(RegistryInfo registryInfo, Map<String, String> config, String extension) {
     this.storage = StorageOptions.getDefaultInstance().getService();
+    String project = ServiceOptions.getDefaultProjectId();
 
+    if (config.get("project") == null && project == null) {
+      throw new RuntimeException("project variable not set");
+    }
     if (config.get("bucket") == null) {
       throw new RuntimeException("bucket variable not set");
     }
     if (config.get("path") == null) {
       throw new RuntimeException("path variable not set");
     }
-    if (config.get("project") == null) {
-      throw new RuntimeException("project variable not set");
-    }
 
+    if (config.get("project") != null) {
+      this.project = config.get("project");
+    }
     this.bucket = config.get("bucket");
-    this.project = config.get("project");
     if (config.get("path").endsWith("/")) {
       this.fileName = config.get("path") + registryInfo.getName() + "." + extension;
     } else {
@@ -49,6 +53,7 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
   @Override
   public void initForBind(
       RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly) {
+    bindDatabase = new BindDatabase();
     init(registryInfo, config, "bind");
   }
 

@@ -5,6 +5,7 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
 class SchemaRegistry extends AbstractRegistry {
@@ -44,10 +45,11 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(PContainer ref, PContainer in) {
+  public void update(PContainer ref, PContainer in, Report report) {
     protoContainer = in;
     update();
     syncGitRepo("Change detected");
+    notifyEventListeners(report);
   }
 
   @Override

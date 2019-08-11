@@ -6,8 +6,9 @@ public class RegistryConfig {
   public String shadowOf;
   public GitRegistryConfig git;
 
-  public StorageProviderConfig storage;
-  public BindConfig bind;
+  public ProviderConfig storage;
+  public ProviderConfig[] bind;
+  public ProviderConfig[] eventing;
 
   public String[] scope;
 

@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 
 public class MetaStoreConfig {
 
-  public StorageProviderConfig storage;
+  public ProviderConfig storage;
 
   public RegistryConfig registries[];
 
@@ -17,9 +17,9 @@ public class MetaStoreConfig {
       registries = new RegistryConfig[] {new RegistryConfig("default")};
     }
     for (RegistryConfig registry : registries) {
-      if (registry.bind == null) {
-        registry.bind = new BindConfig();
-      }
+      //      if (registry.bind == null) {
+      //        registry.bind = new ProvidersConfig();
+      //      }
 
       if (storage != null) {
         if (registry.storage != null) {

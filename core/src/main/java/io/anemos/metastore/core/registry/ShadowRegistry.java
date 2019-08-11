@@ -59,7 +59,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(PContainer ref, PContainer in) {
+  public void update(PContainer ref, PContainer in, Report report) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.scope != null) {
@@ -71,6 +71,7 @@ class ShadowRegistry extends AbstractRegistry {
     }
     delta = results.getReport();
     update();
+    notifyEventListeners(report);
   }
 
   @Override

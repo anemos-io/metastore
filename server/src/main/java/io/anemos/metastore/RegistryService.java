@@ -64,7 +64,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
                 .asRuntimeException());
         return;
       }
-      registry.update(registry.ref(), in);
+      registry.update(registry.ref(), in, report);
     }
 
     responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());

@@ -28,7 +28,6 @@ class BindDatabase {
     String line;
     while ((line = lineReader.readLine()) != null) {
       JsonLine jsonLine = om.readValue(line, JsonLine.class);
-      System.out.println(jsonLine);
       data.put(jsonLine.linkedResource, jsonLine.messageName);
     }
   }

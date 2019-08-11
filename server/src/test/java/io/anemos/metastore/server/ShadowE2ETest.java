@@ -4,8 +4,8 @@ import io.anemos.metastore.MetaStore;
 import io.anemos.metastore.RegistryService;
 import io.anemos.metastore.config.GitRegistryConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
+import io.anemos.metastore.config.ProviderConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.config.StorageProviderConfig;
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtocUtil;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -74,11 +74,11 @@ public class ShadowE2ETest {
     Path shadowrepoPath = Files.createTempDirectory("shadowrepo");
 
     MetaStoreConfig config = new MetaStoreConfig();
-    config.storage = new StorageProviderConfig();
+    config.storage = new ProviderConfig();
     config.storage.providerClass = "io.anemos.metastore.provider.LocalFileStorage";
     config.storage.parameters =
-        new StorageProviderConfig.Parameters[] {
-          new StorageProviderConfig.Parameters("path", metastorePath.toAbsolutePath().toString())
+        new ProviderConfig.Parameters[] {
+          new ProviderConfig.Parameters("path", metastorePath.toAbsolutePath().toString())
         };
     config.registries =
         new RegistryConfig[] {
