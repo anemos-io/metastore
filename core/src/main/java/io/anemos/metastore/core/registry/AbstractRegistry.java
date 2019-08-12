@@ -14,6 +14,9 @@ import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.v1alpha1.Registry;
 import io.anemos.metastore.v1alpha1.Report;
+import io.grpc.Status;
+import io.grpc.StatusException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -96,41 +99,47 @@ public abstract class AbstractRegistry implements RegistryInfo {
     metaGit.init();
   }
 
-  public void createResourceBinding(Registry.ResourceBinding resourceBinding) {
-    if (resourceBinding.getTypeCase().getNumber()
-        == Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
-      Descriptors.Descriptor descriptor =
-          protoContainer.getDescriptorByName(resourceBinding.getMessageName());
-      this.bindProviders.forEach(
-          provider ->
-              provider.createResourceBinding(resourceBinding.getLinkedResource(), descriptor));
-    } else if (resourceBinding.getServiceName() != null) {
-      Descriptors.ServiceDescriptor descriptor =
-          protoContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
-      this.bindProviders.forEach(
-          provider ->
-              provider.createServiceBinding(resourceBinding.getLinkedResource(), descriptor));
-    } else {
-      // TODO
-    }
-  }
+  public void updateResourceBinding(Registry.ResourceBinding resourceBinding, boolean create)
+      throws StatusException {
+    String linkedResource = validateLinkedResource(resourceBinding.getLinkedResource());
 
-  public void updateResourceBinding(Registry.ResourceBinding resourceBinding) {
     if (resourceBinding.getTypeCase().getNumber()
         == Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
       Descriptors.Descriptor descriptor =
           protoContainer.getDescriptorByName(resourceBinding.getMessageName());
+      if (descriptor == null) {
+        throw Status.NOT_FOUND
+                .withDescription("The descriptor with message_name is not found in the registry.")
+                .asException();
+      }
       this.bindProviders.forEach(
-          provider ->
-              provider.updateResourceBinding(resourceBinding.getLinkedResource(), descriptor));
+          provider -> {
+            if (create) {
+              provider.createResourceBinding(linkedResource, descriptor);
+            } else {
+              provider.updateResourceBinding(linkedResource, descriptor);
+            }
+          });
     } else if (resourceBinding.getServiceName() != null) {
       Descriptors.ServiceDescriptor descriptor =
           protoContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
+      if (descriptor == null) {
+        throw Status.NOT_FOUND
+                .withDescription("The descriptor with service_name is not found in the registry.")
+                .asException();
+      }
       this.bindProviders.forEach(
-          provider ->
-              provider.updateServiceBinding(resourceBinding.getLinkedResource(), descriptor));
+          provider -> {
+            if (create) {
+              provider.createServiceBinding(linkedResource, descriptor);
+            } else {
+              provider.updateServiceBinding(linkedResource, descriptor);
+            }
+          });
     } else {
-      // TODO
+      throw Status.INVALID_ARGUMENT
+          .withDescription("Either message_name or service_name should be specified.")
+          .asException();
     }
   }
 
@@ -138,8 +147,13 @@ public abstract class AbstractRegistry implements RegistryInfo {
     this.bindProviders.forEach(provider -> provider.deleteResourceBinding(linkedResource));
   }
 
-  public Registry.ResourceBinding getResourceBinding(String linkedResource) {
+  public Registry.ResourceBinding getResourceBinding(String linkedResource) throws StatusException {
     BindResult bindResult = this.bindProviders.get(0).getResourceBinding(linkedResource);
+    if(bindResult == null) {
+      throw Status.NOT_FOUND
+              .withDescription("No binding for the linked_resource is found.")
+              .asException();
+    }
     return toResourceBinding(bindResult);
   }
 
@@ -190,5 +204,23 @@ public abstract class AbstractRegistry implements RegistryInfo {
         provider -> {
           provider.descriptorsChanged(report);
         });
+  }
+
+  String validateLinkedResource(String linkedResource) throws StatusException {
+    if (linkedResource == null) {
+      throw Status.INVALID_ARGUMENT.asException();
+    }
+    URI uri = URI.create(linkedResource);
+    switch (uri.getScheme()) {
+      case "http":
+      case "https":
+      case "googlecloud":
+        return linkedResource;
+      default:
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                "Invalid linked_resource uri scheme. Only http, https and googlecloud is supported.")
+            .asException();
+    }
   }
 }

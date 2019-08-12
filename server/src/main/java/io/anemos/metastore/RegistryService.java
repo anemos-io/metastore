@@ -152,7 +152,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       Registry.ResourceBinding resourceBinding = request.getBinding();
-      registry.createResourceBinding(resourceBinding);
+      registry.updateResourceBinding(resourceBinding, true);
       responseObserver.onNext(Registry.CreateResourceBindingResponse.newBuilder().build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
@@ -167,7 +167,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       Registry.ResourceBinding resourceBinding = request.getBinding();
-      registry.updateResourceBinding(resourceBinding);
+      registry.updateResourceBinding(resourceBinding, false);
       responseObserver.onNext(Registry.UpdateResourceBindingResponse.newBuilder().build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
