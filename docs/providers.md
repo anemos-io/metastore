@@ -49,6 +49,9 @@ Implements the following classes:
 * Storage
 * Bind
 
+This provider stores all the descriptors and bindings on the local file system. This
+works, but is not recommended for production environments.
+
 Provider Class: `io.anemos.metastore.provider.LocalFileStorage`
 
 | key | description | example |
@@ -60,6 +63,8 @@ Provider Class: `io.anemos.metastore.provider.LocalFileStorage`
 Implements the following classes:
 * Storage
 * Bind
+
+This provider stores all the descriptors and bindings on a Google Cloud Storage bucket.
 
 Provider Class: `io.anemos.metastore.provider.GoogleCloudStorage`
 
@@ -74,25 +79,23 @@ Provider Class: `io.anemos.metastore.provider.GoogleCloudStorage`
 Implements the following classes:
 * Eventing
 
+Provider Class: `io.anemos.metastore.provider.GooglePubsub`
+
 | key | description | example |
 | --- |-------------| --------|
 | project | Google where the pubsub topics live | my-cloud-project |
 | topic_descriptor_change  | Pubsub topic that will publish the descriptor changes | metastore-descriptor-change |
 | topic_binding_change | Pubsub topic that will publish the binding changes | metastore-binding-change |
 
-Provider Class: `io.anemos.metastore.provider.GooglePubsub`
-
-| key | description | example |
-| --- |-------------| --------|
-| project | Google cloud project where the storage bucket lives | my-cloud-project |
-| bucket  | Name of the bucket | my-bucket |
-| path    | Path within the bucket | path/in/bucket |
-
 #### In Memory
 
 Implements the following classes:
 * Storage
 * Bind
+
+The in memory storage provider is only useful for testing and demo purposes. This
+provider stores all the descriptors and bindings in memory. This means that as
+soon as the server restarts all data is gone.
 
 Provider Class: `io.anemos.metastore.provider.InMemoryStorage`
 
