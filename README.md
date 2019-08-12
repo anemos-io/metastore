@@ -1,4 +1,4 @@
-# Protobuf MetaStore
+# Protobuf/gRPC MetaStore
 
 ## Description
 
@@ -47,6 +47,7 @@ package name, file name, ...)
 - [Shadow registry](docs/shadow.md)
 - [Architecture](docs/architecture.md)
 - [Configuration](docs/config.md)
+- [Providers](docs/providers.md)
 - [SSH](docs/ssh.md)
 
 #### References

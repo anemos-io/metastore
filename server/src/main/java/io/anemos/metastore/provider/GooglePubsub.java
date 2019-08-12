@@ -10,7 +10,8 @@ import java.util.Map;
 
 public class GooglePubsub implements EventingProvider {
 
-  Publisher publisher;
+  Publisher publisherDescriptorChange;
+  Publisher publisherBindingChange;
 
   @Override
   public void initForChangeEvent(RegistryInfo registryInfo, Map<String, String> config) {
@@ -19,18 +20,28 @@ public class GooglePubsub implements EventingProvider {
     if (config.get("project") == null && project == null) {
       throw new RuntimeException("project variable not set");
     }
-    if (config.get("topic") == null) {
+    if (config.get("topic_descriptor_change") == null) {
+      throw new RuntimeException("topic_descriptor_change variable not set");
+    }
+    if (config.get("topic_binding_change") == null) {
       throw new RuntimeException("topic variable not set");
     }
 
     if (config.get("project") != null) {
       project = config.get("project");
     }
-    String topicName = config.get("topic");
-
-    ProjectTopicName projectTopicName = ProjectTopicName.of(project, topicName);
+    String topicDescriptorChange = config.get("topic_descriptor_change");
+    ProjectTopicName projectTopicDescriptorChange = ProjectTopicName.of(project, topicDescriptorChange);
     try {
-      publisher = Publisher.newBuilder(projectTopicName).build();
+      publisherDescriptorChange = Publisher.newBuilder(projectTopicDescriptorChange).build();
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to initialize Pubsub Publisher", e);
+    }
+
+    String topicBindingChange = config.get("topic_binding_change");
+    ProjectTopicName projectTopicBindingChange = ProjectTopicName.of(project, topicBindingChange);
+    try {
+      publisherBindingChange = Publisher.newBuilder(projectTopicBindingChange).build();
     } catch (IOException e) {
       throw new RuntimeException("Unable to initialize Pubsub Publisher", e);
     }
@@ -39,6 +50,6 @@ public class GooglePubsub implements EventingProvider {
   @Override
   public void descriptorsChanged(Report report) {
     PubsubMessage message = PubsubMessage.newBuilder().setData(report.toByteString()).build();
-    publisher.publish(message);
+    publisherDescriptorChange.publish(message);
   }
 }

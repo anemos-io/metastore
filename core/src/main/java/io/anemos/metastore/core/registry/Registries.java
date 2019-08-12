@@ -47,7 +47,10 @@ public class Registries {
   }
 
   void notifyShadows(String name) {
-    shadowSubscribers.get(name).forEach(registry -> registry.update());
+    List<AbstractRegistry> registries = shadowSubscribers.get(name);
+    if(registries != null) {
+      registries.forEach(registry -> registry.update());
+    }
   }
 
   public AbstractRegistry get(String name) {
