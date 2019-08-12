@@ -1,6 +1,28 @@
 ## Configuration
 
+Metastore server startup class is: `io.anemos.metastore.MetaStoreServer` and provides
+one program argument `--config`. This provides the path to the configuration file that is explained in this doc.
+
+If no config parameter is given, the server will look for the `METASTORE_CONFIG_PATH`
+environment variable, this can be used in a dockerized version of the metastore.
+
+Example usage:
+
+```
+--config=/workspace/config.yaml
+```
+
+The configuation file has the following top-level configuration:
+
 ### Top level
+
+- storage: global storage provider, if specified you don't need to specify a 
+provider per registry
+- registries: list of registries
+- git: global git settings, if specified you don't need to repeat this for the
+registries
+
+Example:
 
 ```yaml
 storage:
@@ -22,12 +44,6 @@ git:
       key: AGvEpqYNMqs...ZsBn434
       type: SHA256
 ```
-
-- storage: global storage provider, if specified you don't need to specify a 
-provider per registry
-- registries: list of registries
-- git: global git settings, if specified you don't need to repeat this for the
-registries
 
 ### storage 
 
