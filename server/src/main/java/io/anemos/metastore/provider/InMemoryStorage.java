@@ -32,12 +32,22 @@ public class InMemoryStorage implements StorageProvider, BindProvider {
 
   @Override
   public void createResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
   }
 
   @Override
   public void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
+  }
+
+  @Override
+  public void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
+  }
+
+  @Override
+  public void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
   }
 
   @Override

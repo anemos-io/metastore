@@ -71,13 +71,20 @@ message GetSchemaResponse {
     int32 error_code = 2;
 }
 
-message CreateResourceBindingRequest {
-    string registry_name = 1;
+message ResourceBinding {
     //
     // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
     // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    string linked_resource = 2;
-    string message_name = 3;
+    // * (http/https)://hostname/<service_name>/
+    string linked_resource = 1;
+    oneof type {
+        string message_name = 2;
+        string service_name = 3;
+    }
+}
+message CreateResourceBindingRequest {
+    string registry_name = 1;
+    ResourceBinding binding = 2;
 }
 
 message CreateResourceBindingResponse {
@@ -85,11 +92,7 @@ message CreateResourceBindingResponse {
 
 message UpdateResourceBindingRequest {
     string registry_name = 1;
-    //
-    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    string linked_resource = 2;
-    string message_name = 3;
+    ResourceBinding binding = 2;
 }
 
 message UpdateResourceBindingResponse {
@@ -100,6 +103,7 @@ message DeleteResourceBindingRequest {
     //
     // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
     // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * (http/https)://hostname/<service_name>/
     string linked_resource = 2;
 }
 
@@ -123,20 +127,12 @@ message GetResourceBindingeRequest {
 message GetResourceBindingResponse {
     string file_name = 1;
     string package_name = 2;
-    string message_name = 3;
+    ResourceBinding binding = 3;
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses
     // proto2 only features, by making them opaque
     // bytes instead
     repeated bytes file_descriptor_proto = 4;
-}
-
-message ResourceBinding {
-    //
-    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    string linked_resource = 1;
-    string message_name = 2;
 }
 
 message ListResourceBindingsRequest {

@@ -12,6 +12,10 @@ public interface BindProvider {
 
   void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor);
 
+  void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor);
+
+  void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor);
+
   void deleteResourceBinding(String resourceUrn);
 
   List<BindResult> listResourceBindings(String next_page_token);

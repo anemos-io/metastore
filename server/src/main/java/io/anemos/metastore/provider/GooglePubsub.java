@@ -31,11 +31,13 @@ public class GooglePubsub implements EventingProvider {
       project = config.get("project");
     }
     String topicDescriptorChange = config.get("topic_descriptor_change");
-    ProjectTopicName projectTopicDescriptorChange = ProjectTopicName.of(project, topicDescriptorChange);
+    ProjectTopicName projectTopicDescriptorChange =
+        ProjectTopicName.of(project, topicDescriptorChange);
     try {
       publisherDescriptorChange = Publisher.newBuilder(projectTopicDescriptorChange).build();
     } catch (IOException e) {
-      throw new RuntimeException("Unable to initialize Pubsub Publisher", e);
+      throw new RuntimeException(
+          "Unable to initialize topic_descriptor_change Pubsub Publisher", e);
     }
 
     String topicBindingChange = config.get("topic_binding_change");
@@ -43,7 +45,7 @@ public class GooglePubsub implements EventingProvider {
     try {
       publisherBindingChange = Publisher.newBuilder(projectTopicBindingChange).build();
     } catch (IOException e) {
-      throw new RuntimeException("Unable to initialize Pubsub Publisher", e);
+      throw new RuntimeException("Unable to initialize topic_binding_change Pubsub Publisher", e);
     }
   }
 

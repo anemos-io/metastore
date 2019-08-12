@@ -12,6 +12,7 @@ import io.anemos.metastore.v1alpha1.RegistyGrpc;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
 import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 
@@ -53,22 +54,26 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
       return;
     }
 
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    Report report = validate(request, registry.get(), in);
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      Report report = validate(request, registry.get(), in);
 
-    if (submit) {
-      if (hasErrors(report)) {
-        responseObserver.onError(
-            Status.fromCode(Status.Code.FAILED_PRECONDITION)
-                .withDescription("Incompatible schema, us verify to get errors.")
-                .asRuntimeException());
-        return;
+      if (submit) {
+        if (hasErrors(report)) {
+          responseObserver.onError(
+              Status.fromCode(Status.Code.FAILED_PRECONDITION)
+                  .withDescription("Incompatible schema, us verify to get errors.")
+                  .asRuntimeException());
+          return;
+        }
+        registry.update(registry.ref(), in, report);
       }
-      registry.update(registry.ref(), in, report);
-    }
 
-    responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());
-    responseObserver.onCompleted();
+      responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   private boolean hasErrors(Report report) {
@@ -121,80 +126,108 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
   public void getSchema(
       Registry.GetSchemaRequest request,
       StreamObserver<Registry.GetSchemaResponse> responseObserver) {
+    try {
+      Registry.GetSchemaResponse.Builder schemaResponseBuilder =
+          Registry.GetSchemaResponse.newBuilder();
+      metaStore
+          .registries
+          .get(request.getRegistryName())
+          .get()
+          .iterator()
+          .forEach(fd -> schemaResponseBuilder.addFileDescriptorProto(fd.toProto().toByteString()));
 
-    Registry.GetSchemaResponse.Builder schemaResponseBuilder =
-        Registry.GetSchemaResponse.newBuilder();
-    metaStore
-        .registries
-        .get(request.getRegistryName())
-        .get()
-        .iterator()
-        .forEach(fd -> schemaResponseBuilder.addFileDescriptorProto(fd.toProto().toByteString()));
+      // .setFdProtoSet(metaStore.registries.get(request.getRegistryName()).raw())
 
-    // .setFdProtoSet(metaStore.registries.get(request.getRegistryName()).raw())
-
-    responseObserver.onNext(schemaResponseBuilder.build());
-    responseObserver.onCompleted();
+      responseObserver.onNext(schemaResponseBuilder.build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   @Override
   public void createResourceBinding(
       Registry.CreateResourceBindingRequest request,
       StreamObserver<Registry.CreateResourceBindingResponse> responseObserver) {
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    registry.createResourceBinding(request.getLinkedResource(), request.getMessageName());
-    responseObserver.onNext(Registry.CreateResourceBindingResponse.newBuilder().build());
-    responseObserver.onCompleted();
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      Registry.ResourceBinding resourceBinding = request.getBinding();
+      registry.createResourceBinding(resourceBinding);
+      responseObserver.onNext(Registry.CreateResourceBindingResponse.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   @Override
   public void updateResourceBinding(
       Registry.UpdateResourceBindingRequest request,
       StreamObserver<Registry.UpdateResourceBindingResponse> responseObserver) {
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    registry.updateResourceBinding(request.getLinkedResource(), request.getMessageName());
-    responseObserver.onNext(Registry.UpdateResourceBindingResponse.newBuilder().build());
-    responseObserver.onCompleted();
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      Registry.ResourceBinding resourceBinding = request.getBinding();
+      registry.updateResourceBinding(resourceBinding);
+      responseObserver.onNext(Registry.UpdateResourceBindingResponse.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   @Override
   public void getResourceBinding(
       Registry.GetResourceBindingeRequest request,
       StreamObserver<Registry.GetResourceBindingResponse> responseObserver) {
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    Registry.ResourceBinding resourceBinding =
-        registry.getResourceBinding(request.getLinkedResource());
-    responseObserver.onNext(
-        Registry.GetResourceBindingResponse.newBuilder()
-            .setMessageName(resourceBinding.getMessageName())
-            .build());
-    responseObserver.onCompleted();
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      Registry.ResourceBinding resourceBinding =
+          registry.getResourceBinding(request.getLinkedResource());
+      responseObserver.onNext(
+          Registry.GetResourceBindingResponse.newBuilder()
+              .setBinding(
+                  Registry.ResourceBinding.newBuilder()
+                      .setMessageName(resourceBinding.getMessageName())
+                      .build())
+              .build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   @Override
   public void deleteResourceBinding(
       Registry.DeleteResourceBindingRequest request,
       StreamObserver<Registry.DeleteResourceBindingResponse> responseObserver) {
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    registry.deleteResourceBinding(request.getLinkedResource());
-    responseObserver.onNext(Registry.DeleteResourceBindingResponse.newBuilder().build());
-    responseObserver.onCompleted();
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      registry.deleteResourceBinding(request.getLinkedResource());
+      responseObserver.onNext(Registry.DeleteResourceBindingResponse.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 
   @Override
   public void listResourceBindings(
       Registry.ListResourceBindingsRequest request,
       StreamObserver<Registry.ListResourceBindingsResponse> responseObserver) {
-    AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-    Registry.ListResourceBindingsResponse.Builder builder =
-        Registry.ListResourceBindingsResponse.newBuilder();
-    registry
-        .listResourceBindings(request.getPageToken())
-        .forEach(
-            binding -> {
-              builder.addBindings(binding);
-            });
-    responseObserver.onNext(builder.build());
-    responseObserver.onCompleted();
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      Registry.ListResourceBindingsResponse.Builder builder =
+          Registry.ListResourceBindingsResponse.newBuilder();
+      registry
+          .listResourceBindings(request.getPageToken())
+          .forEach(
+              binding -> {
+                builder.addBindings(binding);
+              });
+      responseObserver.onNext(builder.build());
+      responseObserver.onCompleted();
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+    }
   }
 }

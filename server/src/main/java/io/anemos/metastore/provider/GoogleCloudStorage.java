@@ -55,6 +55,11 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
       RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly) {
     bindDatabase = new BindDatabase();
     init(registryInfo, config, "bind");
+    try {
+      loadBind();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -75,13 +80,25 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
   @Override
   public void createResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
     saveBind();
   }
 
   @Override
   public void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
+    saveBind();
+  }
+
+  @Override
+  public void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
+    saveBind();
+  }
+
+  @Override
+  public void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
     saveBind();
   }
 
@@ -103,11 +120,6 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
   @Override
   public BindResult getResourceBinding(String resourceUrn) {
-    try {
-      loadBind();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     return bindDatabase.get(resourceUrn);
   }
 

@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
 public class LocalFileStorage implements StorageProvider, BindProvider {
 
   private String path;
-  private BindDatabase bindFileIO;
+  private BindDatabase bindDatabase;
   private String registyName;
 
   private void init(RegistryInfo registryInfo, Map<String, String> config) {
@@ -73,25 +73,37 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
 
   @Override
   public void createResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindFileIO.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
     saveBind();
   }
 
   @Override
   public void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindFileIO.bind(resourceUrn, descriptor.getFullName());
+    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
+    saveBind();
+  }
+
+  @Override
+  public void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
+    saveBind();
+  }
+
+  @Override
+  public void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
+    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
     saveBind();
   }
 
   @Override
   public void deleteResourceBinding(String resourceUrn) {
-    bindFileIO.remove(resourceUrn);
+    bindDatabase.remove(resourceUrn);
     saveBind();
   }
 
   @Override
   public List<BindResult> listResourceBindings(String next_page_token) {
-    return bindFileIO.list(next_page_token);
+    return bindDatabase.list(next_page_token);
   }
 
   @Override
@@ -101,13 +113,13 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
 
   @Override
   public BindResult getResourceBinding(String resourceUrn) {
-    return bindFileIO.get(resourceUrn);
+    return bindDatabase.get(resourceUrn);
   }
 
   private void saveBind() {
     String filePath = path + "/" + registyName + ".bind";
     try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filePath))) {
-      bindFileIO.write(writer);
+      bindDatabase.write(writer);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -118,10 +130,10 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
   private void loadBind() {
     String filePath = path + "/" + registyName + ".bind";
     File file = new File(filePath);
-    bindFileIO = new BindDatabase();
+    bindDatabase = new BindDatabase();
     if (file.exists()) {
       try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file))) {
-        bindFileIO.read(reader);
+        bindDatabase.read(reader);
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       } catch (IOException e) {

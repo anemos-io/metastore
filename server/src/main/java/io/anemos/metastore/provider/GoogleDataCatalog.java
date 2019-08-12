@@ -34,6 +34,12 @@ public class GoogleDataCatalog implements BindProvider {
   public void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {}
 
   @Override
+  public void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {}
+
+  @Override
+  public void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {}
+
+  @Override
   public void deleteResourceBinding(String resourceUrn) {}
 
   @Override

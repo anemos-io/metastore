@@ -16,10 +16,14 @@ import org.apache.commons.io.input.CharSequenceReader;
 
 class BindDatabase {
 
-  private Map<String, String> data = new HashMap<>();
+  private Map<String, BindResult> data = new HashMap<>();
 
-  public void bind(String resourceUrn, String messageName) {
-    data.put(resourceUrn, messageName);
+  public void bindMessage(String resourceUrn, String messageName) {
+    data.put(resourceUrn, new BindResult(resourceUrn, messageName, null));
+  }
+
+  public void bindService(String resourceUrn, String serviceName) {
+    data.put(resourceUrn, new BindResult(resourceUrn, null, serviceName));
   }
 
   public void read(Reader reader) throws IOException {
@@ -28,7 +32,9 @@ class BindDatabase {
     String line;
     while ((line = lineReader.readLine()) != null) {
       JsonLine jsonLine = om.readValue(line, JsonLine.class);
-      data.put(jsonLine.linkedResource, jsonLine.messageName);
+      data.put(
+          jsonLine.linkedResource,
+          new BindResult(jsonLine.linkedResource, jsonLine.messageName, jsonLine.serviceName));
     }
   }
 
@@ -38,7 +44,8 @@ class BindDatabase {
         (key, value) -> {
           JsonLine jl = new JsonLine();
           jl.linkedResource = key;
-          jl.messageName = value;
+          jl.messageName = value.getMessageName();
+          jl.serviceName = value.getServiceName();
           try {
             fileWriter.write(writer.writeValueAsString(jl));
             fileWriter.write('\n');
@@ -50,20 +57,19 @@ class BindDatabase {
   }
 
   BindResult get(String resourceUrn) {
-    String messageName = data.get(resourceUrn);
-    return new BindResult(resourceUrn, messageName);
+    return data.get(resourceUrn);
   }
 
   List<BindResult> list(String nextPageToken) {
     List<BindResult> results = new ArrayList<>();
     data.forEach(
         (k, v) -> {
-          results.add(new BindResult(k, v));
+          results.add(v);
         });
     return results;
   }
 
-  String remove(String resourceUrn) {
+  BindResult remove(String resourceUrn) {
     return data.remove(resourceUrn);
   }
 
@@ -84,5 +90,6 @@ class BindDatabase {
   private static class JsonLine {
     public String linkedResource;
     public String messageName;
+    public String serviceName;
   }
 }

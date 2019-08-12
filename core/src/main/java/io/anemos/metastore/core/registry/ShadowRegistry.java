@@ -8,6 +8,7 @@ import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.Report;
+import io.grpc.StatusException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -38,7 +39,12 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   private void updateShadowCache() {
-    PContainer original = registries.get(shadowOf).get();
+    PContainer original = null;
+    try {
+      original = registries.get(shadowOf).get();
+    } catch (StatusException e) {
+      throw new RuntimeException("Unable to find registry with name " + shadowOf);
+    }
     protoContainer = new ShadowApply().applyDelta(original, this.delta);
     protoContainer.registerOptions();
   }
@@ -55,7 +61,11 @@ class ShadowRegistry extends AbstractRegistry {
 
   @Override
   public PContainer ref() {
-    return registries.get(shadowOf).get();
+    try {
+      return registries.get(shadowOf).get();
+    } catch (StatusException e) {
+      throw new RuntimeException("Unable to find registry with name " + shadowOf);
+    }
   }
 
   @Override

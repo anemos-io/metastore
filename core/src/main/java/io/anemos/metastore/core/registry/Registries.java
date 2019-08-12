@@ -2,6 +2,8 @@ package io.anemos.metastore.core.registry;
 
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,15 +50,21 @@ public class Registries {
 
   void notifyShadows(String name) {
     List<AbstractRegistry> registries = shadowSubscribers.get(name);
-    if(registries != null) {
+    if (registries != null) {
       registries.forEach(registry -> registry.update());
     }
   }
 
-  public AbstractRegistry get(String name) {
+  public AbstractRegistry get(String name) throws StatusException {
     if (name.equals("")) {
       name = "default";
     }
-    return registries.get(name);
+    AbstractRegistry registry = registries.get(name);
+    if (registry == null) {
+      throw Status.NOT_FOUND
+          .withDescription(String.format("Registry with name '%s' was not found."))
+          .asException();
+    }
+    return registry;
   }
 }

@@ -96,18 +96,42 @@ public abstract class AbstractRegistry implements RegistryInfo {
     metaGit.init();
   }
 
-  public void createResourceBinding(String linkedResource, String messageName) {
-    Descriptors.Descriptor descriptor = protoContainer.getDescriptorByName(messageName);
-    Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
-    this.bindProviders.forEach(
-        provider -> provider.createResourceBinding(linkedResource, descriptor));
+  public void createResourceBinding(Registry.ResourceBinding resourceBinding) {
+    if (resourceBinding.getTypeCase().getNumber()
+        == Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
+      Descriptors.Descriptor descriptor =
+          protoContainer.getDescriptorByName(resourceBinding.getMessageName());
+      this.bindProviders.forEach(
+          provider ->
+              provider.createResourceBinding(resourceBinding.getLinkedResource(), descriptor));
+    } else if (resourceBinding.getServiceName() != null) {
+      Descriptors.ServiceDescriptor descriptor =
+          protoContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
+      this.bindProviders.forEach(
+          provider ->
+              provider.createServiceBinding(resourceBinding.getLinkedResource(), descriptor));
+    } else {
+      // TODO
+    }
   }
 
-  public void updateResourceBinding(String linkedResource, String messageName) {
-    Descriptors.Descriptor descriptor = protoContainer.getDescriptorByName(messageName);
-    Descriptors.FileDescriptor fileDescriptor = descriptor.getFile();
-    this.bindProviders.forEach(
-        provider -> provider.updateResourceBinding(linkedResource, descriptor));
+  public void updateResourceBinding(Registry.ResourceBinding resourceBinding) {
+    if (resourceBinding.getTypeCase().getNumber()
+        == Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
+      Descriptors.Descriptor descriptor =
+          protoContainer.getDescriptorByName(resourceBinding.getMessageName());
+      this.bindProviders.forEach(
+          provider ->
+              provider.updateResourceBinding(resourceBinding.getLinkedResource(), descriptor));
+    } else if (resourceBinding.getServiceName() != null) {
+      Descriptors.ServiceDescriptor descriptor =
+          protoContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
+      this.bindProviders.forEach(
+          provider ->
+              provider.updateServiceBinding(resourceBinding.getLinkedResource(), descriptor));
+    } else {
+      // TODO
+    }
   }
 
   public void deleteResourceBinding(String linkedResource) {
@@ -116,10 +140,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public Registry.ResourceBinding getResourceBinding(String linkedResource) {
     BindResult bindResult = this.bindProviders.get(0).getResourceBinding(linkedResource);
-    return Registry.ResourceBinding.newBuilder()
-        .setMessageName(bindResult.getMessageName())
-        .setLinkedResource(bindResult.getLinkedResource())
-        .build();
+    return toResourceBinding(bindResult);
   }
 
   public Collection<Registry.ResourceBinding> listResourceBindings(String nextPagetoken) {
@@ -127,13 +148,22 @@ public abstract class AbstractRegistry implements RegistryInfo {
     List<Registry.ResourceBinding> bindings = new ArrayList<>(bindResults.size());
     bindResults.forEach(
         result -> {
-          bindings.add(
-              Registry.ResourceBinding.newBuilder()
-                  .setLinkedResource(result.getLinkedResource())
-                  .setMessageName(result.getMessageName())
-                  .build());
+          bindings.add(toResourceBinding(result));
         });
     return bindings;
+  }
+
+  private Registry.ResourceBinding toResourceBinding(BindResult result) {
+    Registry.ResourceBinding.Builder resourceBinding = Registry.ResourceBinding.newBuilder();
+    resourceBinding.setLinkedResource(result.getLinkedResource());
+    if (result.getMessageName() != null) {
+      resourceBinding.setMessageName(result.getMessageName());
+    } else if (result.getServiceName() != null) {
+      resourceBinding.setServiceName(result.getServiceName());
+    } else {
+
+    }
+    return resourceBinding.build();
   }
 
   @Override

@@ -9,11 +9,17 @@ public class BindResult {
     return messageName;
   }
 
-  private String messageName;
-  private String linkedResource;
+  public String getServiceName() {
+    return serviceName;
+  }
 
-  public BindResult(String linkedResource, String messageName) {
+  private String linkedResource;
+  private String messageName;
+  private String serviceName;
+
+  public BindResult(String linkedResource, String messageName, String serviceName) {
     this.linkedResource = linkedResource;
     this.messageName = messageName;
+    this.serviceName = serviceName;
   }
 }
