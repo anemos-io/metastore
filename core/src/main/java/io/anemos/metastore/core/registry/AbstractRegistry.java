@@ -101,6 +101,10 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public void updateResourceBinding(Registry.ResourceBinding resourceBinding, boolean create)
       throws StatusException {
+    if (resourceBinding == null) {
+      throw Status.INVALID_ARGUMENT.withDescription("binding should be set.").asException();
+    }
+
     String linkedResource = validateLinkedResource(resourceBinding.getLinkedResource());
 
     if (resourceBinding.getTypeCase().getNumber()
@@ -109,8 +113,8 @@ public abstract class AbstractRegistry implements RegistryInfo {
           protoContainer.getDescriptorByName(resourceBinding.getMessageName());
       if (descriptor == null) {
         throw Status.NOT_FOUND
-                .withDescription("The descriptor with message_name is not found in the registry.")
-                .asException();
+            .withDescription("The descriptor with message_name is not found in the registry.")
+            .asException();
       }
       this.bindProviders.forEach(
           provider -> {
@@ -125,8 +129,8 @@ public abstract class AbstractRegistry implements RegistryInfo {
           protoContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
       if (descriptor == null) {
         throw Status.NOT_FOUND
-                .withDescription("The descriptor with service_name is not found in the registry.")
-                .asException();
+            .withDescription("The descriptor with service_name is not found in the registry.")
+            .asException();
       }
       this.bindProviders.forEach(
           provider -> {
@@ -149,10 +153,10 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public Registry.ResourceBinding getResourceBinding(String linkedResource) throws StatusException {
     BindResult bindResult = this.bindProviders.get(0).getResourceBinding(linkedResource);
-    if(bindResult == null) {
+    if (bindResult == null) {
       throw Status.NOT_FOUND
-              .withDescription("No binding for the linked_resource is found.")
-              .asException();
+          .withDescription("No binding for the linked_resource is found.")
+          .asException();
     }
     return toResourceBinding(bindResult);
   }
@@ -208,9 +212,21 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   String validateLinkedResource(String linkedResource) throws StatusException {
     if (linkedResource == null) {
-      throw Status.INVALID_ARGUMENT.asException();
+      throw Status.INVALID_ARGUMENT
+          .withDescription("linked_resource should not be empty.")
+          .asException();
     }
     URI uri = URI.create(linkedResource);
+    if (uri == null) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription("linked_resource is not a valid URI.")
+          .asException();
+    }
+    if (uri.getScheme() == null) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription("linked_resource is not a valid URI, unable to determine schema.")
+          .asException();
+    }
     switch (uri.getScheme()) {
       case "http":
       case "https":
