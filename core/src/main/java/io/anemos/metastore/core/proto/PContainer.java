@@ -110,6 +110,12 @@ public class PContainer {
         .collect(Collectors.toList());
   }
 
+  public List<Descriptors.FileDescriptor> getFileDescriptorsByPackageName(String packageName) {
+    return fileDescriptorMap.values().stream()
+        .filter(fd -> fd.getPackage().equals(packageName))
+        .collect(Collectors.toList());
+  }
+
   public Set<String> getFileNames() {
     return fileDescriptorMap.keySet();
   }
@@ -348,5 +354,26 @@ public class PContainer {
 
   public Collection<Descriptors.FileDescriptor> iterator() {
     return fileDescriptorMap.values();
+  }
+
+  public Collection<Descriptors.FileDescriptor> getDependantFileDescriptors(
+      Descriptors.FileDescriptor fd) {
+    Set<Descriptors.FileDescriptor> fds = new HashSet<>();
+    fds.add(fd);
+    return getDependantFileDescriptors(fds);
+  }
+
+  public Collection<Descriptors.FileDescriptor> getDependantFileDescriptors(
+      Collection<Descriptors.FileDescriptor> in) {
+    boolean changed = false;
+    Set<Descriptors.FileDescriptor> fds = new HashSet<>(in);
+    for (Descriptors.FileDescriptor fileDescriptor : in) {
+      boolean added = fds.addAll(fileDescriptor.getDependencies());
+      changed = changed || added;
+    }
+    if (changed) {
+      return getDependantFileDescriptors(fds);
+    }
+    return fds;
   }
 }

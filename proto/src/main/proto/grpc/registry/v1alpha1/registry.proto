@@ -20,21 +20,6 @@ service Registy {
     rpc UseResource (UseResourceRequest) returns (UseResourceResponse);
 }
 
-message Scope {
-    string scope_name = 1;
-    oneof package_scope {
-        string package_name = 2;
-        string package_prefix = 3;
-    }
-    oneof entity_scope {
-        string message_name = 4;
-        string enum_name = 5;
-        string service_name = 6;
-        string file_name = 7;
-    }
-    bool transitive = 8;
-}
-
 message SubmitSchemaRequest {
 
     // Represents the schema registry names. If a schema registry doesn't support multiple
@@ -46,7 +31,16 @@ message SubmitSchemaRequest {
     // proto2 only features, by making them opaque
     // bytes instead
     repeated bytes file_descriptor_proto = 2;
-    repeated Scope scope = 3;
+
+    oneof entity_scope {
+        string linked_resource = 3;
+        string package_name = 4;
+        string package_prefix = 5;
+        string message_name = 6;
+        string service_name = 7;
+        string enum_name = 8;
+        string file_name = 9;
+    }
 }
 
 message SubmitSchemaResponse {
@@ -59,7 +53,17 @@ message GetSchemaRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
-    repeated Scope scope = 2;
+
+    oneof entity_scope {
+        string linked_resource = 3;
+        string package_name = 4;
+        string package_prefix = 5;
+        string message_name = 6;
+        string service_name = 7;
+        string enum_name = 8;
+        string file_name = 9;
+    }
+    bool transitive = 10;
 }
 
 message GetSchemaResponse {
@@ -103,7 +107,7 @@ message DeleteResourceBindingRequest {
     //
     // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
     // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
-    // * (http/https)://hostname/<service_name>/
+    // * (http/https)://hostname/<service_name>
     string linked_resource = 2;
 }
 
@@ -113,10 +117,10 @@ message DeleteResourceBindingResponse {
 
 message GetResourceBindingeRequest {
     enum SchemaContext {
-        SCHEMA_CONTEXT_FULL_DOMAIN = 0;
-        SCHEMA_CONTEXT_NONE = 1;
+        SCHEMA_CONTEXT_NONE = 0;
+        SCHEMA_CONTEXT_IN_FILE = 1;
         SCHEMA_CONTEXT_IN_SCOPE = 2;
-        SCHEMA_CONTEXT_IN_FILE = 3;
+        SCHEMA_CONTEXT_FULL_DOMAIN = 3;
     }
 
     string registry_name = 1;
@@ -161,27 +165,31 @@ message UseResourceRequest {
     }
 
     message Metrics {
-        int64 data_bytes = 2;
-        int64 data_messages = 3;
-        int64 data_errors = 4;
-        int64 data_warnings = 5;
+        int64 data_bytes = 1;
+        int64 data_messages = 2;
+        int64 data_errors = 3;
     }
 
     message Usage {
         string usage_name = 1;
-        string linked_resource = 2;
-        string package_name = 3;
-        string message_name = 4;
-
-        Purpose purpose = 5;
-        google.protobuf.Timestamp since = 6;
-        Metrics metrics = 7;
+        oneof entity_scope {
+            string linked_resource = 2;
+            string package_name = 3;
+            string package_prefix = 4;
+            string message_name = 5;
+            string service_name = 6;
+            string enum_name = 7;
+            string file_name = 8;
+        }
+        Purpose purpose = 9;
+        google.protobuf.Timestamp since = 10;
+        Metrics metrics = 11;
     }
 
     string registry_name = 2;
-    string component_instance = 4;
-    map<string, string> component_labels = 5;
-
+    string name = 3;
+    string instance = 4;
+    map<string, string> labels = 5;
 
     // These are proto2 type google.protobuf.FileDescriptorProto, but
     // we avoid taking a dependency on descriptor.proto, which uses

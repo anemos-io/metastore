@@ -199,11 +199,7 @@ public class MetaStep {
     PContainer protoContainer = createDescriptorSet();
 
     Registry.SubmitSchemaRequest.Builder schemaRequestBuilder =
-        Registry.SubmitSchemaRequest.newBuilder()
-            .addScope(
-                Registry.Scope.newBuilder()
-                    .setPackagePrefix(res.getString("package_prefix"))
-                    .build());
+        Registry.SubmitSchemaRequest.newBuilder().setPackagePrefix(res.getString("package_prefix"));
     protoContainer
         .iterator()
         .forEach(
