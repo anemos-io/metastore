@@ -8,6 +8,8 @@ import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
 import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Logger;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -38,8 +40,27 @@ public class MetaStoreServer {
             .build();
   }
 
+  private static void printVersion() {
+    Properties properties = new Properties();
+    try {
+      InputStream stream = MetaStoreServer.class.getResourceAsStream("version.properties");
+      if (stream != null) {
+        properties.load(stream);
+        System.out.println("Version: " + properties.getProperty("version"));
+        System.out.println("Build Time: " + properties.getProperty("build"));
+      } else {
+        System.out.println("LOCAL BUILD");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /** Main method. This comment makes the linter happy. */
   public static void main(String[] args) throws Exception {
+    System.out.println("MetaStore server");
+    printVersion();
+
     ArgumentParser parser = ArgumentParsers.newFor("metastore").build();
     parser.addArgument("-c", "--config").required(false);
 

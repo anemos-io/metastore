@@ -10,10 +10,13 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Stream;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -81,9 +84,27 @@ public class MetaStep {
     schemaRegistry = RegistyGrpc.newBlockingStub(channel);
   }
 
-  public static void main(String... args) throws IOException, ArgumentParserException {
+  private static void printVersion() {
+    Properties properties = new Properties();
+    try {
+      InputStream stream = MetaStep.class.getResourceAsStream("version.properties");
+      if (stream != null) {
+        properties.load(stream);
+        System.out.println("Version: " + properties.getProperty("version"));
+        System.out.println("Build Time: " + properties.getProperty("build"));
+      } else {
+        System.out.println("LOCAL BUILD");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-    System.out.println("MetaStep v0.2");
+  public static void main(String... args) throws IOException, ArgumentParserException {
+    System.out.println("MetaStep");
+    URL resource = MetaStep.class.getResource("/version.properties");
+    printVersion();
+
     if (args.length > 0 && args[0].equals("sh")) {
       GitLabMagic gitLabMagic = new GitLabMagic();
 
