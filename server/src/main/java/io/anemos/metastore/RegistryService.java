@@ -112,33 +112,9 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
         break;
       case PACKAGE_NAME:
         break;
-      case MESSAGE_NAME:
-        lint.lintOnMessage(request.getMessageName());
-        break;
-      case SERVICE_NAME:
-        lint.lintOnService(request.getServiceName());
-        break;
-      case ENUM_NAME:
-        lint.lintOnEnum(request.getEnumName());
-        break;
       case FILE_NAME:
         diff.diffOnFileName(request.getFileName());
         lint.lintOnFileName(request.getFileName());
-        break;
-      case LINKED_RESOURCE:
-        Registry.ResourceBinding resourceBinding =
-            registry.getResourceBinding(request.getLinkedResource());
-        switch (resourceBinding.getTypeCase()) {
-          case MESSAGE_NAME:
-            lint.lintOnMessage(request.getMessageName());
-            break;
-          case SERVICE_NAME:
-            lint.lintOnService(request.getMessageName());
-            break;
-          case TYPE_NOT_SET:
-          default:
-            throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
-        }
         break;
       default:
         throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();

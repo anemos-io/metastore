@@ -21,7 +21,6 @@ dependencies {
     compile("io.grpc:grpc-protobuf:${versions.grpc}")
     runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
     compile("io.grpc:grpc-services:${versions.grpc}")
-    compile("org.eclipse.jgit:org.eclipse.jgit:5.4.0.201906121030-r")
     compile("net.sourceforge.argparse4j:argparse4j:0.8.1")
     compile("com.google.cloud:google-cloud-storage:${versions.gcp}")
     compile("com.google.cloud:google-cloud-pubsub:${versions.gcp}")
@@ -37,7 +36,6 @@ dependencies {
     testImplementation("junit:junit:4.12")
     testCompile("com.github.stefanbirkner:system-rules:1.19.0")
     testCompile("io.grpc:grpc-testing:${versions.grpc}")
-
 }
 
 protobuf {

@@ -33,13 +33,9 @@ message SubmitSchemaRequest {
     repeated bytes file_descriptor_proto = 2;
 
     oneof entity_scope {
-        string linked_resource = 3;
-        string package_name = 4;
-        string package_prefix = 5;
-        string message_name = 6;
-        string service_name = 7;
-        string enum_name = 8;
-        string file_name = 9;
+        string package_name = 3;
+        string package_prefix = 4;
+        string file_name = 5;
     }
 }
 
@@ -55,15 +51,15 @@ message GetSchemaRequest {
     string registry_name = 1;
 
     oneof entity_scope {
-        string linked_resource = 3;
-        string package_name = 4;
-        string package_prefix = 5;
+        string linked_resource = 2;
+        string package_name = 3;
+        string package_prefix = 4;
+        string file_name = 5;
         string message_name = 6;
         string service_name = 7;
         string enum_name = 8;
-        string file_name = 9;
     }
-    bool transitive = 10;
+    bool transitive = 9;
 }
 
 message GetSchemaResponse {

@@ -78,13 +78,7 @@ public class MetaStep {
     }
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-
     schemaRegistry = RegistyGrpc.newBlockingStub(channel);
-
-    //        Schemaregistry.GetSchemaResponse response = schemaRegistry
-    //                .getSchema(Schemaregistry.GetSchemaRequest.newBuilder().build());
-
-    // File workspace = new File("/Users/AlexVB/Repos/src/github.com/googleapis/googleapis");
   }
 
   public static void main(String... args) throws IOException, ArgumentParserException {

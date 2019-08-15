@@ -23,7 +23,6 @@ dependencies {
     compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
     // Support common types like, color, date, latlng, ...
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
-    implementation("com.google.code.gson:gson:2.8.5")
     implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
     compile("commons-io:commons-io:2.6")
 
