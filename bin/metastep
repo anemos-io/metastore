@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ "$4" == "." ]; then
+    path=`pwd`
+elif [[ "${4:0:1}" = '/' ]]; then
+    path=$4
+else
+    path="`pwd`/$4"
+fi
+
+docker run -v $path:/workspace \
+    metastore/metastep \
+    $1 \
+    --workspace /workspace \
+    --server $2 \
+    --package_prefix $3

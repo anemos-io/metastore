@@ -201,7 +201,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
           }
           break;
         case ENTITYSCOPE_NOT_SET:
-          fdl = new ArrayList<>();
+          fdl = pContainer.getFileDescriptors();
           break;
         default:
           throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
