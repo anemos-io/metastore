@@ -100,11 +100,11 @@ public class ProtoToJsonSchemaTest {
   @Test
   public void testSingleUInt64() {
     final String jsonSingletype =
-            ProtoToJsonSchema.convert(
-                    new PContainer(TestSingleUInt64.getDescriptor()),
-                    "io.anemos.metastore.core.proto.TestSingleUInt64");
+        ProtoToJsonSchema.convert(
+            new PContainer(TestSingleUInt64.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestSingleUInt64");
     String valExpected =
-            "{\"title\":\"io.anemos.metastore.core.proto.TestSingleUInt64\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"numeric\",\"minimum\":0,\"maximum\":123456789012345678}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleUInt64\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"numeric\",\"minimum\":0,\"maximum\":123456789012345678}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 }
