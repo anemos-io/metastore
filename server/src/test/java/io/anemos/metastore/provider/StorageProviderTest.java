@@ -79,7 +79,7 @@ public class StorageProviderTest {
     writeReadTest(provider);
   }
 
-  private void readNewTest(StorageProvider provider) throws Exception {
+  private void readNewTest(StorageProvider provider) {
     Assert.assertNull(provider.read());
   }
 

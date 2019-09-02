@@ -30,3 +30,11 @@ message TestSingleBytes {
 message TestSingleString {
     string field1 = 1;
 }
+
+message TestSingleUInt {
+    uint32 field1 = 1;
+}
+
+message TestSingleUInt64 {
+    uint64 field1 = 1;
+}
