@@ -107,4 +107,52 @@ public class ProtoToJsonSchemaTest {
         "{\"title\":\"io.anemos.metastore.core.proto.TestSingleUInt64\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"numeric\",\"minimum\":0,\"maximum\":123456789012345678}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
+
+  @Test
+  public void testSingleEnum() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestSingleEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestSingleEnum");
+
+    String valExpected =
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"ENUM1\",\"ENUM2\",\"ENUM3\"]}}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
+
+  @Test
+  public void testSingleExtEnum() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestSingleExtEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestSingleExtEnum");
+
+    String valExpected =
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleExtEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"ENUMVAL1\",\"ENUMVAL2\"]}}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
+
+  @Test
+  public void testSingleTopEnum() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestSingleTopEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestSingleTopEnum");
+
+    String valExpected =
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleTopEnum\",\"type\":\"object\",\"properties\":{\"billing\":{\"type\":\"string\",\"enum\":[\"NONE\",\"CORPORATE\",\"INDIVIDUAL\"]}}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
+
+  @Test
+  public void testSingleEnumNoField() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestExtEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestExtEnum");
+
+    String valExpected =
+        "{\"title\":\"io.anemos.metastore.core.proto.TestExtEnum\",\"type\":\"object\",\"properties\":{}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
 }

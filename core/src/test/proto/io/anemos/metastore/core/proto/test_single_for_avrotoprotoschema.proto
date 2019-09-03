@@ -38,3 +38,34 @@ message TestSingleUInt {
 message TestSingleUInt64 {
     uint64 field1 = 1;
 }
+
+message TestSingleEnum {
+    enum TestEnum {
+        ENUM1 = 0;
+        ENUM2 = 1;
+        ENUM3 = 2;
+    }
+
+    TestEnum field1 = 1;
+}
+
+message TestExtEnum {
+    enum TestEnum {
+        ENUMVAL1 = 0;
+        ENUMVAL2 = 1;
+    }
+}
+
+message TestSingleExtEnum {
+    TestExtEnum field1 = 1;
+}
+
+enum JumpBilling {
+    NONE = 0;
+    CORPORATE = 1;
+    INDIVIDUAL = 2;
+}
+
+message TestSingleTopEnum {
+    JumpBilling billing = 1;
+}
