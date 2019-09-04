@@ -155,4 +155,16 @@ public class ProtoToJsonSchemaTest {
         "{\"title\":\"io.anemos.metastore.core.proto.TestExtEnum\",\"type\":\"object\",\"properties\":{}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
+
+  @Test
+  public void testSingleNested() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestSingleNested.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestSingleNested");
+
+    String valExpected =
+        "{\"definitions\":{\"io.anemos.metastore.core.proto.TestSingleInt\":{\"$id\":\"#io.anemos.metastore.core.proto.TestSingleInt\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"integer\",\"minimum\":-2147483648,\"maximum\":2147483647}}}},\"title\":\"io.anemos.metastore.core.proto.TestSingleNested\",\"type\":\"object\",\"properties\":{\"testSingleInt\":{\"$ref\":\"#io.anemos.metastore.core.proto.TestSingleInt\"}}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
 }

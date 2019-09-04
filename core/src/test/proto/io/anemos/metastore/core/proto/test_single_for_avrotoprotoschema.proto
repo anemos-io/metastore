@@ -69,3 +69,7 @@ enum JumpBilling {
 message TestSingleTopEnum {
     JumpBilling billing = 1;
 }
+
+message TestSingleNested {
+    TestSingleInt testSingleInt = 1;
+}
