@@ -73,3 +73,20 @@ message TestSingleTopEnum {
 message TestSingleNested {
     TestSingleInt testSingleInt = 1;
 }
+
+message TestMultipleRepeated {
+    repeated double primitive_double = 1;
+    repeated int32 primitive_int32 = 2;
+    repeated bool primitive_bool = 3;
+    repeated string primitive_string = 4;
+    repeated bytes primitive_bytes = 5;
+
+    enum EnumValue {
+        ENUM1 = 0;
+        ENUM2 = 1;
+        ENUM3 = 2;
+    }
+
+    repeated EnumValue enum_values = 6;
+    repeated TestSingleInt message_int = 7;
+}

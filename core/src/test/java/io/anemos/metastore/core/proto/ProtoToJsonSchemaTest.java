@@ -16,7 +16,7 @@ public class ProtoToJsonSchemaTest {
             new PContainer(TestSingleLong.getDescriptor()),
             "io.anemos.metastore.core.proto.TestSingleLong");
     String valExpected =
-        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleLong\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"numeric\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleLong\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 
@@ -104,7 +104,7 @@ public class ProtoToJsonSchemaTest {
             new PContainer(TestSingleUInt64.getDescriptor()),
             "io.anemos.metastore.core.proto.TestSingleUInt64");
     String valExpected =
-        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleUInt64\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"numeric\",\"minimum\":0,\"maximum\":123456789012345678}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleUInt64\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":123456789012345678}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 
@@ -165,6 +165,18 @@ public class ProtoToJsonSchemaTest {
 
     String valExpected =
         "{\"definitions\":{\"io.anemos.metastore.core.proto.TestSingleInt\":{\"$id\":\"#io.anemos.metastore.core.proto.TestSingleInt\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"integer\",\"minimum\":-2147483648,\"maximum\":2147483647}}}},\"title\":\"io.anemos.metastore.core.proto.TestSingleNested\",\"type\":\"object\",\"properties\":{\"testSingleInt\":{\"$ref\":\"#io.anemos.metastore.core.proto.TestSingleInt\"}}}";
+    Assert.assertEquals(valExpected, jsonSingletype);
+  }
+
+  @Test
+  public void testMultipleRepeated() {
+    final String jsonSingletype =
+        ProtoToJsonSchema.convert(
+            new PContainer(TestMultipleRepeated.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestMultipleRepeated");
+
+    String valExpected =
+        "{\"definitions\":{\"io.anemos.metastore.core.proto.TestSingleInt\":{\"$id\":\"#io.anemos.metastore.core.proto.TestSingleInt\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"integer\",\"minimum\":-2147483648,\"maximum\":2147483647}}}},\"title\":\"io.anemos.metastore.core.proto.TestMultipleRepeated\",\"type\":\"object\",\"properties\":{\"primitive_double\":{\"type\":\"array\",\"items\":{\"type\":\"numeric\"},\"minimum\":4.9E-324,\"maximum\":4.9E-324},\"primitive_int32\":{\"type\":\"array\",\"items\":{\"type\":\"integer\"},\"minimum\":-2147483648,\"maximum\":2147483647},\"primitive_bool\":{\"type\":\"array\",\"items\":{\"type\":\"boolean\"}},\"primitive_string\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"primitive_bytes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"contentEncoding\":\"base64\"},\"enum_values\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"enum\":[\"ENUM1\",\"ENUM2\",\"ENUM3\"]}},\"message_int\":{\"type\":\"array\",\"items\":{\"$ref\":\"#io.anemos.metastore.core.proto.TestSingleInt\"}}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 }

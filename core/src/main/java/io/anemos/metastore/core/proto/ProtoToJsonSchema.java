@@ -11,38 +11,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** https://json-schema.org or https://cswr.github.io/JsonSchema/ */
+/**
+ * This class generate a Json schema from protobuf object https://json-schema.org or
+ * https://cswr.github.io/JsonSchema/
+ */
 public class ProtoToJsonSchema {
-  private PContainer pContainer;
   private Map<String, ObjectNode> enumMaps;
   private ObjectNode nestedNodes;
 
-  public ProtoToJsonSchema(PContainer pC) {
-    this.pContainer = pC;
+  public ProtoToJsonSchema() {
     enumMaps = new HashMap<>();
   }
 
+  /**
+   * Convert Protobuf object to json schema
+   *
+   * @param pContainer
+   * @param messageName
+   * @return
+   * @throws StatusRuntimeException
+   */
   public static String convert(PContainer pContainer, String messageName)
       throws StatusRuntimeException {
-    // Descriptors.Descriptor descriptor = pContainer.getDescriptorByName(messageName);
-    return new ProtoToJsonSchema(pContainer).toJsonSchema(messageName).toString();
-  }
 
-  private ObjectNode toJsonSchema(String messageName) {
     Descriptors.Descriptor descriptor = pContainer.getDescriptorByName(messageName);
     if (descriptor == null)
       throw Status.fromCode(Status.Code.NOT_FOUND)
           .withDescription(String.format("The contract : %s is not found.", messageName))
           .asRuntimeException();
+    return new ProtoToJsonSchema().toJsonSchema(descriptor).toString();
+  }
 
+  private ObjectNode toJsonSchema(Descriptors.Descriptor descriptor) {
     ObjectMapper mapper = new ObjectMapper();
 
-    final ObjectNode node = mapper.createObjectNode();
     nestedNodes = mapper.createObjectNode();
-
+    final ObjectNode node = mapper.createObjectNode();
     final ObjectNode nodeFields = toRecord(mapper, descriptor, null);
 
     if (nestedNodes.size() > 0) {
+      // node.put("$schema", "http://json-schema.org/draft-07/schema#");
       node.put("definitions", nestedNodes);
     }
     node.put("title", descriptor.getFullName());
@@ -62,22 +70,22 @@ public class ProtoToJsonSchema {
             f -> {
               Descriptors.FieldDescriptor.Type descriptorType = f.getType();
               String fullName = f.getFullName();
-
               if (f.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
                 final Descriptors.Descriptor message = f.getMessageType();
-                descriptorType = getMessageType(message);
+                descriptorType = getEmbedMessageType(message);
                 if (descriptorType == Descriptors.FieldDescriptor.Type.ENUM) {
-                  getMapEnums(mapper, fullName, message.getEnumTypes());
+                  addToEnumsMap(mapper, fullName, message.getEnumTypes());
                 } else {
                   final ObjectNode nodeNested = toRecord(mapper, message, f.getFullName());
                   fullName = message.getFullName();
-                  setNestedNode(fullName, nodeNested);
+                  addNestedNode(fullName, nodeNested);
                 }
               } else if (f.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
-                getMapEnums(mapper, f.getFullName(), f.getEnumType());
+                addToEnumsMap(mapper, f.getFullName(), f.getEnumType());
               }
 
-              final ObjectNode nodeFieldType = toJsonNode(fullName, descriptorType, mapper);
+              final ObjectNode nodeFieldType =
+                  toJsonNode(fullName, descriptorType, mapper, isRepeated(f));
               nodeFields.put(f.getName(), nodeFieldType);
             });
 
@@ -85,7 +93,11 @@ public class ProtoToJsonSchema {
   }
 
   private ObjectNode toJsonNode(
-      String fullName, Descriptors.FieldDescriptor.Type fieldType, ObjectMapper mapper) {
+      String fullName,
+      Descriptors.FieldDescriptor.Type fieldType,
+      ObjectMapper mapper,
+      Boolean isRepeated) {
+    final ObjectNode nodeFieldItem = mapper.createObjectNode();
     final ObjectNode nodeFieldType = mapper.createObjectNode();
 
     if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE) {
@@ -99,11 +111,16 @@ public class ProtoToJsonSchema {
       }
     }
 
+    if (isRepeated) {
+      nodeFieldItem.put("type", "array");
+      nodeFieldItem.put("items", nodeFieldType);
+    } else nodeFieldItem.putAll(nodeFieldType);
+
     final ObjectNode nodeRestrictive = mapper.createObjectNode();
     getRestrictives(fieldType, nodeRestrictive);
-    nodeFieldType.putAll(nodeRestrictive);
+    nodeFieldItem.putAll(nodeRestrictive);
 
-    return nodeFieldType;
+    return nodeFieldItem;
   }
 
   private String getJsonType(Descriptors.FieldDescriptor.Type fieldType) {
@@ -113,12 +130,12 @@ public class ProtoToJsonSchema {
       case SINT32:
       case FIXED32:
       case UINT32:
-        return "integer";
       case SFIXED64:
       case INT64:
       case SINT64:
       case FIXED64:
       case UINT64:
+        return "integer";
       case FLOAT:
       case DOUBLE:
         return "numeric";
@@ -173,15 +190,16 @@ public class ProtoToJsonSchema {
     }
   }
 
-  private void getMapEnums(
+  private void addToEnumsMap(
       ObjectMapper mapper, String fieldName, List<Descriptors.EnumDescriptor> enums) {
     enums.forEach(
         item -> {
-          getMapEnums(mapper, fieldName, item);
+          addToEnumsMap(mapper, fieldName, item);
         });
   }
 
-  private void getMapEnums(ObjectMapper mapper, String fieldName, Descriptors.EnumDescriptor item) {
+  private void addToEnumsMap(
+      ObjectMapper mapper, String fieldName, Descriptors.EnumDescriptor item) {
     ObjectNode nodeEnum = mapper.createObjectNode();
     ArrayNode nodeArray = nodeEnum.putArray("enum");
     item.getValues()
@@ -193,16 +211,20 @@ public class ProtoToJsonSchema {
     enumMaps.put(key, nodeEnum);
   }
 
-  private Descriptors.FieldDescriptor.Type getMessageType(Descriptors.Descriptor message) {
+  private Descriptors.FieldDescriptor.Type getEmbedMessageType(Descriptors.Descriptor message) {
     if (message.getEnumTypes().size() > 0) return Descriptors.FieldDescriptor.Type.ENUM;
     else if (message.getFields().size() > 0) return Descriptors.FieldDescriptor.Type.MESSAGE;
     return null;
   }
 
-  private void setNestedNode(String fullName, ObjectNode nodeNested) {
+  private void addNestedNode(String fullName, ObjectNode nodeNested) {
     ObjectNode objObject = nestedNodes.putObject(fullName);
     objObject.put("$id", "#" + fullName);
     objObject.put("type", "object");
     objObject.put("properties", nodeNested);
+  }
+
+  private Boolean isRepeated(Descriptors.FieldDescriptor field) {
+    return (field.toProto().getLabel().name() == "LABEL_REPEATED") ? true : false;
   }
 }
