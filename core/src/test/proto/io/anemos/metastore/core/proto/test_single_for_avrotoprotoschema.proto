@@ -1,4 +1,8 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/generatemessage.proto";
 
 package io.anemos.metastore.core.proto;
 option java_multiple_files = true;
@@ -60,14 +64,14 @@ message TestSingleExtEnum {
     TestExtEnum field1 = 1;
 }
 
-enum JumpBilling {
+enum TestTopEnum {
     NONE = 0;
     CORPORATE = 1;
     INDIVIDUAL = 2;
 }
 
 message TestSingleTopEnum {
-    JumpBilling billing = 1;
+    TestTopEnum billing = 1;
 }
 
 message TestSingleNested {
@@ -89,4 +93,21 @@ message TestMultipleRepeated {
 
     repeated EnumValue enum_values = 6;
     repeated TestSingleInt message_int = 7;
+}
+
+message TestSingleTimestamp {
+    google.protobuf.Timestamp field1 = 1;
+}
+
+message TestWrapperTypes {
+    google.protobuf.StringValue nullable_string = 1;
+    google.protobuf.Int32Value nullable_int32 = 2;
+    google.protobuf.Duration nullable_duration = 3;
+    google.protobuf.BoolValue nullable_boolean = 4;
+    google.protobuf.BytesValue nullable_bytes = 5;
+    google.protobuf.DoubleValue nullable_double = 6;
+    google.protobuf.FloatValue nullable_float = 7;
+    google.protobuf.Int64Value nullable_int64 = 8;
+    google.protobuf.UInt32Value nullable_uint32 = 9;
+    google.protobuf.UInt64Value nullable_uint64 = 10;
 }
