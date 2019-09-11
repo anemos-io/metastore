@@ -102,8 +102,7 @@ public class ProtoToJsonSchema {
               nodeFields.put(f.getName(), nodeFieldType);
             });
 
-    if (fieldsRequired.size() > 0)
-      mapFieldsRequired.put(descriptor.getFullName(), fieldsRequired);
+    if (fieldsRequired.size() > 0) mapFieldsRequired.put(descriptor.getFullName(), fieldsRequired);
     return nodeFields;
   }
 
