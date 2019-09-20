@@ -1,13 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## 0.6.0
 
 ### Added
 
 - First iteration of the Proto to JSON schema convertor.
-
-### Changed
 
 ### Fixed
 
