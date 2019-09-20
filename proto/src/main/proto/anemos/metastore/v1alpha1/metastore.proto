@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 option java_package = "io.anemos.metastore.v1alpha1";
+option java_outer_classname = "MetaStoreP";
 
 package anemos.metastore.v1alpha1;
 

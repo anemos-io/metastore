@@ -1,6 +1,6 @@
 package io.anemos.metastore;
 
-import static io.anemos.metastore.v1alpha1.Registry.GetResourceBindingeRequest.SchemaContext;
+import static io.anemos.metastore.v1alpha1.RegistryP.GetResourceBindingeRequest.SchemaContext;
 
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.PContainer;
@@ -10,8 +10,8 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.registry.AbstractRegistry;
-import io.anemos.metastore.v1alpha1.Registry;
-import io.anemos.metastore.v1alpha1.RegistyGrpc;
+import io.anemos.metastore.v1alpha1.RegistryGrpc;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
 import io.grpc.Status;
@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RegistryService extends RegistyGrpc.RegistyImplBase {
+public class RegistryService extends RegistryGrpc.RegistryImplBase {
 
   private MetaStore metaStore;
 
@@ -33,21 +33,21 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void submitSchema(
-      Registry.SubmitSchemaRequest request,
-      StreamObserver<Registry.SubmitSchemaResponse> responseObserver) {
+      RegistryP.SubmitSchemaRequest request,
+      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver) {
     schema(request, responseObserver, true);
   }
 
   @Override
   public void verifySchema(
-      Registry.SubmitSchemaRequest request,
-      StreamObserver<Registry.SubmitSchemaResponse> responseObserver) {
+      RegistryP.SubmitSchemaRequest request,
+      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver) {
     schema(request, responseObserver, false);
   }
 
   public void schema(
-      Registry.SubmitSchemaRequest request,
-      StreamObserver<Registry.SubmitSchemaResponse> responseObserver,
+      RegistryP.SubmitSchemaRequest request,
+      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver,
       boolean submit) {
     PContainer in;
     try {
@@ -76,7 +76,8 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
         registry.update(registry.ref(), in, report);
       }
 
-      responseObserver.onNext(Registry.SubmitSchemaResponse.newBuilder().setReport(report).build());
+      responseObserver.onNext(
+          RegistryP.SubmitSchemaResponse.newBuilder().setReport(report).build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
       responseObserver.onError(e);
@@ -93,7 +94,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   private Report validate(
       AbstractRegistry registry,
-      Registry.SubmitSchemaRequest request,
+      RegistryP.SubmitSchemaRequest request,
       PContainer ref,
       PContainer in)
       throws StatusException {
@@ -126,11 +127,11 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void getSchema(
-      Registry.GetSchemaRequest request,
-      StreamObserver<Registry.GetSchemaResponse> responseObserver) {
+      RegistryP.GetSchemaRequest request,
+      StreamObserver<RegistryP.GetSchemaResponse> responseObserver) {
     try {
-      Registry.GetSchemaResponse.Builder schemaResponseBuilder =
-          Registry.GetSchemaResponse.newBuilder();
+      RegistryP.GetSchemaResponse.Builder schemaResponseBuilder =
+          RegistryP.GetSchemaResponse.newBuilder();
 
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       PContainer pContainer = registry.get();
@@ -172,7 +173,7 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
           }
           break;
         case LINKED_RESOURCE:
-          Registry.ResourceBinding resourceBinding =
+          RegistryP.ResourceBinding resourceBinding =
               registry.getResourceBinding(request.getLinkedResource());
           switch (resourceBinding.getTypeCase()) {
             case MESSAGE_NAME:
@@ -230,13 +231,13 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void createResourceBinding(
-      Registry.CreateResourceBindingRequest request,
-      StreamObserver<Registry.CreateResourceBindingResponse> responseObserver) {
+      RegistryP.CreateResourceBindingRequest request,
+      StreamObserver<RegistryP.CreateResourceBindingResponse> responseObserver) {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      Registry.ResourceBinding resourceBinding = request.getBinding();
+      RegistryP.ResourceBinding resourceBinding = request.getBinding();
       registry.updateResourceBinding(resourceBinding, true);
-      responseObserver.onNext(Registry.CreateResourceBindingResponse.newBuilder().build());
+      responseObserver.onNext(RegistryP.CreateResourceBindingResponse.newBuilder().build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
       responseObserver.onError(e);
@@ -245,13 +246,13 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void updateResourceBinding(
-      Registry.UpdateResourceBindingRequest request,
-      StreamObserver<Registry.UpdateResourceBindingResponse> responseObserver) {
+      RegistryP.UpdateResourceBindingRequest request,
+      StreamObserver<RegistryP.UpdateResourceBindingResponse> responseObserver) {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      Registry.ResourceBinding resourceBinding = request.getBinding();
+      RegistryP.ResourceBinding resourceBinding = request.getBinding();
       registry.updateResourceBinding(resourceBinding, false);
-      responseObserver.onNext(Registry.UpdateResourceBindingResponse.newBuilder().build());
+      responseObserver.onNext(RegistryP.UpdateResourceBindingResponse.newBuilder().build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
       responseObserver.onError(e);
@@ -260,15 +261,15 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void getResourceBinding(
-      Registry.GetResourceBindingeRequest request,
-      StreamObserver<Registry.GetResourceBindingResponse> responseObserver) {
+      RegistryP.GetResourceBindingeRequest request,
+      StreamObserver<RegistryP.GetResourceBindingResponse> responseObserver) {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      Registry.ResourceBinding resourceBinding =
+      RegistryP.ResourceBinding resourceBinding =
           registry.getResourceBinding(request.getLinkedResource());
 
-      Registry.GetResourceBindingResponse.Builder response =
-          Registry.GetResourceBindingResponse.newBuilder().setBinding(resourceBinding);
+      RegistryP.GetResourceBindingResponse.Builder response =
+          RegistryP.GetResourceBindingResponse.newBuilder().setBinding(resourceBinding);
 
       PContainer pContainer = registry.get();
       if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_FULL_DOMAIN) {
@@ -279,12 +280,12 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
       } else if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_IN_SCOPE) {
         Collection<Descriptors.FileDescriptor> fds = new ArrayList<>();
         switch (resourceBinding.getTypeCase().getNumber()) {
-          case Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
+          case RegistryP.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
             Descriptors.Descriptor descriptor =
                 pContainer.getDescriptorByName(resourceBinding.getMessageName());
             fds = pContainer.getDependantFileDescriptors(descriptor.getFile());
             break;
-          case Registry.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
+          case RegistryP.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
             Descriptors.ServiceDescriptor service =
                 pContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
             fds = pContainer.getDependantFileDescriptors(service.getFile());
@@ -298,12 +299,12 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
             fds.stream().map(fd -> fd.toProto().toByteString()).collect(Collectors.toList()));
       } else if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_IN_FILE) {
         switch (resourceBinding.getTypeCase().getNumber()) {
-          case Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
+          case RegistryP.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
             Descriptors.Descriptor descriptor =
                 pContainer.getDescriptorByName(resourceBinding.getMessageName());
             response.addFileDescriptorProto(descriptor.getFile().toProto().toByteString());
             break;
-          case Registry.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
+          case RegistryP.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
             Descriptors.ServiceDescriptor service =
                 pContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
             response.addFileDescriptorProto(service.getFile().toProto().toByteString());
@@ -323,12 +324,12 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void deleteResourceBinding(
-      Registry.DeleteResourceBindingRequest request,
-      StreamObserver<Registry.DeleteResourceBindingResponse> responseObserver) {
+      RegistryP.DeleteResourceBindingRequest request,
+      StreamObserver<RegistryP.DeleteResourceBindingResponse> responseObserver) {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       registry.deleteResourceBinding(request.getLinkedResource());
-      responseObserver.onNext(Registry.DeleteResourceBindingResponse.newBuilder().build());
+      responseObserver.onNext(RegistryP.DeleteResourceBindingResponse.newBuilder().build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
       responseObserver.onError(e);
@@ -337,12 +338,12 @@ public class RegistryService extends RegistyGrpc.RegistyImplBase {
 
   @Override
   public void listResourceBindings(
-      Registry.ListResourceBindingsRequest request,
-      StreamObserver<Registry.ListResourceBindingsResponse> responseObserver) {
+      RegistryP.ListResourceBindingsRequest request,
+      StreamObserver<RegistryP.ListResourceBindingsResponse> responseObserver) {
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      Registry.ListResourceBindingsResponse.Builder builder =
-          Registry.ListResourceBindingsResponse.newBuilder();
+      RegistryP.ListResourceBindingsResponse.Builder builder =
+          RegistryP.ListResourceBindingsResponse.newBuilder();
       registry
           .listResourceBindings(request.getPageToken())
           .forEach(

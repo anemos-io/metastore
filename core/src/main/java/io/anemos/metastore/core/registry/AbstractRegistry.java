@@ -12,7 +12,7 @@ import io.anemos.metastore.provider.BindResult;
 import io.anemos.metastore.provider.EventingProvider;
 import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
-import io.anemos.metastore.v1alpha1.Registry;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -99,7 +99,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
     metaGit.init();
   }
 
-  public void updateResourceBinding(Registry.ResourceBinding resourceBinding, boolean create)
+  public void updateResourceBinding(RegistryP.ResourceBinding resourceBinding, boolean create)
       throws StatusException {
     if (resourceBinding == null) {
       throw Status.INVALID_ARGUMENT.withDescription("binding should be set.").asException();
@@ -108,7 +108,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
     String linkedResource = validateLinkedResource(resourceBinding.getLinkedResource());
 
     if (resourceBinding.getTypeCase().getNumber()
-        == Registry.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
+        == RegistryP.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER) {
       Descriptors.Descriptor descriptor =
           protoContainer.getDescriptorByName(resourceBinding.getMessageName());
       if (descriptor == null) {
@@ -151,7 +151,8 @@ public abstract class AbstractRegistry implements RegistryInfo {
     this.bindProviders.forEach(provider -> provider.deleteResourceBinding(linkedResource));
   }
 
-  public Registry.ResourceBinding getResourceBinding(String linkedResource) throws StatusException {
+  public RegistryP.ResourceBinding getResourceBinding(String linkedResource)
+      throws StatusException {
     BindResult bindResult = this.bindProviders.get(0).getResourceBinding(linkedResource);
     if (bindResult == null) {
       throw Status.NOT_FOUND
@@ -161,9 +162,9 @@ public abstract class AbstractRegistry implements RegistryInfo {
     return toResourceBinding(bindResult);
   }
 
-  public Collection<Registry.ResourceBinding> listResourceBindings(String nextPagetoken) {
+  public Collection<RegistryP.ResourceBinding> listResourceBindings(String nextPagetoken) {
     List<BindResult> bindResults = this.bindProviders.get(0).listResourceBindings(nextPagetoken);
-    List<Registry.ResourceBinding> bindings = new ArrayList<>(bindResults.size());
+    List<RegistryP.ResourceBinding> bindings = new ArrayList<>(bindResults.size());
     bindResults.forEach(
         result -> {
           bindings.add(toResourceBinding(result));
@@ -171,8 +172,8 @@ public abstract class AbstractRegistry implements RegistryInfo {
     return bindings;
   }
 
-  private Registry.ResourceBinding toResourceBinding(BindResult result) {
-    Registry.ResourceBinding.Builder resourceBinding = Registry.ResourceBinding.newBuilder();
+  private RegistryP.ResourceBinding toResourceBinding(BindResult result) {
+    RegistryP.ResourceBinding.Builder resourceBinding = RegistryP.ResourceBinding.newBuilder();
     resourceBinding.setLinkedResource(result.getLinkedResource());
     if (result.getMessageName() != null) {
       resourceBinding.setMessageName(result.getMessageName());

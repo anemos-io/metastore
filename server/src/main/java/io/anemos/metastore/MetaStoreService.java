@@ -4,7 +4,7 @@ import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtoToJsonSchema;
 import io.anemos.metastore.core.registry.AbstractRegistry;
 import io.anemos.metastore.v1alpha1.MetaStoreGrpc;
-import io.anemos.metastore.v1alpha1.Metastore;
+import io.anemos.metastore.v1alpha1.MetaStoreP;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
@@ -19,11 +19,11 @@ public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
 
   @Override
   public void getAvroSchema(
-      Metastore.GetAvroSchemaRequest request,
-      StreamObserver<Metastore.GetAvroSchemaResponse> responseObserver) {
+      MetaStoreP.GetAvroSchemaRequest request,
+      StreamObserver<MetaStoreP.GetAvroSchemaResponse> responseObserver) {
     if ("demo".equals(request.getRegistryName())) {
 
-      responseObserver.onNext(Metastore.GetAvroSchemaResponse.newBuilder().build());
+      responseObserver.onNext(MetaStoreP.GetAvroSchemaResponse.newBuilder().build());
       responseObserver.onCompleted();
 
     } else {
@@ -33,8 +33,8 @@ public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
 
   @Override
   public void getJsonSchema(
-      Metastore.GetJsonSchemaRequest request,
-      StreamObserver<Metastore.GetJsonSchemaResponse> responseObserver) {
+      MetaStoreP.GetJsonSchemaRequest request,
+      StreamObserver<MetaStoreP.GetJsonSchemaResponse> responseObserver) {
 
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
@@ -42,7 +42,7 @@ public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
       String jsonSchema = ProtoToJsonSchema.convert(pContainer, request.getMessageName());
 
       responseObserver.onNext(
-          Metastore.GetJsonSchemaResponse.newBuilder().setSchema(jsonSchema).build());
+          MetaStoreP.GetJsonSchemaResponse.newBuilder().setSchema(jsonSchema).build());
       responseObserver.onCompleted();
     } catch (StatusException | StatusRuntimeException e) {
       responseObserver.onError(e);

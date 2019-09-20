@@ -2,8 +2,8 @@ package io.anemos.metastore.metastep;
 
 import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtocUtil;
-import io.anemos.metastore.v1alpha1.Registry;
-import io.anemos.metastore.v1alpha1.RegistyGrpc;
+import io.anemos.metastore.v1alpha1.RegistryGrpc;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
 import io.grpc.ManagedChannel;
@@ -29,7 +29,7 @@ public class MetaStep {
 
   private File workspace;
   private String protoInclude;
-  private RegistyGrpc.RegistyBlockingStub schemaRegistry;
+  private RegistryGrpc.RegistryBlockingStub schemaRegistry;
   private File descriptorFile;
   private Namespace res;
 
@@ -81,7 +81,7 @@ public class MetaStep {
     }
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-    schemaRegistry = RegistyGrpc.newBlockingStub(channel);
+    schemaRegistry = RegistryGrpc.newBlockingStub(channel);
   }
 
   private static void printVersion() {
@@ -184,7 +184,7 @@ public class MetaStep {
   private void validate() throws IOException {
     System.out.println("Contract Validation started");
 
-    Registry.SubmitSchemaResponse verifySchemaResponse =
+    RegistryP.SubmitSchemaResponse verifySchemaResponse =
         schemaRegistry.verifySchema(createSchemaRequest());
 
     Report report = verifySchemaResponse.getReport();
@@ -210,11 +210,12 @@ public class MetaStep {
     schemaRegistry.submitSchema(createSchemaRequest());
   }
 
-  private Registry.SubmitSchemaRequest createSchemaRequest() throws IOException {
+  private RegistryP.SubmitSchemaRequest createSchemaRequest() throws IOException {
     PContainer protoContainer = createDescriptorSet();
 
-    Registry.SubmitSchemaRequest.Builder schemaRequestBuilder =
-        Registry.SubmitSchemaRequest.newBuilder().setPackagePrefix(res.getString("package_prefix"));
+    RegistryP.SubmitSchemaRequest.Builder schemaRequestBuilder =
+        RegistryP.SubmitSchemaRequest.newBuilder()
+            .setPackagePrefix(res.getString("package_prefix"));
     protoContainer
         .iterator()
         .forEach(

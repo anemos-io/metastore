@@ -37,9 +37,12 @@ protobuf {
                     grpc {
                     }
                 }
-
+                task.generateDescriptorSet = true
+                task.descriptorSetOptions.includeSourceInfo = true
+                task.descriptorSetOptions.includeImports = true
         }
         ofSourceSet("test")
+
     }
 }
 

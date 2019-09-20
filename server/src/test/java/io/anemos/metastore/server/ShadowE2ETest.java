@@ -11,8 +11,8 @@ import io.anemos.metastore.core.proto.ProtocUtil;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.FieldChangeInfo;
-import io.anemos.metastore.v1alpha1.Registry;
-import io.anemos.metastore.v1alpha1.RegistyGrpc;
+import io.anemos.metastore.v1alpha1.RegistryGrpc;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -89,10 +89,10 @@ public class ShadowE2ETest {
 
     MetaStore metaStore = new MetaStore(config);
 
-    RegistyGrpc.RegistyBlockingStub schemaRegistyStub = getSchemaRegistryStub(metaStore);
+    RegistryGrpc.RegistryBlockingStub schemaRegistyStub = getSchemaRegistryStub(metaStore);
 
-    Registry.SubmitSchemaRequest.Builder submitSchemaRequest =
-        Registry.SubmitSchemaRequest.newBuilder()
+    RegistryP.SubmitSchemaRequest.Builder submitSchemaRequest =
+        RegistryP.SubmitSchemaRequest.newBuilder()
             .setPackagePrefix("test")
             .setRegistryName("default");
     baseKnownOption()
@@ -116,8 +116,8 @@ public class ShadowE2ETest {
         baseKnownOption().toFileDescriptorSet(), actualShadowRepo.toFileDescriptorSet());
 
     // add option to shadow
-    Registry.SubmitSchemaRequest.Builder submitSchemaRequest2 =
-        Registry.SubmitSchemaRequest.newBuilder().setRegistryName("shadow");
+    RegistryP.SubmitSchemaRequest.Builder submitSchemaRequest2 =
+        RegistryP.SubmitSchemaRequest.newBuilder().setRegistryName("shadow");
     baseAddMessageOption()
         .iterator()
         .forEach(
@@ -138,8 +138,8 @@ public class ShadowE2ETest {
         actualShadowReport.getMessageResultsMap());
 
     // add field to default
-    Registry.SubmitSchemaRequest.Builder submitDefaultAddField =
-        Registry.SubmitSchemaRequest.newBuilder().setPackagePrefix("test");
+    RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
+        RegistryP.SubmitSchemaRequest.newBuilder().setPackagePrefix("test");
     baseKnownOptionAddField()
         .iterator()
         .forEach(
@@ -147,7 +147,7 @@ public class ShadowE2ETest {
               submitDefaultAddField.addFileDescriptorProto(fileDescriptor.toProto().toByteString());
             });
 
-    Registry.SubmitSchemaResponse verifyDefaultResponse2 =
+    RegistryP.SubmitSchemaResponse verifyDefaultResponse2 =
         schemaRegistyStub.verifySchema(submitDefaultAddField.build());
     Assert.assertFalse(verifyDefaultResponse2.getReport().getResultCount().getDiffErrors() > 0);
     Assert.assertEquals(
@@ -174,7 +174,7 @@ public class ShadowE2ETest {
         shadowDefaultFieldAdded().toFileDescriptorSet(), actualShadowRepo.toFileDescriptorSet());
   }
 
-  private RegistyGrpc.RegistyBlockingStub getSchemaRegistryStub(MetaStore metaStore)
+  private RegistryGrpc.RegistryBlockingStub getSchemaRegistryStub(MetaStore metaStore)
       throws IOException {
     String serverName = InProcessServerBuilder.generateName();
     grpcCleanup.register(
@@ -183,7 +183,7 @@ public class ShadowE2ETest {
             .addService(new RegistryService(metaStore))
             .build()
             .start());
-    return RegistyGrpc.newBlockingStub(
+    return RegistryGrpc.newBlockingStub(
         grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build()));
   }
 }
