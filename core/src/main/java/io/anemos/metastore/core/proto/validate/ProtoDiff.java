@@ -55,8 +55,11 @@ public class ProtoDiff {
   public void diffOnFileName(String fileName) {
     Descriptors.FileDescriptor fdRef = proto_ref.getFileDescriptorByFileName(fileName);
     Descriptors.FileDescriptor fdNew = proto_new.getFileDescriptorByFileName(fileName);
-    diffFileDescriptor(fdRef, fdNew);
-    diffFileOptions(fdRef, fdNew);
+
+    if (fdRef != null && fdNew != null) {
+      diffFileDescriptor(fdRef, fdNew);
+      diffFileOptions(fdRef, fdNew);
+    }
   }
 
   private void diffFileDescriptor(
@@ -331,6 +334,7 @@ public class ProtoDiff {
 
   private void diffFileOptions(
       Descriptors.FileDescriptor descriptorRef, Descriptors.FileDescriptor descriptorNew) {
+
     Map<Integer, UnknownFieldSet.Field> fieldsRef =
         descriptorRef.getOptions().getUnknownFields().asMap();
     Map<Integer, UnknownFieldSet.Field> fieldsNew =
