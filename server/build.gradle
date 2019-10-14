@@ -8,7 +8,7 @@ plugins {
     id "java"
     id "idea"
     id "com.google.cloud.tools.jib" version "1.4.0"
-
+    id 'maven-publish'
 }
 
 repositories {
@@ -123,6 +123,32 @@ processResources {
             Date date = new Date();
             p['build'] = dateFormat.format(date)
             p.store w, null
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            if (project.version.endsWith('-SNAPSHOT')) {
+                url = uri(snapshotRepoUrl)
+            } else {
+                url = uri(repoUrl)
+            }
+            if (project.hasProperty('repoUser') && project.hasProperty('repoPass')) {
+                credentials {
+                    username repoUser
+                    password repoPass
+                }
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId 'io.anemos'
+            artifactId 'metastore-server'
+            from components.java
         }
     }
 }

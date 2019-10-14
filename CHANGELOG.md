@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## 0.6.2
+### Fixed
+- Fixed a NPE is the ProtoDiffer
+
 ## 0.6.1
 ### Fixed
 - Renamed the service name to `grpc.registry.v1alpha1.Registry` as
