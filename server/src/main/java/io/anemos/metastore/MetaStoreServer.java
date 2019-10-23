@@ -10,13 +10,14 @@ import io.opencensus.trace.samplers.Samplers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Logger;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetaStoreServer {
-  private static final Logger logger = Logger.getLogger(MetaStoreServer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStoreServer.class);
 
   private final int port;
   private final Server server;
@@ -46,10 +47,10 @@ public class MetaStoreServer {
       InputStream stream = MetaStoreServer.class.getResourceAsStream("version.properties");
       if (stream != null) {
         properties.load(stream);
-        System.out.println("Version: " + properties.getProperty("version"));
-        System.out.println("Build Time: " + properties.getProperty("build"));
+        LOG.info("Version: " + properties.getProperty("version"));
+        LOG.info("Build Time: " + properties.getProperty("build"));
       } else {
-        System.out.println("LOCAL BUILD");
+        LOG.warn("LOCAL BUILD");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -58,7 +59,7 @@ public class MetaStoreServer {
 
   /** Main method. This comment makes the linter happy. */
   public static void main(String[] args) throws Exception {
-    System.out.println("MetaStore server");
+    LOG.info("MetaStore server");
     printVersion();
 
     ArgumentParser parser = ArgumentParsers.newFor("metastore").build();
@@ -67,11 +68,11 @@ public class MetaStoreServer {
     Namespace res = parser.parseArgs(args);
     String configPath = res.getString("config");
     if (configPath == null) {
-      System.out.println("No configuration file set via argument, setting from environment.");
+      LOG.info("No configuration file set via argument, setting from environment.");
       configPath = System.getenv("METASTORE_CONFIG_PATH");
-      System.out.println("Taking configuration file: " + configPath);
+      LOG.info("Taking configuration file: " + configPath);
     } else {
-      System.out.println("Taking configuration file: " + configPath);
+      LOG.info("Taking configuration file: " + configPath);
     }
 
     // 2. Configure 100% sample rate, otherwise, few traces will be sampled.
@@ -80,7 +81,11 @@ public class MetaStoreServer {
     traceConfig.updateActiveTraceParams(
         activeTraceParams.toBuilder().setSampler(Samplers.alwaysSample()).build());
 
-    MetaStoreServer server = new MetaStoreServer(configPath, 8980);
+    String port = System.getenv("PORT");
+    if (port == null) {
+      port = "8980";
+    }
+    MetaStoreServer server = new MetaStoreServer(configPath, Integer.valueOf(port));
     server.start();
     server.blockUntilShutdown();
   }
@@ -88,7 +93,7 @@ public class MetaStoreServer {
   /** Start serving requests. */
   public void start() throws IOException {
     server.start();
-    logger.info("Server started, listening on " + port);
+    LOG.info("Server started, listening on " + port);
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread(

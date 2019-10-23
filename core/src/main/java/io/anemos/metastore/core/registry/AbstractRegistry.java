@@ -20,11 +20,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractRegistry implements RegistryInfo {
 
-  private static final Logger LOG = Logger.getLogger(AbstractRegistry.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractRegistry.class);
   protected final Registries registries;
   protected final String name;
   private List<BindProvider> bindProviders;
@@ -49,7 +50,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
     this.eventingProviders = new ArrayList<>();
 
     if (config.storage == null) {
-      System.out.println("Storage Provider not configured, defaulting to in memory provider");
+      LOG.warn("Storage Provider not configured, defaulting to in memory provider");
       config.storage = new ProviderConfig();
       config.storage.providerClass = "io.anemos.metastore.provider.InMemoryStorage";
     }

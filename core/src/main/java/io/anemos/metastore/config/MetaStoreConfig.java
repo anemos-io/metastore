@@ -1,8 +1,10 @@
 package io.anemos.metastore.config;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetaStoreConfig {
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStoreConfig.class);
 
   public ProviderConfig storage;
 
@@ -11,9 +13,8 @@ public class MetaStoreConfig {
   public GitGlobalConfig git;
 
   public MetaStoreConfig resolve() {
-    final Logger logger = Logger.getLogger(MetaStoreConfig.class.getName());
     if (registries == null) {
-      System.out.println("No repositories configured, creating default repo");
+      LOG.info("No repositories configured, creating default repo");
       registries = new RegistryConfig[] {new RegistryConfig("default")};
     }
     for (RegistryConfig registry : registries) {

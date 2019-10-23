@@ -3,14 +3,17 @@ package io.anemos.metastore;
 import io.anemos.metastore.config.ConfigLoader;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.core.registry.Registries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetaStore {
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStore.class);
   Registries registries;
 
   public MetaStore(String configPath) {
     MetaStoreConfig config;
     if (configPath == null) {
-      System.out.println("Default config not set, running in demo mode");
+      LOG.warn("Default config not set, running in demo mode");
       config = new MetaStoreConfig();
     } else {
       config = ConfigLoader.load(configPath);

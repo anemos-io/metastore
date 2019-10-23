@@ -10,12 +10,8 @@ import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 class ShadowRegistry extends AbstractRegistry {
-
-  private static final Logger LOG = Logger.getLogger(ShadowRegistry.class.getName());
-
   private Report delta;
   private String shadowOf;
 

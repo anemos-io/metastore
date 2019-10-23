@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     compile(project(':proto'))
+    compile("org.slf4j:slf4j-api:1.7.28")
     compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
     compile("io.grpc:grpc-stub:${versions.grpc}")
     compile("io.grpc:grpc-protobuf:${versions.grpc}")
@@ -25,7 +26,6 @@ dependencies {
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
     compile("commons-io:commons-io:2.6")
-
 
     testImplementation("junit:junit:4.12")
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'

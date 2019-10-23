@@ -9,6 +9,13 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## 0.6.3
+### Added
+- Port is now configured through the PORT environment variable
+
+### Changed
+- Changed to SL4J
+
 ## 0.6.2
 ### Fixed
 - Fixed a NPE is the ProtoDiffer

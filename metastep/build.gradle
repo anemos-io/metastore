@@ -46,7 +46,6 @@ jib {
 processResources {
     doFirst {
         File file = new File("$sourceSets.main.output.resourcesDir/io/anemos/metastore/metastep/version.properties");
-        System.out.println(file);
         file.getParentFile().mkdirs();
         file.withWriter { w ->
             Properties p = new Properties()

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -64,6 +65,7 @@ public class StorageProviderTest {
     writeReadTest(provider);
   }
 
+  @Ignore
   @Test
   public void googleCloudStorageProviderTest() throws Exception {
     Map<String, String> config = new HashMap<>();
