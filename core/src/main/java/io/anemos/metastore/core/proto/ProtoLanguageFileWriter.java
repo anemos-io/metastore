@@ -356,6 +356,11 @@ public class ProtoLanguageFileWriter {
 
       extensions();
 
+      for (Descriptors.EnumDescriptor enumDescriptor : fd.getEnumTypes()) {
+        writer.println();
+        enumType(enumDescriptor, 0);
+      }
+
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
         writer.println();
         messageType(messageType, 0);

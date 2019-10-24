@@ -9,6 +9,9 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.GitHostConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.PContainer;
+import io.opencensus.common.Scope;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 class MetaGit {
   private static final Logger LOG = LoggerFactory.getLogger(MetaGit.class);
+  private static final Tracer TRACER = Tracing.getTracer();
   private final RegistryConfig config;
   private final GitGlobalConfig global;
   private Git gitRepo;
@@ -51,7 +55,7 @@ class MetaGit {
       return;
     }
 
-    try {
+    try (Scope ss = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
       if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
         protoContainer.writeToDirectory(new File(config.git.path).toPath().toString());
         return;
@@ -92,6 +96,7 @@ class MetaGit {
     if (config.git == null) {
       return;
     }
+    LOG.info("Git Enabled");
 
     try {
       final File ssh = sshPrivateKey();
@@ -169,6 +174,8 @@ class MetaGit {
               }
             };
 
+        LOG.info("Git Local: " + config.git.path);
+        LOG.info("Git Remote: " + config.git.remote);
         this.gitRepo =
             Git.cloneRepository()
                 .setURI(config.git.remote)

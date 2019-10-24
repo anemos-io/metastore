@@ -9,6 +9,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## 0.6.4
+### Added
+- Span and logging for git operations
+
+### Changed
+
+### Fixed
+- Proto writer now outputs enum types.
+
 ## 0.6.3
 ### Added
 - Port is now configured through the PORT environment variable
