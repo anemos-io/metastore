@@ -6,14 +6,17 @@ import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.anemos.metastore.v1alpha1.ResultCount;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +48,8 @@ public class MetaStep {
     submitParser.addArgument("-w", "--workspace").required(false);
     submitParser.addArgument("-s", "--server").required(true);
     submitParser.addArgument("-r", "--registry").required(false);
+    submitParser.addArgument("-t", "--tls").required(false);
+    submitParser.addArgument("-e", "--tls_env").required(false);
 
     Subparser validateParser = subparsers.addParser("validate").help("validate help");
     validateParser.setDefault("sub-command", "validate");
@@ -54,6 +59,8 @@ public class MetaStep {
     validateParser.addArgument("-w", "--workspace").required(false);
     validateParser.addArgument("-s", "--server").required(true);
     validateParser.addArgument("-r", "--registry").required(false);
+    validateParser.addArgument("-t", "--tls").required(false);
+    validateParser.addArgument("-e", "--tls_env").required(false);
 
     //        streamParser.addArgument("-e", "--env")
     //                .choices("production", "staging", "integration")
@@ -80,8 +87,32 @@ public class MetaStep {
       protoInclude = "/usr/include";
     }
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-    schemaRegistry = RegistryGrpc.newBlockingStub(channel);
+    String tlsFileName = res.getString("tls");
+    if (tlsFileName == null) {
+      String tlsEnv = res.getString("tls_env");
+      if (tlsEnv != null) {
+        File tlsFile = File.createTempFile("tls", ".pem");
+        tlsFileName = tlsFile.getAbsolutePath();
+        String tlsBase64 = System.getenv(tlsEnv);
+        if (tlsBase64 == null) {
+          throw new RuntimeException("No ENVIRONMENT_VARIABLE of name " + tlsEnv + " found.");
+        }
+        try (FileOutputStream writer = new FileOutputStream(tlsFile)) {
+          writer.write(Base64.getDecoder().decode(tlsBase64));
+        }
+      }
+    }
+
+    NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, port);
+    if (tlsFileName != null) {
+      SslContext sslContext =
+          GrpcSslContexts.forClient().trustManager(new File(tlsFileName)).build();
+
+      channelBuilder.sslContext(sslContext).useTransportSecurity().build();
+    } else {
+      channelBuilder.usePlaintext();
+    }
+    schemaRegistry = RegistryGrpc.newBlockingStub(channelBuilder.build());
   }
 
   private static void printVersion() {

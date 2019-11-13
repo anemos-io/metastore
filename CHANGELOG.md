@@ -9,6 +9,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+## 0.6.5
+
+### Added
+
+- Support to connect via meta step with supplied certificates
+
 ## 0.6.4
 ### Added
 - Span and logging for git operations
