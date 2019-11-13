@@ -1,6 +1,7 @@
 package io.anemos.metastore.core.proto;
 
-import com.google.protobuf.*;
+import com.google.protobuf.DescriptorProtos;
+import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.test.OptionsTest;
 import io.anemos.metastore.core.test.TestOption;
 import java.io.ByteArrayOutputStream;
@@ -283,6 +284,78 @@ public class ProtoLanguageFileWriterTest {
             + "\tbool primitive_bool = 15;\n"
             + "\tstring primitive_string = 16;\n"
             + "\tbytes primitive_bytes = 17;\n"
+            + "}\n";
+    Assert.assertEquals(expected, outputStream.toString());
+  }
+
+  @Test
+  public void serviceTest() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder()
+            .setName("test")
+            .setSyntax("proto3")
+            .addDependency("google/protobuf/descriptor.proto");
+
+    DescriptorProtos.DescriptorProto methodRequest =
+        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodRequest").build();
+
+    DescriptorProtos.DescriptorProto methodResponse =
+        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodResponse").build();
+
+    DescriptorProtos.ServiceDescriptorProto service =
+        DescriptorProtos.ServiceDescriptorProto.newBuilder()
+            .setName("Service")
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("FirstMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse"))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("ClientStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setClientStreaming(true))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("ServerStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setServerStreaming(true))
+            .build();
+
+    fileDescriptorProtoBuilder.addService(service);
+    fileDescriptorProtoBuilder.addMessageType(methodRequest);
+    fileDescriptorProtoBuilder.addMessageType(methodResponse);
+
+    Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
+    dependencies[0] = DescriptorProtos.getDescriptor();
+
+    Descriptors.FileDescriptor fileDescriptor =
+        Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), dependencies);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    ProtoLanguageFileWriter.write(fileDescriptor, outputStream);
+
+    String expected =
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"google/protobuf/descriptor.proto\";\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "service Service {\n"
+            + "\trpc FirstMethod(MethodRequest) returns (MethodResponse)\n"
+            + "\trpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse)\n"
+            + "\trpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse)\n"
+            + "}\n"
+            + "\n"
+            + "message MethodRequest {\n"
+            + "\n"
+            + "}\n"
+            + "\n"
+            + "message MethodResponse {\n"
+            + "\n"
             + "}\n";
     Assert.assertEquals(expected, outputStream.toString());
   }

@@ -13,7 +13,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
@@ -51,6 +57,16 @@ public class ProtoLanguageFileWriter {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     write(fd, byteArrayOutputStream);
     return byteArrayOutputStream.toString();
+  }
+
+  private static String unsignedToString(final long value) {
+    if (value >= 0) {
+      return Long.toString(value);
+    } else {
+      // Pull off the most-significant bit so that BigInteger doesn't think
+      // the number is negative, then set it again using setBit().
+      return BigInteger.valueOf(value & 0x7FFFFFFFFFFFFFFFL).setBit(63).toString();
+    }
   }
 
   public void write(PrintWriter writer) {
@@ -361,6 +377,11 @@ public class ProtoLanguageFileWriter {
         enumType(enumDescriptor, 0);
       }
 
+      for (Descriptors.ServiceDescriptor serviceDescriptor : fd.getServices()) {
+        writer.println();
+        serviceType(serviceDescriptor, 0);
+      }
+
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
         writer.println();
         messageType(messageType, 0);
@@ -369,6 +390,32 @@ public class ProtoLanguageFileWriter {
       List<DescriptorProtos.UninterpretedOption> uninterpretedOptionList =
           fd.getOptions().getUninterpretedOptionList();
       System.out.println();
+    }
+
+    private void serviceType(Descriptors.ServiceDescriptor serviceDescriptor, int indent) {
+      indent(indent);
+      writer.print("service ");
+      writer.print(serviceDescriptor.getName());
+      writer.println(" {");
+      for (Descriptors.MethodDescriptor method : serviceDescriptor.getMethods()) {
+        indent(indent + 1);
+        writer.print("rpc ");
+        writer.print(method.getName());
+        writer.print("(");
+        if (method.isClientStreaming()) {
+          writer.print("stream ");
+        }
+        writer.print(method.getInputType().getFullName());
+        writer.print(") returns (");
+        if (method.isServerStreaming()) {
+          writer.print("stream ");
+        }
+        writer.print(method.getOutputType().getFullName());
+        writer.println(")");
+      }
+
+      indent(indent);
+      writer.println("}");
     }
 
     private void enumType(Descriptors.EnumDescriptor enumType, int indent) {
@@ -620,16 +667,6 @@ public class ProtoLanguageFileWriter {
             fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
       }
       return unknownFieldValues;
-    }
-  }
-
-  private static String unsignedToString(final long value) {
-    if (value >= 0) {
-      return Long.toString(value);
-    } else {
-      // Pull off the most-significant bit so that BigInteger doesn't think
-      // the number is negative, then set it again using setBit().
-      return BigInteger.valueOf(value & 0x7FFFFFFFFFFFFFFFL).setBit(63).toString();
     }
   }
 }

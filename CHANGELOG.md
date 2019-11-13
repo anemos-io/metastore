@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## unreleased
 
 ### Added
+- Write service type to the proto file writer
 
 ### Changed
 
@@ -12,7 +13,6 @@ All notable changes to this project will be documented in this file.
 ## 0.6.5
 
 ### Added
-
 - Support to connect via meta step with supplied certificates
 
 ## 0.6.4
