@@ -14,6 +14,27 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ProtoLanguageFileWriterTest {
 
+  private void testOutput(
+      DescriptorProtos.FileDescriptorProto.Builder protoBuilder,
+      PContainer container,
+      String expected)
+      throws Descriptors.DescriptorValidationException {
+    Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
+    dependencies[0] = OptionsTest.getDescriptor();
+    Descriptors.FileDescriptor fileDescriptor =
+        Descriptors.FileDescriptor.buildFrom(protoBuilder.build(), dependencies);
+
+    testOutput(fileDescriptor, container, expected);
+  }
+
+  private void testOutput(
+      Descriptors.FileDescriptor fileDescriptor, PContainer container, String expected)
+      throws Descriptors.DescriptorValidationException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    ProtoLanguageFileWriter.write(fileDescriptor, container, outputStream);
+    Assert.assertEquals(expected, outputStream.toString());
+  }
+
   @Test
   public void noPackageSetTest() throws Exception {
     DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
@@ -24,13 +45,18 @@ public class ProtoLanguageFileWriterTest {
     descriptor.setName("TestMessage");
     fileDescriptorProtoBuilder.addMessageType(descriptor);
 
-    Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[0];
-    Descriptors.FileDescriptor fileDescriptor =
-        Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), dependencies);
-
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, outputStream);
-    Assert.assertFalse(outputStream.toString().contains("package"));
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"options_test.proto\";\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "message TestMessage {\n"
+            + "\n"
+            + "}\n");
   }
 
   @Test
@@ -61,15 +87,9 @@ public class ProtoLanguageFileWriterTest {
     descriptor.setOptions(messageOptions);
     fileDescriptorProtoBuilder.addMessageType(descriptor);
 
-    Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
-    dependencies[0] = OptionsTest.getDescriptor();
-    Descriptors.FileDescriptor fileDescriptor =
-        Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), dependencies);
-
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, outputStream);
-
-    String expected =
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"options_test.proto\";\n"
@@ -86,8 +106,7 @@ public class ProtoLanguageFileWriterTest {
             + "\toption anemos.metastore.core.test.test_option.(int64) = 10;\n"
             + "\toption anemos.metastore.core.test.test_option.(test_enum) = ENUM2;\n"
             + "\n"
-            + "}\n";
-    Assert.assertEquals(expected, outputStream.toString());
+            + "}\n");
   }
 
   @Test
@@ -127,10 +146,9 @@ public class ProtoLanguageFileWriterTest {
     Descriptors.FileDescriptor fileDescriptor =
         Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), list);
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, outputStream);
-
-    String expected =
+    testOutput(
+        fileDescriptor,
+        null,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"options_test.proto\";\n"
@@ -145,8 +163,7 @@ public class ProtoLanguageFileWriterTest {
             + "\t];\n"
             + "\n"
             + "\tstring field2 = 124;\n"
-            + "}\n";
-    Assert.assertEquals(expected, outputStream.toString());
+            + "}\n");
   }
 
   @Test
@@ -195,10 +212,9 @@ public class ProtoLanguageFileWriterTest {
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/complex.proto");
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, PContainer, outputStream);
-
-    String expected =
+    testOutput(
+        fileDescriptor,
+        PContainer,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"test/v1/option.proto\";\n"
@@ -284,8 +300,7 @@ public class ProtoLanguageFileWriterTest {
             + "\tbool primitive_bool = 15;\n"
             + "\tstring primitive_string = 16;\n"
             + "\tbytes primitive_bytes = 17;\n"
-            + "}\n";
-    Assert.assertEquals(expected, outputStream.toString());
+            + "}\n");
   }
 
   @Test
@@ -328,19 +343,12 @@ public class ProtoLanguageFileWriterTest {
     fileDescriptorProtoBuilder.addMessageType(methodRequest);
     fileDescriptorProtoBuilder.addMessageType(methodResponse);
 
-    Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
-    dependencies[0] = DescriptorProtos.getDescriptor();
-
-    Descriptors.FileDescriptor fileDescriptor =
-        Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), dependencies);
-
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ProtoLanguageFileWriter.write(fileDescriptor, outputStream);
-
-    String expected =
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
         "syntax = \"proto3\";\n"
             + "\n"
-            + "import \"google/protobuf/descriptor.proto\";\n"
+            + "import \"options_test.proto\";\n"
             + "\n"
             + "\n"
             + "\n"
@@ -356,7 +364,6 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "message MethodResponse {\n"
             + "\n"
-            + "}\n";
-    Assert.assertEquals(expected, outputStream.toString());
+            + "}\n");
   }
 }
