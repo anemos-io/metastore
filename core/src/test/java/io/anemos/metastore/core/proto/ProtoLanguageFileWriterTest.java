@@ -2,17 +2,49 @@ package io.anemos.metastore.core.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.test.OptionsTest;
-import io.anemos.metastore.core.test.TestOption;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import test.v1.Option;
 
 @RunWith(JUnit4.class)
 public class ProtoLanguageFileWriterTest {
+
+  static final Option.TestOption TEST_MINIMAL =
+      Option.TestOption.newBuilder()
+          .setSingleString("minimal")
+          .addRepeatedString("test1")
+          .addRepeatedString("test2")
+          .setSingleInt32(2)
+          .addRepeatedInt32(3)
+          .setSingleEnum(Option.TestOption.TestEnum.ENUM2)
+          .build();
+
+  static final Option.TestOption TEST_OPTION =
+      Option.TestOption.newBuilder()
+          .setSingleString("testString")
+          .addRepeatedString("test1")
+          .addRepeatedString("test2")
+          .setSingleInt32(2)
+          .addRepeatedInt32(3)
+          .addRepeatedInt32(4)
+          .setSingleInt64(10)
+          //              .setSingleBytes(ByteString.copyFrom(new byte[] { 0x00, 0x01, 0x02 }))
+          .setSingleEnum(Option.TestOption.TestEnum.ENUM2)
+          .setSingleMessage(TEST_MINIMAL)
+          .build();
+
+  static final List STING_LIST = new ArrayList<String>();
+
+  static {
+    STING_LIST.add("Value I");
+    STING_LIST.add("Value II");
+    STING_LIST.add("Value III");
+  }
 
   private void testOutput(
       DescriptorProtos.FileDescriptorProto.Builder protoBuilder,
@@ -20,7 +52,7 @@ public class ProtoLanguageFileWriterTest {
       String expected)
       throws Descriptors.DescriptorValidationException {
     Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
-    dependencies[0] = OptionsTest.getDescriptor();
+    dependencies[0] = Option.getDescriptor();
     Descriptors.FileDescriptor fileDescriptor =
         Descriptors.FileDescriptor.buildFrom(protoBuilder.build(), dependencies);
 
@@ -50,61 +82,11 @@ public class ProtoLanguageFileWriterTest {
         null,
         "syntax = \"proto3\";\n"
             + "\n"
-            + "import \"options_test.proto\";\n"
+            + "import \"test/v1/option.proto\";\n"
             + "\n"
             + "\n"
             + "\n"
             + "message TestMessage {\n"
-            + "\n"
-            + "}\n");
-  }
-
-  @Test
-  public void messageOptionTest() throws Exception {
-    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
-        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
-
-    DescriptorProtos.DescriptorProto.Builder descriptor =
-        DescriptorProtos.DescriptorProto.newBuilder();
-    descriptor.setName("TestMessage");
-
-    TestOption testOption =
-        TestOption.newBuilder()
-            .setString("testString")
-            .addRepeatedString("test1")
-            .addRepeatedString("test2")
-            .setInt32(2)
-            .addRepeatedInt32(3)
-            .addRepeatedInt32(4)
-            .setInt64(10)
-            .setTestEnum(TestOption.TestEnum.ENUM2)
-            .build();
-    DescriptorProtos.MessageOptions messageOptions =
-        DescriptorProtos.MessageOptions.newBuilder()
-            .setExtension(OptionsTest.testOption, testOption)
-            .build();
-
-    descriptor.setOptions(messageOptions);
-    fileDescriptorProtoBuilder.addMessageType(descriptor);
-
-    testOutput(
-        fileDescriptorProtoBuilder,
-        null,
-        "syntax = \"proto3\";\n"
-            + "\n"
-            + "import \"options_test.proto\";\n"
-            + "\n"
-            + "\n"
-            + "\n"
-            + "message TestMessage {\n"
-            + "\toption anemos.metastore.core.test.test_option.(string) = \"testString\";\n"
-            + "\toption anemos.metastore.core.test.test_option.(repeated_string) = \"test1\";\n"
-            + "\toption anemos.metastore.core.test.test_option.(repeated_string) = \"test2\";\n"
-            + "\toption anemos.metastore.core.test.test_option.(int32) = 2;\n"
-            + "\toption anemos.metastore.core.test.test_option.(repeated_int32) = 3;\n"
-            + "\toption anemos.metastore.core.test.test_option.(repeated_int32) = 4;\n"
-            + "\toption anemos.metastore.core.test.test_option.(int64) = 10;\n"
-            + "\toption anemos.metastore.core.test.test_option.(test_enum) = ENUM2;\n"
             + "\n"
             + "}\n");
   }
@@ -125,8 +107,8 @@ public class ProtoLanguageFileWriterTest {
             .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING)
             .setOptions(
                 DescriptorProtos.FieldOptions.newBuilder()
-                    .setExtension(OptionsTest.fieldOption1, 123)
-                    .setExtension(OptionsTest.fieldOption2, "something")
+                    .setExtension(Option.fieldOption1, 123)
+                    .setExtension(Option.fieldOption2, "something")
                     .build());
 
     DescriptorProtos.FieldDescriptorProto.Builder fieldDescriptorProtoBuilder2 =
@@ -140,7 +122,7 @@ public class ProtoLanguageFileWriterTest {
     fileDescriptorProtoBuilder.addMessageType(descriptor);
 
     ArrayList<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
-    dependencies.add(OptionsTest.getDescriptor());
+    dependencies.add(Option.getDescriptor());
     Descriptors.FileDescriptor[] list = new Descriptors.FileDescriptor[dependencies.size()];
     dependencies.toArray(list);
     Descriptors.FileDescriptor fileDescriptor =
@@ -151,15 +133,15 @@ public class ProtoLanguageFileWriterTest {
         null,
         "syntax = \"proto3\";\n"
             + "\n"
-            + "import \"options_test.proto\";\n"
+            + "import \"test/v1/option.proto\";\n"
             + "\n"
             + "\n"
             + "\n"
             + "message TestMessage {\n"
             + "\n"
             + "\tstring string = 123 [\n"
-            + "\t\t(anemos.metastore.core.test.field_option_1) = 123, \n"
-            + "\t\t(anemos.metastore.core.test.field_option_2) = \"something\"\n"
+            + "\t\t(test.v1.field_option_1) = 123, \n"
+            + "\t\t(test.v1.field_option_2) = \"something\"\n"
             + "\t];\n"
             + "\n"
             + "\tstring field2 = 124;\n"
@@ -304,7 +286,46 @@ public class ProtoLanguageFileWriterTest {
   }
 
   @Test
-  public void serviceTest() throws Exception {
+  public void writeMessage() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
+
+    DescriptorProtos.DescriptorProto.Builder descriptor =
+        DescriptorProtos.DescriptorProto.newBuilder();
+    descriptor.setName("TestMessage");
+
+    DescriptorProtos.MessageOptions messageOptions =
+        DescriptorProtos.MessageOptions.newBuilder()
+            .setExtension(Option.messageOption, TEST_OPTION)
+            .build();
+
+    descriptor.setOptions(messageOptions);
+    fileDescriptorProtoBuilder.addMessageType(descriptor);
+
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"test/v1/option.proto\";\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "message TestMessage {\n"
+            + "\toption test.v1.message_option.(single_string) = \"testString\";\n"
+            + "\toption test.v1.message_option.(repeated_string) = \"test1\";\n"
+            + "\toption test.v1.message_option.(repeated_string) = \"test2\";\n"
+            + "\toption test.v1.message_option.(single_int32) = 2;\n"
+            + "\toption test.v1.message_option.(repeated_int32) = 3;\n"
+            + "\toption test.v1.message_option.(repeated_int32) = 4;\n"
+            + "\toption test.v1.message_option.(single_int64) = 10;\n"
+            + "\toption test.v1.message_option.(single_enum) = ENUM2;\n"
+            + "\n"
+            + "}\n");
+  }
+
+  @Test
+  public void writeService() throws Exception {
     DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
         DescriptorProtos.FileDescriptorProto.newBuilder()
             .setName("test")
@@ -336,7 +357,28 @@ public class ProtoLanguageFileWriterTest {
                     .setName("ServerStreamingMethod")
                     .setInputType("MethodRequest")
                     .setOutputType("MethodResponse")
-                    .setServerStreaming(true))
+                    .setServerStreaming(true)
+                    .setOptions(
+                        DescriptorProtos.MethodOptions.newBuilder()
+                            .setExtension(Option.methodOption, TEST_MINIMAL)))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("BiStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setClientStreaming(true)
+                    .setServerStreaming(true)
+                    .setOptions(
+                        DescriptorProtos.MethodOptions.newBuilder()
+                            .setExtension(Option.methodOption, TEST_OPTION)
+                            .setExtension(Option.methodOption1, 12)
+                            .setExtension(Option.methodOption2, "String")
+                            .setExtension(Option.methodOptionN, STING_LIST)
+                            .build()))
+            .setOptions(
+                DescriptorProtos.ServiceOptions.newBuilder()
+                    .setExtension(Option.serviceOption, TEST_OPTION)
+                    .build())
             .build();
 
     fileDescriptorProtoBuilder.addService(service);
@@ -348,14 +390,47 @@ public class ProtoLanguageFileWriterTest {
         null,
         "syntax = \"proto3\";\n"
             + "\n"
-            + "import \"options_test.proto\";\n"
+            + "import \"test/v1/option.proto\";\n"
             + "\n"
             + "\n"
             + "\n"
             + "service Service {\n"
-            + "\trpc FirstMethod(MethodRequest) returns (MethodResponse)\n"
-            + "\trpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse)\n"
-            + "\trpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse)\n"
+            + "\trpc FirstMethod(MethodRequest) returns (MethodResponse) {}\n"
+            + "\trpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse) {}\n"
+            + "\trpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse) {\n"
+            + "\t\toption (test.v1.method_option) = {\n"
+            + "\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3]\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t};\n"
+            + "\n"
+            + "\t}\n"
+            + "\trpc BiStreamingMethod(stream MethodRequest) returns (stream MethodResponse) {\n"
+            + "\t\toption (test.v1.method_option) = {\n"
+            + "\t\t\tsingle_string: \"testString\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\tsingle_int64: 10\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\tsingle_message: {\n"
+            + "\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t};\n"
+            + "\n"
+            + "\t\t};\n"
+            + "\t\toption (test.v1.method_option_1) = 12;\n"
+            + "\t\toption (test.v1.method_option_2) = \"String\";\n"
+            + "\t\toption (test.v1.method_option_n) = \"Value I\";\n"
+            + "\t\toption (test.v1.method_option_n) = \"Value II\";\n"
+            + "\t\toption (test.v1.method_option_n) = \"Value III\";\n"
+            + "\n"
+            + "\t}\n"
             + "}\n"
             + "\n"
             + "message MethodRequest {\n"

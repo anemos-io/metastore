@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
@@ -81,12 +82,12 @@ public class ProtoLanguageFileWriter {
       this.writer = writer;
     }
 
-    private void fileOptions() {
+    private void writeOptionsForFile() {
       DescriptorProtos.FileOptions options = fd.toProto().getOptions();
 
       for (Map.Entry<Descriptors.FieldDescriptor, Object> field :
           options.getAllFields().entrySet()) {
-        writeFileOption(field.getKey(), field.getValue(), false);
+        writeOptionForFile(field.getKey(), field.getValue());
       }
       if (!options.getUnknownFields().asMap().isEmpty()) {
         HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
@@ -95,31 +96,31 @@ public class ProtoLanguageFileWriter {
         for (Descriptors.FieldDescriptor fd : keys) {
           Collection<String> values = unknownOptionsMap.get(fd);
           for (String value : values) {
-            writeFileOption(fd, value, true);
+            writeOptionForField(fd, value);
           }
         }
       }
       writer.println();
     }
 
-    private void writeFileOption(Descriptors.FieldDescriptor fd, Object value, boolean unknown) {
+    private void writeOptionForField(Descriptors.FieldDescriptor fd, Object value) {
       writer.print("option ");
-      if (unknown) {
-        writer.print("(");
-      }
+      writer.print("(");
       writer.print(fd.getName());
-      if (unknown) {
-        writer.print(")");
-      }
+      writer.print(")");
+      writer.print(" = ");
+      writer.print(value);
+      writer.println(";");
+    }
+
+    private void writeOptionForFile(Descriptors.FieldDescriptor fd, Object value) {
+      writer.print("option ");
+      writer.print(fd.getName());
       writer.print(" = ");
       if (fd.getType() == Descriptors.FieldDescriptor.Type.STRING) {
-        if (!unknown) {
-          writer.print("\"");
-        }
+        writer.print("\"");
         writer.print(value);
-        if (!unknown) {
-          writer.print("\"");
-        }
+        writer.print("\"");
       } else {
         writer.print(value);
       }
@@ -321,6 +322,53 @@ public class ProtoLanguageFileWriter {
       }
     }
 
+    private String value(Descriptors.FieldDescriptor fd, Object value) {
+      StringBuilder stringBuilder = new StringBuilder();
+      if (fd.getType() == Descriptors.FieldDescriptor.Type.STRING) {
+        stringBuilder.append("\"");
+        stringBuilder.append(value);
+        stringBuilder.append("\"");
+      } else {
+        stringBuilder.append(value);
+      }
+      return stringBuilder.toString();
+    }
+
+    private void writeValue(Descriptors.FieldDescriptor fd, Object value) {
+      if (fd.isRepeated() && value instanceof List) {
+        List values = (List) value;
+        List<String> stringList = new ArrayList<>();
+        writer.print('[');
+        values.forEach(
+            v -> {
+              stringList.add(value(fd, v));
+            });
+        writer.print(stringList.stream().collect(Collectors.joining(",")));
+        writer.print(']');
+      } else {
+        writer.print(value(fd, value));
+      }
+    }
+
+    private void writeMessageValue(Message v, int indent) {
+      writer.println("{");
+      v.getAllFields()
+          .forEach(
+              (fieldDescriptor, value) -> {
+                indent(indent + 1);
+                writer.print(fieldDescriptor.getName());
+                writer.print(": ");
+                if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                  writeMessageValue((Message) value, indent + 1);
+                } else {
+                  writeValue(fieldDescriptor, value);
+                }
+                writer.println();
+              });
+      indent(indent);
+      writer.println("};");
+    }
+
     private void message(Message v) {
       writer.println("{");
       for (Map.Entry<Descriptors.FieldDescriptor, Object> field : v.getAllFields().entrySet()) {
@@ -362,7 +410,7 @@ public class ProtoLanguageFileWriter {
               });
       writer.println();
 
-      fileOptions();
+      writeOptionsForFile();
 
       if (!fd.getPackage().isEmpty()) {
         writer.print("package ");
@@ -379,7 +427,7 @@ public class ProtoLanguageFileWriter {
 
       for (Descriptors.ServiceDescriptor serviceDescriptor : fd.getServices()) {
         writer.println();
-        serviceType(serviceDescriptor, 0);
+        writeService(serviceDescriptor, 0);
       }
 
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
@@ -392,10 +440,11 @@ public class ProtoLanguageFileWriter {
       System.out.println();
     }
 
-    private void serviceType(Descriptors.ServiceDescriptor serviceDescriptor, int indent) {
+    private void writeService(Descriptors.ServiceDescriptor serviceDescriptor, int indent) {
       indent(indent);
       writer.print("service ");
       writer.print(serviceDescriptor.getName());
+
       writer.println(" {");
       for (Descriptors.MethodDescriptor method : serviceDescriptor.getMethods()) {
         indent(indent + 1);
@@ -411,7 +460,15 @@ public class ProtoLanguageFileWriter {
           writer.print("stream ");
         }
         writer.print(method.getOutputType().getFullName());
-        writer.println(")");
+        DescriptorProtos.MethodOptions options = method.getOptions();
+        if (options.getAllFields().size() == 0) {
+          writer.println(") {}");
+        } else {
+          writer.println(") {");
+          writeOptionsForMethod(options, indent + 1);
+          indent(indent + 1);
+          writer.println("}");
+        }
       }
 
       indent(indent);
@@ -440,7 +497,7 @@ public class ProtoLanguageFileWriter {
       writer.print(messageType.getName());
       writer.println(" {");
 
-      messageOptions(messageType, indent);
+      writeOptionsForMessage(messageType, indent);
 
       for (Descriptors.Descriptor nestedType : messageType.getNestedTypes()) {
         if (!nestedType.getOptions().getMapEntry()) {
@@ -483,7 +540,7 @@ public class ProtoLanguageFileWriter {
       writer.println("}");
     }
 
-    private void messageOptions(Descriptors.Descriptor messageDescriptor, int indent) {
+    private void writeOptionsForMessage(Descriptors.Descriptor messageDescriptor, int indent) {
       Map<Descriptors.FieldDescriptor, Object> allFields =
           messageDescriptor.getOptions().getAllFields();
       allFields.forEach(
@@ -497,7 +554,7 @@ public class ProtoLanguageFileWriter {
                 List<Object> repeatedMessage = (List<Object>) value;
                 for (Object repeatedObject : repeatedMessage) {
                   String optionsValue = getOptionValue(subFieldDescriptor, repeatedObject);
-                  printMessageOption(
+                  writeOptionForMessage(
                       fieldDescriptor.getFullName(),
                       subFieldDescriptor.getName(),
                       optionsValue,
@@ -505,7 +562,7 @@ public class ProtoLanguageFileWriter {
                 }
               } else {
                 String optionsValue = getOptionValue(subFieldDescriptor, value);
-                printMessageOption(
+                writeOptionForMessage(
                     fieldDescriptor.getFullName(),
                     subFieldDescriptor.getName(),
                     optionsValue,
@@ -523,14 +580,70 @@ public class ProtoLanguageFileWriter {
         for (Descriptors.FieldDescriptor fd : keys) {
           Collection<String> values = unknownOptionsMap.get(fd);
           for (String value : values) {
-            printMessageOption("", fd.getName(), value, indent + 1);
+            writeOptionForMessage("", fd.getName(), value, indent + 1);
           }
         }
       }
       writer.println();
     }
 
-    private void printMessageOption(
+    private void writeOptionForMethod(
+        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
+      indent(indent);
+      writer.print("option (");
+      writer.print(fieldDescriptor.getFullName());
+      writer.print(") = ");
+      if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+        writeMessageValue((Message) value, indent);
+      } else {
+        writeValue(fieldDescriptor, value);
+        writer.println(";");
+      }
+    }
+
+    private void writeOptionsForMethod(DescriptorProtos.MethodOptions options, int indent) {
+      options
+          .getAllFields()
+          .forEach(
+              (fieldDescriptor, value) -> {
+                if (fieldDescriptor.isRepeated()) {
+                  List values = (List) value;
+                  values.forEach(v -> writeOptionForMethod(fieldDescriptor, v, indent + 1));
+                } else {
+                  writeOptionForMethod(fieldDescriptor, value, indent + 1);
+                }
+
+                //                for (Descriptors.FieldDescriptor subFieldDescriptor :
+                //                    fieldDescriptor.getMessageType().getFields()) {
+                //                  Message optionsMessage = (Message) value;
+                //                  Object value = optionsMessage.getField(subFieldDescriptor);
+                //
+                //                  if (subFieldDescriptor.isRepeated()) {
+                //                    List<Object> repeatedMessage = (List<Object>) value;
+                //                    for (Object repeatedObject : repeatedMessage) {
+                //                      String optionsValue = getOptionValue(subFieldDescriptor,
+                // repeatedObject);
+                //                      writeOptionForMessage(
+                //                          fieldDescriptor.getFullName(),
+                //                          subFieldDescriptor.getName(),
+                //                          optionsValue,
+                //                          indent + 1);
+                //                    }
+                //                  } else {
+                //                    String optionsValue = getOptionValue(subFieldDescriptor,
+                // value);
+                //                    writeOptionForMessage(
+                //                        fieldDescriptor.getFullName(),
+                //                        subFieldDescriptor.getName(),
+                //                        optionsValue,
+                //                        indent + 1);
+                //                  }
+                //                }
+              });
+      writer.println();
+    }
+
+    private void writeOptionForMessage(
         String packageName, String optionName, String value, int indent) {
       if (!value.isEmpty()) {
         indent(indent);

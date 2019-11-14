@@ -5,7 +5,6 @@ import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
-import io.anemos.metastore.core.test.TestOption;
 import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
@@ -13,6 +12,7 @@ import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
+import test.v1.Option;
 
 public class OptionDiffTest {
 
@@ -29,7 +29,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -45,7 +45,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadOld();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -61,9 +61,9 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payloadOld = optionChangeInfo.getPayloadOld();
-    TestOption optionOld = TestOption.parseFrom(payloadOld);
+    Option.TestOption optionOld = Option.TestOption.parseFrom(payloadOld);
     ByteString payloadNew = optionChangeInfo.getPayloadNew();
-    TestOption optionNew = TestOption.parseFrom(payloadNew);
+    Option.TestOption optionNew = Option.TestOption.parseFrom(payloadNew);
     Assert.assertNotEquals(optionOld, optionNew);
   }
 
@@ -81,7 +81,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -115,9 +115,9 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payloadOld = optionChangeInfo.getPayloadOld();
-    TestOption optionOld = TestOption.parseFrom(payloadOld);
+    Option.TestOption optionOld = Option.TestOption.parseFrom(payloadOld);
     ByteString payloadNew = optionChangeInfo.getPayloadNew();
-    TestOption optionNew = TestOption.parseFrom(payloadNew);
+    Option.TestOption optionNew = Option.TestOption.parseFrom(payloadNew);
     Assert.assertNotEquals(optionOld, optionNew);
   }
 
@@ -134,7 +134,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -150,7 +150,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   @Test
@@ -166,7 +166,7 @@ public class OptionDiffTest {
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
-    TestOption option = TestOption.parseFrom(payload);
+    Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
   private MessageResult diffMessage(PContainer dRef, PContainer dNew) throws IOException {

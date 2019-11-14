@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## unreleased
 
 ### Added
-- Write service type to the proto file writer
+- ProtoFileWriter: Write service type
+- ProtoFileWriter: Write method options
 
 ### Changed
 
