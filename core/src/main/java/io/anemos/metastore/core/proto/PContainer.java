@@ -35,10 +35,18 @@ public class PContainer {
   private Map<Integer, Descriptors.FileDescriptor> fileOptionDependencyMap;
   private Map<Integer, Descriptors.FileDescriptor> messageOptionDependencyMap;
   private Map<Integer, Descriptors.FileDescriptor> fieldOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> serviceOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> methodOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> enumOptionDependencyMap;
+  private Map<Integer, Descriptors.FileDescriptor> enumValueOptionDependencyMap;
 
   private Map<Integer, Descriptors.FieldDescriptor> fileOptionMap;
   private Map<Integer, Descriptors.FieldDescriptor> messageOptionMap;
   private Map<Integer, Descriptors.FieldDescriptor> fieldOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> serviceOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> methodOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> enumOptionMap;
+  private Map<Integer, Descriptors.FieldDescriptor> enumValueOptionMap;
 
   public PContainer(DescriptorProtos.FileDescriptorSet fileDescriptorSet) {
     fileDescriptorMap = Convert.convertFileDescriptorSet(fileDescriptorSet);
@@ -92,12 +100,28 @@ public class PContainer {
     return Collections.unmodifiableMap(fileOptionMap);
   }
 
-  public Map<Integer, Descriptors.FieldDescriptor> getMessageOptionMap() {
+  Map<Integer, Descriptors.FieldDescriptor> getMessageOptionMap() {
     return Collections.unmodifiableMap(messageOptionMap);
   }
 
-  public Map<Integer, Descriptors.FieldDescriptor> getFieldOptionMap() {
+  Map<Integer, Descriptors.FieldDescriptor> getFieldOptionMap() {
     return Collections.unmodifiableMap(fieldOptionMap);
+  }
+
+  Map<Integer, Descriptors.FieldDescriptor> getServiceOptionMap() {
+    return Collections.unmodifiableMap(serviceOptionMap);
+  }
+
+  Map<Integer, Descriptors.FieldDescriptor> getMethodOptionMap() {
+    return Collections.unmodifiableMap(methodOptionMap);
+  }
+
+  Map<Integer, Descriptors.FieldDescriptor> getEnumOptionMap() {
+    return Collections.unmodifiableMap(enumOptionMap);
+  }
+
+  Map<Integer, Descriptors.FieldDescriptor> getEnumValueOptionMap() {
+    return Collections.unmodifiableMap(enumValueOptionMap);
   }
 
   public Descriptors.FileDescriptor getFileDescriptorByFileName(String fileName) {
@@ -211,12 +235,20 @@ public class PContainer {
   }
 
   private void indexOptionsByNumber() {
+    fileOptionMap = new HashMap<>();
     fileOptionDependencyMap = new HashMap<>();
+    messageOptionMap = new HashMap<>();
     messageOptionDependencyMap = new HashMap<>();
     fieldOptionMap = new HashMap<>();
-    fileOptionMap = new HashMap<>();
-    messageOptionMap = new HashMap<>();
     fieldOptionDependencyMap = new HashMap<>();
+    serviceOptionMap = new HashMap<>();
+    serviceOptionDependencyMap = new HashMap<>();
+    methodOptionMap = new HashMap<>();
+    methodOptionDependencyMap = new HashMap<>();
+    enumOptionMap = new HashMap<>();
+    enumOptionDependencyMap = new HashMap<>();
+    enumValueOptionMap = new HashMap<>();
+    enumValueOptionDependencyMap = new HashMap<>();
     fileDescriptorMap.forEach(
         (fileName, fileDescriptor) -> {
           fileDescriptor
@@ -235,6 +267,22 @@ public class PContainer {
                       case ".google.protobuf.FieldOptions":
                         fieldOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                         fieldOptionMap.put(extension.getNumber(), extension);
+                        break;
+                      case ".google.protobuf.ServiceOptions":
+                        serviceOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        serviceOptionMap.put(extension.getNumber(), extension);
+                        break;
+                      case ".google.protobuf.MethodOptions":
+                        methodOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        methodOptionMap.put(extension.getNumber(), extension);
+                        break;
+                      case ".google.protobuf.Enumptions":
+                        enumOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        enumOptionMap.put(extension.getNumber(), extension);
+                        break;
+                      case ".google.protobuf.EnumValueOptions":
+                        enumValueOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
+                        enumValueOptionMap.put(extension.getNumber(), extension);
                         break;
                     }
                   });

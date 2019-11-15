@@ -140,10 +140,9 @@ public class ProtoLanguageFileWriterTest {
             + "message TestMessage {\n"
             + "\n"
             + "\tstring string = 123 [\n"
-            + "\t\t(test.v1.field_option_1) = 123, \n"
+            + "\t\t(test.v1.field_option_1) = 123,\n"
             + "\t\t(test.v1.field_option_2) = \"something\"\n"
             + "\t];\n"
-            + "\n"
             + "\tstring field2 = 124;\n"
             + "}\n");
   }
@@ -197,92 +196,91 @@ public class ProtoLanguageFileWriterTest {
     testOutput(
         fileDescriptor,
         PContainer,
-        "syntax = \"proto3\";\n" +
-                "\n" +
-                "import \"test/v1/option.proto\";\n" +
-                "\n" +
-                "option (test_file_option) = {\n" +
-                "\tstring: \"test\",\n" +
-                "\trepeated_string: [\"test1\",\"test2\"],\n" +
-                "\tint32: 42,\n" +
-                "\trepeated_int32: [1,2],\n" +
-                "\tint64: 43\n" +
-                "};\n" +
-                "option (string_file_option) = \"test\";\n" +
-                "option (repeated_string_file_option) = \"test1\";\n" +
-                "option (repeated_string_file_option) = \"test2\";\n" +
-                "option (int32_file_option) = 42;\n" +
-                "option (repeated_int32_file_option) = 42;\n" +
-                "option (repeated_int32_file_option) = 43;\n" +
-                "option (int64_file_option) = 42;\n" +
-                "option (repeated_int64_file_option) = 42;\n" +
-                "option (repeated_int64_file_option) = 43;\n" +
-                "option (bool_file_option) = true;\n" +
-                "option (double_file_option) = 3.14;\n" +
-                "option (float_file_option) = 3.14;\n" +
-                "\n" +
-                "package test.v1;\n" +
-                "\n" +
-                "message ProtoBeamBasicMessage {\n" +
-                "\toption (test_option) = {\n" +
-                "\t\tstring: \"test\",\n" +
-                "\t\trepeated_string: [\"test1\",\"test2\"],\n" +
-                "\t\tint32: 42,\n" +
-                "\t\trepeated_int32: [1,2],\n" +
-                "\t\tint64: 43\n" +
-                "\t};\n" +
-                "\toption (string_option) = \"test\";\n" +
-                "\toption (repeated_string_option) = \"test1\";\n" +
-                "\toption (repeated_string_option) = \"test2\";\n" +
-                "\toption (int32_option) = 42;\n" +
-                "\toption (repeated_int32_option) = 42;\n" +
-                "\toption (repeated_int32_option) = 43;\n" +
-                "\toption (int64_option) = 42;\n" +
-                "\toption (repeated_int64_option) = 42;\n" +
-                "\toption (repeated_int64_option) = 43;\n" +
-                "\toption (bool_option) = true;\n" +
-                "\toption (double_option) = 3.14;\n" +
-                "\toption (float_option) = 3.14;\n" +
-                "\n" +
-                "\tstring test_name = 1;\n" +
-                "\tint32 test_index = 2 [\n" +
-                "\t\t(test_field_option) = {\n" +
-                "\t\t\tstring: \"test\",\n" +
-                "\t\t\trepeated_string: [\"test1\",\"test2\"],\n" +
-                "\t\t\tint32: 42,\n" +
-                "\t\t\trepeated_int32: [1,2],\n" +
-                "\t\t\tint64: 43\n" +
-                "\t\t},\n" +
-                "\t\t(string_field_option) = \"test\",\n" +
-                "\t\t(repeated_string_field_option) = \"test1\",\n" +
-                "\t\t(repeated_string_field_option) = \"test2\",\n" +
-                "\t\t(int32_field_option) = 42,\n" +
-                "\t\t(repeated_int32_field_option) = 42,\n" +
-                "\t\t(repeated_int32_field_option) = 43,\n" +
-                "\t\t(int64_field_option) = 42,\n" +
-                "\t\t(repeated_int64_field_option) = 42,\n" +
-                "\t\t(repeated_int64_field_option) = 43,\n" +
-                "\t\t(bool_field_option) = true,\n" +
-                "\t\t(double_field_option) = 3.14,\n" +
-                "\t\t(float_field_option) = 3.14\n" +
-                "\t];\n" +
-                "\n" +
-                "\tdouble primitive_double = 3;\n" +
-                "\tfloat primitive_float = 4;\n" +
-                "\tint32 primitive_int32 = 5;\n" +
-                "\tint64 primitive_int64 = 6;\n" +
-                "\tuint32 primitive_uint32 = 7;\n" +
-                "\tuint64 primitive_uint64 = 8;\n" +
-                "\tsint32 primitive_sint32 = 9;\n" +
-                "\tsint64 primitive_sint64 = 10;\n" +
-                "\tfixed32 primitive_fixed32 = 11;\n" +
-                "\tfixed64 primitive_fixed64 = 12;\n" +
-                "\tsfixed32 primitive_sfixed32 = 13;\n" +
-                "\tsfixed64 primitive_sfixed64 = 14;\n" +
-                "\tbool primitive_bool = 15;\n" +
-                "\tstring primitive_string = 16;\n" +
-                "\tbytes primitive_bytes = 17;\n" +
-                "}\n");
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"test/v1/option.proto\";\n"
+            + "\n"
+            + "option (test.v1.test_file_option) = {\n"
+            + "\tstring: \"test\"\n"
+            + "\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\tint32: 42\n"
+            + "\trepeated_int32: [1,2]\n"
+            + "\tint64: 43\n"
+            + "};\n"
+            + "option (test.v1.string_file_option) = \"test\";\n"
+            + "option (test.v1.repeated_string_file_option) = \"test1\";\n"
+            + "option (test.v1.repeated_string_file_option) = \"test2\";\n"
+            + "option (test.v1.int32_file_option) = 42;\n"
+            + "option (test.v1.repeated_int32_file_option) = 42;\n"
+            + "option (test.v1.repeated_int32_file_option) = 43;\n"
+            + "option (test.v1.int64_file_option) = 42;\n"
+            + "option (test.v1.repeated_int64_file_option) = 42;\n"
+            + "option (test.v1.repeated_int64_file_option) = 43;\n"
+            + "option (test.v1.bool_file_option) = true;\n"
+            + "option (test.v1.double_file_option) = 3.14;\n"
+            + "option (test.v1.float_file_option) = 3.14;\n"
+            + "\n"
+            + "package test.v1;\n"
+            + "\n"
+            + "message ProtoBeamBasicMessage {\n"
+            + "\toption (test.v1.test_option) = {\n"
+            + "\t\tstring: \"test\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tint32: 42\n"
+            + "\t\trepeated_int32: [1,2]\n"
+            + "\t\tint64: 43\n"
+            + "\t};\n"
+            + "\toption (test.v1.string_option) = \"test\";\n"
+            + "\toption (test.v1.repeated_string_option) = \"test1\";\n"
+            + "\toption (test.v1.repeated_string_option) = \"test2\";\n"
+            + "\toption (test.v1.int32_option) = 42;\n"
+            + "\toption (test.v1.repeated_int32_option) = 42;\n"
+            + "\toption (test.v1.repeated_int32_option) = 43;\n"
+            + "\toption (test.v1.int64_option) = 42;\n"
+            + "\toption (test.v1.repeated_int64_option) = 42;\n"
+            + "\toption (test.v1.repeated_int64_option) = 43;\n"
+            + "\toption (test.v1.bool_option) = true;\n"
+            + "\toption (test.v1.double_option) = 3.14;\n"
+            + "\toption (test.v1.float_option) = 3.14;\n"
+            + "\n"
+            + "\tstring test_name = 1;\n"
+            + "\tint32 test_index = 2 [\n"
+            + "\t\t(test.v1.test_field_option) = {\n"
+            + "\t\t\tstring: \"test\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tint32: 42\n"
+            + "\t\t\trepeated_int32: [1,2]\n"
+            + "\t\t\tint64: 43\n"
+            + "\t\t},\n"
+            + "\t\t(test.v1.string_field_option) = \"test\",\n"
+            + "\t\t(test.v1.repeated_string_field_option) = \"test1\",\n"
+            + "\t\t(test.v1.repeated_string_field_option) = \"test2\"\n"
+            + "\t\t(test.v1.int32_field_option) = 42,\n"
+            + "\t\t(test.v1.repeated_int32_field_option) = 42,\n"
+            + "\t\t(test.v1.repeated_int32_field_option) = 43\n"
+            + "\t\t(test.v1.int64_field_option) = 42,\n"
+            + "\t\t(test.v1.repeated_int64_field_option) = 42,\n"
+            + "\t\t(test.v1.repeated_int64_field_option) = 43\n"
+            + "\t\t(test.v1.bool_field_option) = true,\n"
+            + "\t\t(test.v1.double_field_option) = 3.14,\n"
+            + "\t\t(test.v1.float_field_option) = 3.14\n"
+            + "\t];\n"
+            + "\tdouble primitive_double = 3;\n"
+            + "\tfloat primitive_float = 4;\n"
+            + "\tint32 primitive_int32 = 5;\n"
+            + "\tint64 primitive_int64 = 6;\n"
+            + "\tuint32 primitive_uint32 = 7;\n"
+            + "\tuint64 primitive_uint64 = 8;\n"
+            + "\tsint32 primitive_sint32 = 9;\n"
+            + "\tsint64 primitive_sint64 = 10;\n"
+            + "\tfixed32 primitive_fixed32 = 11;\n"
+            + "\tfixed64 primitive_fixed64 = 12;\n"
+            + "\tsfixed32 primitive_sfixed32 = 13;\n"
+            + "\tsfixed64 primitive_sfixed64 = 14;\n"
+            + "\tbool primitive_bool = 15;\n"
+            + "\tstring primitive_string = 16;\n"
+            + "\tbytes primitive_bytes = 17;\n"
+            + "}\n");
   }
 
   @Test
@@ -315,27 +313,26 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\n"
             + "message TestMessage {\n"
-            + "\t\toption (test.v1.message_option) = {\n"
-            + "\t\t\tsingle_string: \"testString\"\n"
+            + "\toption (test.v1.message_option) = {\n"
+            + "\t\tsingle_string: \"testString\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tsingle_int32: 2\n"
+            + "\t\trepeated_int32: [3,4]\n"
+            + "\t\tsingle_int64: 10\n"
+            + "\t\tsingle_enum: ENUM2\n"
+            + "\t\tsingle_message: {\n"
+            + "\t\t\tsingle_string: \"minimal\"\n"
             + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
             + "\t\t\tsingle_int32: 2\n"
-            + "\t\t\trepeated_int32: [3,4]\n"
-            + "\t\t\tsingle_int64: 10\n"
+            + "\t\t\trepeated_int32: [3]\n"
             + "\t\t\tsingle_enum: ENUM2\n"
-            + "\t\t\tsingle_message: {\n"
-            + "\t\t\t\tsingle_string: \"minimal\"\n"
-            + "\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
-            + "\t\t\t\tsingle_int32: 2\n"
-            + "\t\t\t\trepeated_int32: [3]\n"
-            + "\t\t\t\tsingle_enum: ENUM2\n"
-            + "\t\t\t};\n"
-            + "\n"
-            + "\t\t};\n"
-            + "\t\toption (test.v1.message_option_1) = 12;\n"
-            + "\t\toption (test.v1.message_option_2) = \"String\";\n"
-            + "\t\toption (test.v1.message_option_n) = \"Value I\";\n"
-            + "\t\toption (test.v1.message_option_n) = \"Value II\";\n"
-            + "\t\toption (test.v1.message_option_n) = \"Value III\";\n"
+            + "\t\t}\n"
+            + "\t};\n"
+            + "\toption (test.v1.message_option_1) = 12;\n"
+            + "\toption (test.v1.message_option_2) = \"String\";\n"
+            + "\toption (test.v1.message_option_n) = \"Value I\";\n"
+            + "\toption (test.v1.message_option_n) = \"Value II\";\n"
+            + "\toption (test.v1.message_option_n) = \"Value III\";\n"
             + "\n"
             + "}\n");
   }
@@ -437,8 +434,7 @@ public class ProtoLanguageFileWriterTest {
             + "\t\t\t\tsingle_int32: 2\n"
             + "\t\t\t\trepeated_int32: [3]\n"
             + "\t\t\t\tsingle_enum: ENUM2\n"
-            + "\t\t\t};\n"
-            + "\n"
+            + "\t\t\t}\n"
             + "\t\t};\n"
             + "\t\toption (test.v1.method_option_1) = 12;\n"
             + "\t\toption (test.v1.method_option_2) = \"String\";\n"

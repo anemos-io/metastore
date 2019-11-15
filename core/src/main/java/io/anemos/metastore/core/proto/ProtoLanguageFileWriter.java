@@ -1,7 +1,5 @@
 package io.anemos.metastore.core.proto;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
@@ -14,25 +12,26 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
-  private PContainer PContainer;
+  private PContainer domain;
 
-  ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor, PContainer PContainer) {
-    this(fileDescriptor);
-    this.PContainer = PContainer;
+  private ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor, PContainer domain) {
+    this.fd = fileDescriptor;
+    this.domain = domain;
+    if (domain == null) {
+      this.domain = new PContainer();
+    }
   }
 
-  ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor) {
-    this.fd = fileDescriptor;
+  private ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor) {
+    this(fileDescriptor, null);
   }
 
   public static void write(
@@ -80,51 +79,6 @@ public class ProtoLanguageFileWriter {
 
     public ProtoFilePrintWriter(PrintWriter writer) {
       this.writer = writer;
-    }
-
-    private void writeOptionsForFile() {
-      DescriptorProtos.FileOptions options = fd.toProto().getOptions();
-
-      for (Map.Entry<Descriptors.FieldDescriptor, Object> field :
-          options.getAllFields().entrySet()) {
-        writeOptionForFile(field.getKey(), field.getValue());
-      }
-      if (!options.getUnknownFields().asMap().isEmpty()) {
-        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
-            getUnknownFieldValues(options.getUnknownFields(), PContainer.getFileOptionMap(), 0);
-        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
-        for (Descriptors.FieldDescriptor fd : keys) {
-          Collection<String> values = unknownOptionsMap.get(fd);
-          for (String value : values) {
-            writeOptionForField(fd, value);
-          }
-        }
-      }
-      writer.println();
-    }
-
-    private void writeOptionForField(Descriptors.FieldDescriptor fd, Object value) {
-      writer.print("option ");
-      writer.print("(");
-      writer.print(fd.getName());
-      writer.print(")");
-      writer.print(" = ");
-      writer.print(value);
-      writer.println(";");
-    }
-
-    private void writeOptionForFile(Descriptors.FieldDescriptor fd, Object value) {
-      writer.print("option ");
-      writer.print(fd.getName());
-      writer.print(" = ");
-      if (fd.getType() == Descriptors.FieldDescriptor.Type.STRING) {
-        writer.print("\"");
-        writer.print(value);
-        writer.print("\"");
-      } else {
-        writer.print(value);
-      }
-      writer.println(";");
     }
 
     private void extensions() {
@@ -256,70 +210,43 @@ public class ProtoLanguageFileWriter {
       writer.print(" = ");
       writer.print(field.getNumber());
 
-      boolean hasFieldOptions =
-          field.getOptions().getAllFields().size() > 0
-              || field.getOptions().getUnknownFields().asMap().keySet().size() > 0;
-      if (hasFieldOptions) writer.print(" [\n");
-
-      Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iter =
-          field.getOptions().getAllFields().entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry<Descriptors.FieldDescriptor, Object> fieldOption = iter.next();
-        Descriptors.FieldDescriptor fieldDescriptor = fieldOption.getKey();
-        Object value = fieldOption.getValue();
-        indent(indent + 1);
-        if (fieldDescriptor.getFullName().startsWith("google.protobuf.FieldOptions")) {
-          writer.print(fieldDescriptor.getName());
-        } else {
-          writer.print("(");
-          writer.print(fieldDescriptor.getFullName());
-          writer.print(")");
+      Map<Descriptors.FieldDescriptor, Object> resolved = new LinkedHashMap<>();
+      resolved.putAll(field.getOptions().getAllFields());
+      resolved.putAll(
+          convertUnknownFieldValue(
+              field.getOptions().getUnknownFields(), domain.getFieldOptionMap()));
+      if (resolved.size() > 0) {
+        writer.print(" [\n");
+        Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iterator =
+            resolved.entrySet().iterator();
+        while (iterator.hasNext()) {
+          Map.Entry<Descriptors.FieldDescriptor, Object> fieldOption = iterator.next();
+          Descriptors.FieldDescriptor fieldDescriptor = fieldOption.getKey();
+          Object value = fieldOption.getValue();
+          if (fieldDescriptor.isRepeated()) {
+            List values = (List) value;
+            for (int i = 0; i < values.size(); i++) {
+              Object o = values.get(i);
+              indent(indent + 1);
+              writeOptionForList(fieldDescriptor, o, indent);
+              if (i < values.size() - 1) {
+                writer.print(",");
+              }
+              writer.println();
+            }
+          } else {
+            indent(indent + 1);
+            writeOptionForList(fieldDescriptor, value, indent);
+            if (iterator.hasNext()) {
+              writer.print(",");
+            }
+            writer.println();
+          }
         }
-
-        writer.print(" = ");
-        value(value, fieldDescriptor);
-
-        if (iter.hasNext()) writer.print(", ");
-        writer.print("\n");
-      }
-      if (!field.getOptions().getUnknownFields().asMap().isEmpty()) {
-        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
-            getUnknownFieldValues(
-                field.getOptions().getUnknownFields(), PContainer.getFieldOptionMap(), indent + 1);
-        Iterator<Map.Entry<Descriptors.FieldDescriptor, String>> unknownIter =
-            unknownOptionsMap.entries().iterator();
-        while (unknownIter.hasNext()) {
-          Map.Entry<Descriptors.FieldDescriptor, String> fieldOption = unknownIter.next();
-          Descriptors.FieldDescriptor fd = fieldOption.getKey();
-          String value = fieldOption.getValue();
-          indent(indent + 1);
-          writer.print("(");
-          writer.print(fd.getName());
-          writer.print(")");
-
-          writer.print(" = ");
-          writer.print(value);
-
-          if (unknownIter.hasNext()) writer.print(",");
-          writer.print("\n");
-        }
-      }
-
-      if (hasFieldOptions) {
         indent(indent);
         writer.print("]");
       }
-
       writer.println(";");
-      if (hasFieldOptions) writer.println();
-    }
-
-    private void value(Object v, Descriptors.FieldDescriptor fieldDescriptor) {
-      if (v instanceof Message) {
-        message((Message) v);
-      } else {
-        writer.print(getOptionValue(fieldDescriptor, v));
-      }
     }
 
     private String value(Descriptors.FieldDescriptor fd, Object value) {
@@ -339,11 +266,8 @@ public class ProtoLanguageFileWriter {
         List values = (List) value;
         List<String> stringList = new ArrayList<>();
         writer.print('[');
-        values.forEach(
-            v -> {
-              stringList.add(value(fd, v));
-            });
-        writer.print(stringList.stream().collect(Collectors.joining(",")));
+        values.forEach(v -> stringList.add(value(fd, v)));
+        writer.print(String.join(",", stringList));
         writer.print(']');
       } else {
         writer.print(value(fd, value));
@@ -366,25 +290,6 @@ public class ProtoLanguageFileWriter {
                 writer.println();
               });
       indent(indent);
-      writer.println("};");
-    }
-
-    private void message(Message v) {
-      writer.println("{");
-      for (Map.Entry<Descriptors.FieldDescriptor, Object> field : v.getAllFields().entrySet()) {
-        indent(2);
-        writer.print(field.getKey().getName());
-        writer.print(": ");
-        if (field.getKey().getType() == Descriptors.FieldDescriptor.Type.STRING) {
-          writer.print("\"");
-          writer.print(field.getValue());
-          writer.print("\"");
-        } else {
-          writer.print(field.getValue());
-        }
-      }
-      writer.println();
-      indent(1);
       writer.print("}");
     }
 
@@ -410,7 +315,7 @@ public class ProtoLanguageFileWriter {
               });
       writer.println();
 
-      writeOptionsForFile();
+      writeOptionsForBlock(fd.getOptions(), 0, "File");
 
       if (!fd.getPackage().isEmpty()) {
         writer.print("package ");
@@ -422,12 +327,12 @@ public class ProtoLanguageFileWriter {
 
       for (Descriptors.EnumDescriptor enumDescriptor : fd.getEnumTypes()) {
         writer.println();
-        enumType(enumDescriptor, 0);
+        writeEnumDescriptor(enumDescriptor, 0);
       }
 
       for (Descriptors.ServiceDescriptor serviceDescriptor : fd.getServices()) {
         writer.println();
-        writeService(serviceDescriptor, 0);
+        writeServiceDescriptor(serviceDescriptor);
       }
 
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
@@ -440,14 +345,13 @@ public class ProtoLanguageFileWriter {
       System.out.println();
     }
 
-    private void writeService(Descriptors.ServiceDescriptor serviceDescriptor, int indent) {
-      indent(indent);
+    private void writeServiceDescriptor(Descriptors.ServiceDescriptor serviceDescriptor) {
       writer.print("service ");
       writer.print(serviceDescriptor.getName());
 
       writer.println(" {");
       for (Descriptors.MethodDescriptor method : serviceDescriptor.getMethods()) {
-        indent(indent + 1);
+        indent(1);
         writer.print("rpc ");
         writer.print(method.getName());
         writer.print("(");
@@ -465,17 +369,16 @@ public class ProtoLanguageFileWriter {
           writer.println(") {}");
         } else {
           writer.println(") {");
-          writeOptions(options, indent + 1);
-          indent(indent + 1);
+          writeOptionsForBlock(options, 2, "Service");
+          indent(1);
           writer.println("}");
         }
       }
 
-      indent(indent);
       writer.println("}");
     }
 
-    private void enumType(Descriptors.EnumDescriptor enumType, int indent) {
+    private void writeEnumDescriptor(Descriptors.EnumDescriptor enumType, int indent) {
       indent(indent);
       writer.print("enum ");
       writer.print(enumType.getName());
@@ -497,7 +400,7 @@ public class ProtoLanguageFileWriter {
       writer.print(messageType.getName());
       writer.println(" {");
 
-      writeOptions(messageType.getOptions(), indent + 1);
+      writeOptionsForBlock(messageType.getOptions(), indent + 1, "Message");
 
       for (Descriptors.Descriptor nestedType : messageType.getNestedTypes()) {
         if (!nestedType.getOptions().getMapEntry()) {
@@ -506,7 +409,7 @@ public class ProtoLanguageFileWriter {
         }
       }
       for (Descriptors.EnumDescriptor enumType : messageType.getEnumTypes()) {
-        enumType(enumType, indent + 1);
+        writeEnumDescriptor(enumType, indent + 1);
         writer.println();
       }
 
@@ -541,141 +444,114 @@ public class ProtoLanguageFileWriter {
     }
 
     private void writeOptionForMethod(
-        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
+        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent, String optionType) {
       indent(indent);
-      writer.print("option (");
-      writer.print(fieldDescriptor.getFullName());
-      writer.print(") = ");
+      writer.print("option ");
+      if (fieldDescriptor.getFullName().startsWith("google.protobuf." + optionType + "Options")) {
+        writer.print(fieldDescriptor.getName());
+      } else {
+        writer.print("(");
+        writer.print(fieldDescriptor.getFullName());
+        writer.print(")");
+      }
+      writer.print(" = ");
       if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
         writeMessageValue((Message) value, indent);
       } else {
         writeValue(fieldDescriptor, value);
-        writer.println(";");
+      }
+      writer.println(";");
+    }
+
+    private void writeOptionForList(
+        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
+      if (fieldDescriptor.getFullName().startsWith("google.protobuf.FieldOptions")) {
+        writer.print(fieldDescriptor.getName());
+      } else {
+        writer.print("(");
+        writer.print(fieldDescriptor.getFullName());
+        writer.print(")");
+      }
+      writer.print(" = ");
+      if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+        writeMessageValue((Message) value, indent + 1);
+      } else {
+        writeValue(fieldDescriptor, value);
       }
     }
 
-    private void writeOptions(
-        com.google.protobuf.GeneratedMessageV3.ExtendableMessage options, int indent) {
-      options
-          .getAllFields()
-          .forEach(
-              (fd, value) -> {
-                Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor) fd;
-                if (fieldDescriptor.isRepeated()) {
-                  List values = (List) value;
-                  values.forEach(v -> writeOptionForMethod(fieldDescriptor, v, indent + 1));
-                } else {
-                  writeOptionForMethod(fieldDescriptor, value, indent + 1);
-                }
-              });
-      if (!options.getUnknownFields().asMap().isEmpty()) {
-        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
-            getUnknownFieldValues(
-                options.getUnknownFields(), PContainer.getMessageOptionMap(), indent);
+    private void writeOptionsForBlock(
+        com.google.protobuf.GeneratedMessageV3.ExtendableMessage options,
+        int indent,
+        String optionMap) {
 
-        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
-        for (Descriptors.FieldDescriptor fd : keys) {
-          Collection<String> values = unknownOptionsMap.get(fd);
-          for (String value : values) {
-            writeOptionForMessage("", fd.getName(), value, indent + 1);
-          }
-        }
+      Map<Integer, Descriptors.FieldDescriptor> unknownMap;
+      switch (optionMap) {
+        case "File":
+          unknownMap = domain.getFileOptionMap();
+          break;
+        case "Message":
+          unknownMap = domain.getMessageOptionMap();
+          break;
+        case "Field":
+          unknownMap = domain.getFieldOptionMap();
+          break;
+        case "Enum":
+          unknownMap = domain.getEnumOptionMap();
+          break;
+        case "EnumValue":
+          unknownMap = domain.getEnumValueOptionMap();
+          break;
+        case "Service":
+          unknownMap = domain.getServiceOptionMap();
+          break;
+        case "Method":
+          unknownMap = domain.getMethodOptionMap();
+          break;
+        default:
+          throw new RuntimeException("Exception");
       }
+
+      Map<Descriptors.FieldDescriptor, Object> resolved = new LinkedHashMap<>();
+      resolved.putAll(options.getAllFields());
+      resolved.putAll(convertUnknownFieldValue(options.getUnknownFields(), unknownMap));
+
+      resolved.forEach(
+          (fieldDescriptor, value) -> {
+            if (fieldDescriptor.isRepeated()) {
+              List values = (List) value;
+              values.forEach(v -> writeOptionForMethod(fieldDescriptor, v, indent, optionMap));
+            } else {
+              writeOptionForMethod(fieldDescriptor, value, indent, optionMap);
+            }
+          });
 
       writer.println();
     }
 
-    private void writeOptionForMessage(
-        String packageName, String optionName, String value, int indent) {
-      if (!value.isEmpty()) {
-        indent(indent);
-        if (!packageName.isEmpty()) {
-          packageName = packageName + ".";
-        }
-        writer.println(String.format("option %s(%s) = %s;", packageName, optionName, value));
-      }
-    }
-
-    private String getOptionValue(Descriptors.FieldDescriptor descriptor, Object value) {
-      switch (descriptor.getType()) {
-        case STRING:
-          return "\"" + (String) value + "\"";
-        case INT32:
-          return Integer.toString((Integer) value);
-        case INT64:
-          return Long.toString((Long) value);
-        case ENUM:
-          Descriptors.EnumValueDescriptor valueDescriptor = (Descriptors.EnumValueDescriptor) value;
-          return valueDescriptor.toString();
-      }
-      return "";
-    }
-
-    private String getUnknownPrimitiveFieldValue(
-        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
+    private Object convertFieldValue(Descriptors.FieldDescriptor fieldDescriptor, Object value) {
       switch (fieldDescriptor.getType()) {
         case MESSAGE:
           try {
-            StringBuilder stringBuilder = new StringBuilder();
             DynamicMessage dynamicMessage =
                 DynamicMessage.parseFrom(fieldDescriptor.getMessageType(), (ByteString) value);
-            stringBuilder.append("{\n");
-
-            Iterator<Descriptors.FieldDescriptor> iter =
-                dynamicMessage.getAllFields().keySet().iterator();
-            while (iter.hasNext()) {
-              Descriptors.FieldDescriptor fd = iter.next();
-              Object fieldValue = dynamicMessage.getField(fd);
-              for (int i = 0; i < indent + 1; i++) {
-                stringBuilder.append("\t");
-              }
-              stringBuilder.append(fd.getName());
-              stringBuilder.append(": ");
-
-              if (fd.isRepeated()) {
-                stringBuilder.append("[");
-                List<Object> repeatedValues = (List<Object>) fieldValue;
-                Iterator<Object> repeatedIt = repeatedValues.iterator();
-                while (repeatedIt.hasNext()) {
-                  stringBuilder.append(getOptionValue(fd, repeatedIt.next()));
-                  if (repeatedIt.hasNext()) {
-                    stringBuilder.append(",");
-                  } else {
-                    stringBuilder.append("]");
-                  }
-                }
-              } else {
-                String optionValue = getOptionValue(fd, fieldValue);
-                stringBuilder.append(optionValue);
-              }
-              if (iter.hasNext()) {
-                stringBuilder.append(",");
-              }
-              stringBuilder.append("\n");
-            }
-            for (int i = 0; i < indent; i++) {
-              stringBuilder.append("\t");
-            }
-            stringBuilder.append("}");
-            return stringBuilder.toString();
+            return dynamicMessage;
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
         case BOOL:
-          return value.equals(1L) ? "true" : "false";
+          return value.equals(1L);
         case ENUM:
         case STRING:
           ByteString byteString = (ByteString) value;
-          return "\"" + byteString.toStringUtf8() + "\"";
+          return byteString.toStringUtf8();
         case INT32:
         case INT64:
           return unsignedToString((Long) value);
         case DOUBLE:
-          Double d = Double.longBitsToDouble((Long) value);
-          return d.toString();
+          return Double.longBitsToDouble((Long) value);
         case FLOAT:
-          Float f = Float.intBitsToFloat((Integer) value);
-          return f.toString();
+          return Float.intBitsToFloat((Integer) value);
       }
       throw new RuntimeException(
           "conversion of unknownfield for type "
@@ -683,45 +559,94 @@ public class ProtoLanguageFileWriter {
               + " not implemented");
     }
 
-    private HashMultimap<Descriptors.FieldDescriptor, String> getUnknownFieldValues(
-        UnknownFieldSet unknownFieldSet,
-        Map<Integer, Descriptors.FieldDescriptor> optionsMap,
-        int indent) {
-      HashMultimap<Descriptors.FieldDescriptor, String> unknownFieldValues = HashMultimap.create();
+    private Map<Descriptors.FieldDescriptor, Object> convertUnknownFieldValue(
+        UnknownFieldSet unknownFieldSet, Map<Integer, Descriptors.FieldDescriptor> optionsMap) {
+      Map<Descriptors.FieldDescriptor, Object> unknownFieldValues = new LinkedHashMap<>();
       unknownFieldSet
           .asMap()
           .forEach(
               (number, field) -> {
                 Descriptors.FieldDescriptor fieldDescriptor = optionsMap.get(number);
-                unknownFieldValues.putAll(getUnknownFieldValue(fieldDescriptor, field, indent));
+                if (fieldDescriptor.isRepeated()) {
+                  unknownFieldValues.put(
+                      fieldDescriptor, convertUnknownFieldList(fieldDescriptor, field));
+                } else {
+                  unknownFieldValues.put(
+                      fieldDescriptor, convertUnknownFieldValue(fieldDescriptor, field));
+                }
               });
       return unknownFieldValues;
     }
 
-    private Multimap<Descriptors.FieldDescriptor, String> getUnknownFieldValue(
-        Descriptors.FieldDescriptor fieldDescriptor, UnknownFieldSet.Field field, int indent) {
-      HashMultimap<Descriptors.FieldDescriptor, String> unknownFieldValues = HashMultimap.create();
-      for (Object value : field.getLengthDelimitedList()) {
-        unknownFieldValues.put(
-            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+    /**
+     * https://developers.google.com/protocol-buffers/docs/encoding#structure
+     *
+     * @param fieldDescriptor
+     * @param field
+     * @return
+     */
+    private Object convertUnknownFieldList(
+        Descriptors.FieldDescriptor fieldDescriptor, UnknownFieldSet.Field field) {
+      List list = new ArrayList();
+      if (field.getLengthDelimitedList().size() > 0) {
+        field
+            .getLengthDelimitedList()
+            .forEach(value -> list.add(convertFieldValue(fieldDescriptor, value)));
       }
-      for (Object value : field.getFixed32List()) {
-        unknownFieldValues.put(
-            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      if (field.getFixed32List().size() > 0) {
+        field
+            .getFixed32List()
+            .forEach(value -> list.add(convertFieldValue(fieldDescriptor, value)));
       }
-      for (Object value : field.getFixed64List()) {
-        unknownFieldValues.put(
-            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      if (field.getFixed64List().size() > 0) {
+        field
+            .getFixed64List()
+            .forEach(value -> list.add(convertFieldValue(fieldDescriptor, value)));
       }
-      for (Object value : field.getVarintList()) {
-        unknownFieldValues.put(
-            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      if (field.getVarintList().size() > 0) {
+        field.getVarintList().forEach(value -> list.add(convertFieldValue(fieldDescriptor, value)));
       }
-      for (Object value : field.getGroupList()) {
-        unknownFieldValues.put(
-            fieldDescriptor, getUnknownPrimitiveFieldValue(fieldDescriptor, value, indent));
+      if (field.getGroupList().size() > 0) {
+        throw new RuntimeException("Groups are not implemented");
       }
-      return unknownFieldValues;
+      return list;
+    }
+
+    private Object convertUnknownFieldValue(
+        Descriptors.FieldDescriptor fieldDescriptor, UnknownFieldSet.Field field) {
+
+      if (field.getLengthDelimitedList().size() > 0) {
+        if (field.getLengthDelimitedList().size() > 1) {
+          throw new RuntimeException(
+              "Single value should not contrain more then 1 value in the unknown field");
+        }
+        return convertFieldValue(fieldDescriptor, field.getLengthDelimitedList().get(0));
+      }
+      if (field.getFixed32List().size() > 0) {
+        if (field.getFixed32List().size() > 1) {
+          throw new RuntimeException(
+              "Single value should not contrain more then 1 value in the unknown field");
+        }
+        return convertFieldValue(fieldDescriptor, field.getFixed32List().get(0));
+      }
+      if (field.getFixed64List().size() > 0) {
+        if (field.getFixed64List().size() > 1) {
+          throw new RuntimeException(
+              "Single value should not contrain more then 1 value in the unknown field");
+        }
+        return convertFieldValue(fieldDescriptor, field.getFixed64List().get(0));
+      }
+      if (field.getVarintList().size() > 0) {
+        if (field.getVarintList().size() > 1) {
+          throw new RuntimeException(
+              "Single value should not contrain more then 1 value in the unknown field");
+        }
+        return convertFieldValue(fieldDescriptor, field.getVarintList().get(0));
+      }
+      if (field.getGroupList().size() > 0) {
+        throw new RuntimeException("Groups are not implemented");
+      }
+      return null;
     }
   }
 }
