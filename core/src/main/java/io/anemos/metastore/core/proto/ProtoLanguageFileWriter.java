@@ -432,7 +432,7 @@ public class ProtoLanguageFileWriter {
 
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
         writer.println();
-        messageType(messageType, 0);
+        writeMessageDescriptor(messageType, 0);
       }
 
       List<DescriptorProtos.UninterpretedOption> uninterpretedOptionList =
@@ -465,7 +465,7 @@ public class ProtoLanguageFileWriter {
           writer.println(") {}");
         } else {
           writer.println(") {");
-          writeOptionsForMethod(options, indent + 1);
+          writeOptions(options, indent + 1);
           indent(indent + 1);
           writer.println("}");
         }
@@ -491,17 +491,17 @@ public class ProtoLanguageFileWriter {
       writer.println("}");
     }
 
-    private void messageType(Descriptors.Descriptor messageType, int indent) {
+    private void writeMessageDescriptor(Descriptors.Descriptor messageType, int indent) {
       indent(indent);
       writer.print("message ");
       writer.print(messageType.getName());
       writer.println(" {");
 
-      writeOptionsForMessage(messageType, indent);
+      writeOptions(messageType.getOptions(), indent + 1);
 
       for (Descriptors.Descriptor nestedType : messageType.getNestedTypes()) {
         if (!nestedType.getOptions().getMapEntry()) {
-          messageType(nestedType, indent + 1);
+          writeMessageDescriptor(nestedType, indent + 1);
           writer.println();
         }
       }
@@ -540,53 +540,6 @@ public class ProtoLanguageFileWriter {
       writer.println("}");
     }
 
-    private void writeOptionsForMessage(Descriptors.Descriptor messageDescriptor, int indent) {
-      Map<Descriptors.FieldDescriptor, Object> allFields =
-          messageDescriptor.getOptions().getAllFields();
-      allFields.forEach(
-          (fieldDescriptor, obj) -> {
-            for (Descriptors.FieldDescriptor subFieldDescriptor :
-                fieldDescriptor.getMessageType().getFields()) {
-              Message optionsMessage = (Message) obj;
-              Object value = optionsMessage.getField(subFieldDescriptor);
-
-              if (subFieldDescriptor.isRepeated()) {
-                List<Object> repeatedMessage = (List<Object>) value;
-                for (Object repeatedObject : repeatedMessage) {
-                  String optionsValue = getOptionValue(subFieldDescriptor, repeatedObject);
-                  writeOptionForMessage(
-                      fieldDescriptor.getFullName(),
-                      subFieldDescriptor.getName(),
-                      optionsValue,
-                      indent + 1);
-                }
-              } else {
-                String optionsValue = getOptionValue(subFieldDescriptor, value);
-                writeOptionForMessage(
-                    fieldDescriptor.getFullName(),
-                    subFieldDescriptor.getName(),
-                    optionsValue,
-                    indent + 1);
-              }
-            }
-          });
-      if (!messageDescriptor.getOptions().getUnknownFields().asMap().isEmpty()) {
-        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
-            getUnknownFieldValues(
-                messageDescriptor.getOptions().getUnknownFields(),
-                PContainer.getMessageOptionMap(),
-                indent + 1);
-        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
-        for (Descriptors.FieldDescriptor fd : keys) {
-          Collection<String> values = unknownOptionsMap.get(fd);
-          for (String value : values) {
-            writeOptionForMessage("", fd.getName(), value, indent + 1);
-          }
-        }
-      }
-      writer.println();
-    }
-
     private void writeOptionForMethod(
         Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
       indent(indent);
@@ -601,45 +554,34 @@ public class ProtoLanguageFileWriter {
       }
     }
 
-    private void writeOptionsForMethod(DescriptorProtos.MethodOptions options, int indent) {
+    private void writeOptions(
+        com.google.protobuf.GeneratedMessageV3.ExtendableMessage options, int indent) {
       options
           .getAllFields()
           .forEach(
-              (fieldDescriptor, value) -> {
+              (fd, value) -> {
+                Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor) fd;
                 if (fieldDescriptor.isRepeated()) {
                   List values = (List) value;
                   values.forEach(v -> writeOptionForMethod(fieldDescriptor, v, indent + 1));
                 } else {
                   writeOptionForMethod(fieldDescriptor, value, indent + 1);
                 }
-
-                //                for (Descriptors.FieldDescriptor subFieldDescriptor :
-                //                    fieldDescriptor.getMessageType().getFields()) {
-                //                  Message optionsMessage = (Message) value;
-                //                  Object value = optionsMessage.getField(subFieldDescriptor);
-                //
-                //                  if (subFieldDescriptor.isRepeated()) {
-                //                    List<Object> repeatedMessage = (List<Object>) value;
-                //                    for (Object repeatedObject : repeatedMessage) {
-                //                      String optionsValue = getOptionValue(subFieldDescriptor,
-                // repeatedObject);
-                //                      writeOptionForMessage(
-                //                          fieldDescriptor.getFullName(),
-                //                          subFieldDescriptor.getName(),
-                //                          optionsValue,
-                //                          indent + 1);
-                //                    }
-                //                  } else {
-                //                    String optionsValue = getOptionValue(subFieldDescriptor,
-                // value);
-                //                    writeOptionForMessage(
-                //                        fieldDescriptor.getFullName(),
-                //                        subFieldDescriptor.getName(),
-                //                        optionsValue,
-                //                        indent + 1);
-                //                  }
-                //                }
               });
+      if (!options.getUnknownFields().asMap().isEmpty()) {
+        HashMultimap<Descriptors.FieldDescriptor, String> unknownOptionsMap =
+            getUnknownFieldValues(
+                options.getUnknownFields(), PContainer.getMessageOptionMap(), indent);
+
+        Set<Descriptors.FieldDescriptor> keys = unknownOptionsMap.keySet();
+        for (Descriptors.FieldDescriptor fd : keys) {
+          Collection<String> values = unknownOptionsMap.get(fd);
+          for (String value : values) {
+            writeOptionForMessage("", fd.getName(), value, indent + 1);
+          }
+        }
+      }
+
       writer.println();
     }
 
