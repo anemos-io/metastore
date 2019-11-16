@@ -14,7 +14,7 @@ import test.v1.Option;
 @RunWith(JUnit4.class)
 public class ProtoLanguageFileWriterTest {
 
-  static final Option.TestOption TEST_MINIMAL =
+  private static final Option.TestOption TEST_MINIMAL =
       Option.TestOption.newBuilder()
           .setSingleString("minimal")
           .addRepeatedString("test1")
@@ -24,7 +24,7 @@ public class ProtoLanguageFileWriterTest {
           .setSingleEnum(Option.TestOption.TestEnum.ENUM2)
           .build();
 
-  static final Option.TestOption TEST_OPTION =
+  private static final Option.TestOption TEST_OPTION =
       Option.TestOption.newBuilder()
           .setSingleString("testString")
           .addRepeatedString("test1")
@@ -38,13 +38,76 @@ public class ProtoLanguageFileWriterTest {
           .setSingleMessage(TEST_MINIMAL)
           .build();
 
-  static final List<String> STING_LIST = new ArrayList<>();
+  private static final List<String> STING_LIST = new ArrayList<>();
 
   static {
     STING_LIST.add("Value I");
     STING_LIST.add("Value II");
     STING_LIST.add("Value III");
   }
+
+  private static final DescriptorProtos.FileOptions FILE_OPTIONS =
+      DescriptorProtos.FileOptions.newBuilder()
+          .setExtension(Option.fileOption, TEST_OPTION)
+          .setExtension(Option.fileOption1, 12)
+          .setExtension(Option.fileOption2, "String")
+          .setExtension(Option.fileOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.MessageOptions MESSAGE_OPTIONS =
+      DescriptorProtos.MessageOptions.newBuilder()
+          .setExtension(Option.messageOption, TEST_OPTION)
+          .setExtension(Option.messageOption1, 12)
+          .setExtension(Option.messageOption2, "String")
+          .setExtension(Option.messageOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.FieldOptions FIELD_OPTIONS =
+      DescriptorProtos.FieldOptions.newBuilder()
+          .setExtension(Option.fieldOption, TEST_OPTION)
+          .setExtension(Option.fieldOption1, 12)
+          .setExtension(Option.fieldOption2, "String")
+          .setExtension(Option.fieldOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.ServiceOptions SERVICE_OPTIONS =
+      DescriptorProtos.ServiceOptions.newBuilder()
+          .setExtension(Option.serviceOption, TEST_OPTION)
+          .setExtension(Option.serviceOption1, 12)
+          .setExtension(Option.serviceOption2, "String")
+          .setExtension(Option.serviceOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.MethodOptions METHOD_OPTIONS =
+      DescriptorProtos.MethodOptions.newBuilder()
+          .setExtension(Option.methodOption, TEST_OPTION)
+          .setExtension(Option.methodOption1, 12)
+          .setExtension(Option.methodOption2, "String")
+          .setExtension(Option.methodOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.EnumOptions ENUM_OPTIONS =
+      DescriptorProtos.EnumOptions.newBuilder()
+          .setExtension(Option.enumOption, TEST_OPTION)
+          .setExtension(Option.enumOption1, 12)
+          .setExtension(Option.enumOption2, "String")
+          .setExtension(Option.enumOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
+
+  private static final DescriptorProtos.EnumValueOptions ENUM_VALUE_OPTIONS =
+      DescriptorProtos.EnumValueOptions.newBuilder()
+          .setExtension(Option.enumValueOption, TEST_OPTION)
+          .setExtension(Option.enumValueOption1, 12)
+          .setExtension(Option.enumValueOption2, "String")
+          .setExtension(Option.enumValueOptionN, STING_LIST)
+          .setDeprecated(true)
+          .build();
 
   private void testOutput(
       DescriptorProtos.FileDescriptorProto.Builder protoBuilder,
@@ -88,62 +151,6 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "message TestMessage {\n"
             + "\n"
-            + "}\n");
-  }
-
-  @Test
-  public void fieldOptionsTest() throws Exception {
-    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
-        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
-
-    DescriptorProtos.DescriptorProto.Builder descriptor =
-        DescriptorProtos.DescriptorProto.newBuilder();
-    descriptor.setName("TestMessage");
-
-    DescriptorProtos.FieldDescriptorProto.Builder fieldDescriptorProtoBuilder =
-        DescriptorProtos.FieldDescriptorProto.newBuilder()
-            .setName("string")
-            .setNumber(123)
-            .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING)
-            .setOptions(
-                DescriptorProtos.FieldOptions.newBuilder()
-                    .setExtension(Option.fieldOption1, 123)
-                    .setExtension(Option.fieldOption2, "something")
-                    .build());
-
-    DescriptorProtos.FieldDescriptorProto.Builder fieldDescriptorProtoBuilder2 =
-        DescriptorProtos.FieldDescriptorProto.newBuilder()
-            .setName("field2")
-            .setNumber(124)
-            .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING);
-
-    descriptor.addField(fieldDescriptorProtoBuilder);
-    descriptor.addField(fieldDescriptorProtoBuilder2);
-    fileDescriptorProtoBuilder.addMessageType(descriptor);
-
-    ArrayList<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
-    dependencies.add(Option.getDescriptor());
-    Descriptors.FileDescriptor[] list = new Descriptors.FileDescriptor[dependencies.size()];
-    dependencies.toArray(list);
-    Descriptors.FileDescriptor fileDescriptor =
-        Descriptors.FileDescriptor.buildFrom(fileDescriptorProtoBuilder.build(), list);
-
-    testOutput(
-        fileDescriptor,
-        null,
-        "syntax = \"proto3\";\n"
-            + "\n"
-            + "import \"test/v1/option.proto\";\n"
-            + "\n"
-            + "\n"
-            + "\n"
-            + "message TestMessage {\n"
-            + "\n"
-            + "\tstring string = 123 [\n"
-            + "\t\t(test.v1.field_option_1) = 123,\n"
-            + "\t\t(test.v1.field_option_2) = \"something\"\n"
-            + "\t];\n"
-            + "\tstring field2 = 124;\n"
             + "}\n");
   }
 
@@ -289,18 +296,17 @@ public class ProtoLanguageFileWriterTest {
         DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
 
     DescriptorProtos.DescriptorProto.Builder descriptor =
-        DescriptorProtos.DescriptorProto.newBuilder();
-    descriptor.setName("TestMessage");
+        DescriptorProtos.DescriptorProto.newBuilder()
+            .setName("Proto3Message")
+            .setOptions(MESSAGE_OPTIONS)
+            .addField(
+                DescriptorProtos.FieldDescriptorProto.newBuilder()
+                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
+                    .setNumber(1)
+                    .setName("field_1")
+                    .setOptions(FIELD_OPTIONS)
+                    .build());
 
-    DescriptorProtos.MessageOptions messageOptions =
-        DescriptorProtos.MessageOptions.newBuilder()
-            .setExtension(Option.messageOption, TEST_OPTION)
-            .setExtension(Option.messageOption1, 12)
-            .setExtension(Option.messageOption2, "String")
-            .setExtension(Option.messageOptionN, STING_LIST)
-            .build();
-
-    descriptor.setOptions(messageOptions);
     fileDescriptorProtoBuilder.addMessageType(descriptor);
 
     testOutput(
@@ -312,7 +318,8 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\n"
             + "\n"
-            + "message TestMessage {\n"
+            + "message Proto3Message {\n"
+            + "\toption deprecated = true;\n"
             + "\toption (test.v1.message_option) = {\n"
             + "\t\tsingle_string: \"testString\"\n"
             + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
@@ -334,6 +341,29 @@ public class ProtoLanguageFileWriterTest {
             + "\toption (test.v1.message_option_n) = \"Value II\";\n"
             + "\toption (test.v1.message_option_n) = \"Value III\";\n"
             + "\n"
+            + "\tbool field_1 = 1 [\n"
+            + "\t\tdeprecated = true,\n"
+            + "\t\t(test.v1.field_option) = {\n"
+            + "\t\t\tsingle_string: \"testString\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\tsingle_int64: 10\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\tsingle_message: {\n"
+            + "\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t}\n"
+            + "\t\t},\n"
+            + "\t\t(test.v1.field_option_1) = 12,\n"
+            + "\t\t(test.v1.field_option_2) = \"String\",\n"
+            + "\t\t(test.v1.field_option_n) = \"Value I\",\n"
+            + "\t\t(test.v1.field_option_n) = \"Value II\",\n"
+            + "\t\t(test.v1.field_option_n) = \"Value III\"\n"
+            + "\t];\n"
             + "}\n");
   }
 
@@ -381,20 +411,8 @@ public class ProtoLanguageFileWriterTest {
                     .setOutputType("MethodResponse")
                     .setClientStreaming(true)
                     .setServerStreaming(true)
-                    .setOptions(
-                        DescriptorProtos.MethodOptions.newBuilder()
-                            .setExtension(Option.methodOption, TEST_OPTION)
-                            .setExtension(Option.methodOption1, 12)
-                            .setExtension(Option.methodOption2, "String")
-                            .setExtension(Option.methodOptionN, STING_LIST)
-                            .build()))
-            .setOptions(
-                DescriptorProtos.ServiceOptions.newBuilder()
-                    .setExtension(Option.serviceOption, TEST_OPTION)
-                    .setExtension(Option.serviceOption1, 12)
-                    .setExtension(Option.serviceOption2, "String")
-                    .setExtension(Option.serviceOptionN, STING_LIST)
-                    .build())
+                    .setOptions(METHOD_OPTIONS))
+            .setOptions(SERVICE_OPTIONS)
             .build();
 
     fileDescriptorProtoBuilder.addService(service);
@@ -411,6 +429,7 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\n"
             + "service Service {\n"
+            + "\toption deprecated = true;\n"
             + "\toption (test.v1.service_option) = {\n"
             + "\t\tsingle_string: \"testString\"\n"
             + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
@@ -445,6 +464,7 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\t}\n"
             + "\trpc BiStreamingMethod(stream MethodRequest) returns (stream MethodResponse) {\n"
+            + "\t\toption deprecated = true;\n"
             + "\t\toption (test.v1.method_option) = {\n"
             + "\t\t\tsingle_string: \"testString\"\n"
             + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
@@ -489,24 +509,12 @@ public class ProtoLanguageFileWriterTest {
     DescriptorProtos.EnumDescriptorProto enumDescriptor =
         DescriptorProtos.EnumDescriptorProto.newBuilder()
             .setName("WriteEnum")
-            .setOptions(
-                DescriptorProtos.EnumOptions.newBuilder()
-                    .setExtension(Option.enumOption, TEST_OPTION)
-                    .setExtension(Option.enumOption1, 12)
-                    .setExtension(Option.enumOption2, "String")
-                    .setExtension(Option.enumOptionN, STING_LIST)
-                    .build())
+            .setOptions(ENUM_OPTIONS)
             .addValue(
                 DescriptorProtos.EnumValueDescriptorProto.newBuilder()
                     .setNumber(0)
                     .setName("WRITE_ENUM_UNSET")
-                    .setOptions(
-                        DescriptorProtos.EnumValueOptions.newBuilder()
-                            .setExtension(Option.enumValueOption, TEST_OPTION)
-                            .setExtension(Option.enumValueOption1, 12)
-                            .setExtension(Option.enumValueOption2, "String")
-                            .setExtension(Option.enumValueOptionN, STING_LIST)
-                            .build())
+                    .setOptions(ENUM_VALUE_OPTIONS)
                     .build())
             .build();
 
@@ -522,6 +530,7 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\n"
             + "enum WriteEnum {\n"
+            + "\toption deprecated = true;\n"
             + "\toption (test.v1.enum_option) = {\n"
             + "\t\tsingle_string: \"testString\"\n"
             + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
@@ -544,27 +553,94 @@ public class ProtoLanguageFileWriterTest {
             + "\toption (test.v1.enum_option_n) = \"Value III\";\n"
             + "\n"
             + "\tWRITE_ENUM_UNSET = 0 [\n"
-            + "\t(test.v1.enum_value_option) = {\n"
-            + "\t\tsingle_string: \"testString\"\n"
-            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
-            + "\t\tsingle_int32: 2\n"
-            + "\t\trepeated_int32: [3,4]\n"
-            + "\t\tsingle_int64: 10\n"
-            + "\t\tsingle_enum: ENUM2\n"
-            + "\t\tsingle_message: {\n"
-            + "\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\tdeprecated = true,\n"
+            + "\t\t(test.v1.enum_value_option) = {\n"
+            + "\t\t\tsingle_string: \"testString\"\n"
             + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
             + "\t\t\tsingle_int32: 2\n"
-            + "\t\t\trepeated_int32: [3]\n"
+            + "\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\tsingle_int64: 10\n"
             + "\t\t\tsingle_enum: ENUM2\n"
-            + "\t\t}\n"
-            + "\t},\n"
-            + "\t(test.v1.enum_value_option_1) = 12,\n"
-            + "\t(test.v1.enum_value_option_2) = \"String\",\n"
-            + "\t(test.v1.enum_value_option_n) = \"Value I\",\n"
-            + "\t(test.v1.enum_value_option_n) = \"Value II\",\n"
-            + "\t(test.v1.enum_value_option_n) = \"Value III\"\n"
-            + "];\n"
+            + "\t\t\tsingle_message: {\n"
+            + "\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t}\n"
+            + "\t\t},\n"
+            + "\t\t(test.v1.enum_value_option_1) = 12,\n"
+            + "\t\t(test.v1.enum_value_option_2) = \"String\",\n"
+            + "\t\t(test.v1.enum_value_option_n) = \"Value I\",\n"
+            + "\t\t(test.v1.enum_value_option_n) = \"Value II\",\n"
+            + "\t\t(test.v1.enum_value_option_n) = \"Value III\"\n"
+            + "\t];\n"
+            + "}\n");
+  }
+
+  @Test
+  public void writeFile() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder()
+            .setName("test")
+            .setSyntax("proto3")
+            .addDependency("google/protobuf/descriptor.proto")
+            .setOptions(FILE_OPTIONS);
+
+    DescriptorProtos.EnumDescriptorProto enumDescriptor =
+        DescriptorProtos.EnumDescriptorProto.newBuilder()
+            .setName("WriteEnum")
+            .addValue(
+                DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                    .setNumber(0)
+                    .setName("WRITE_ENUM_UNSET")
+                    .build())
+            .build();
+
+    DescriptorProtos.DescriptorProto.Builder descriptor =
+        DescriptorProtos.DescriptorProto.newBuilder();
+    descriptor.setName("Proto3Message");
+
+    fileDescriptorProtoBuilder.addEnumType(enumDescriptor);
+    fileDescriptorProtoBuilder.addMessageType(descriptor);
+
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"test/v1/option.proto\";\n"
+            + "\n"
+            + "option deprecated = true;\n"
+            + "option (test.v1.file_option) = {\n"
+            + "\tsingle_string: \"testString\"\n"
+            + "\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\tsingle_int32: 2\n"
+            + "\trepeated_int32: [3,4]\n"
+            + "\tsingle_int64: 10\n"
+            + "\tsingle_enum: ENUM2\n"
+            + "\tsingle_message: {\n"
+            + "\t\tsingle_string: \"minimal\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tsingle_int32: 2\n"
+            + "\t\trepeated_int32: [3]\n"
+            + "\t\tsingle_enum: ENUM2\n"
+            + "\t}\n"
+            + "};\n"
+            + "option (test.v1.file_option_1) = 12;\n"
+            + "option (test.v1.file_option_2) = \"String\";\n"
+            + "option (test.v1.file_option_n) = \"Value I\";\n"
+            + "option (test.v1.file_option_n) = \"Value II\";\n"
+            + "option (test.v1.file_option_n) = \"Value III\";\n"
+            + "\n"
+            + "\n"
+            + "enum WriteEnum {\n"
+            + "\n"
+            + "\tWRITE_ENUM_UNSET = 0;\n"
+            + "}\n"
+            + "\n"
+            + "message Proto3Message {\n"
+            + "\n"
             + "}\n");
   }
 }

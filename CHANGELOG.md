@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - ProtoFileWriter: Write method options
 - ProtoFileWriter: Write enum options
 - ProtoFileWriter: Write enum value options
+- More tests for ProtoFileWriter
 
 ### Changed
 
@@ -17,7 +18,7 @@ All notable changes to this project will be documented in this file.
 ## 0.6.5
 
 ### Added
-- Support to connect via meta step with supplied certificates
+- Support to connect via meta step with supplied TLS certificates
 
 ## 0.6.4
 ### Added

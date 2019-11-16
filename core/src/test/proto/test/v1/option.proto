@@ -5,45 +5,45 @@ package test.v1;
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FileOptions {
-    TestOption file_option = 66666700;
-    int32 file_option_1 = 66666708;
-    string file_option_2 = 66666709;
-    repeated string file_option_n = 66666710;
+    TestOption file_option = 66660700;
+    int32 file_option_1 = 66660708;
+    string file_option_2 = 66660709;
+    repeated string file_option_n = 66660710;
 }
 
 extend google.protobuf.MessageOptions {
-    TestOption message_option = 66666700;
-    int32 message_option_1 = 66666708;
-    string message_option_2 = 66666709;
-    repeated string message_option_n = 66666710;
+    TestOption message_option = 66661700;
+    int32 message_option_1 = 66661708;
+    string message_option_2 = 66661709;
+    repeated string message_option_n = 66661710;
 }
 
 extend google.protobuf.FieldOptions {
-    TestOption field_option = 66666700;
-    int32 field_option_1 = 66666708;
-    string field_option_2 = 66666709;
-    repeated string field_option_n = 66666710;
+    TestOption field_option = 66662700;
+    int32 field_option_1 = 66662708;
+    string field_option_2 = 66662709;
+    repeated string field_option_n = 66662710;
 }
 
 extend google.protobuf.ServiceOptions {
-    TestOption service_option = 66666700;
-    int32 service_option_1 = 66666708;
-    string service_option_2 = 66666709;
-    repeated string service_option_n = 66666710;
+    TestOption service_option = 66663700;
+    int32 service_option_1 = 66663708;
+    string service_option_2 = 66663709;
+    repeated string service_option_n = 66663710;
 }
 
 extend google.protobuf.MethodOptions {
-    TestOption method_option = 66666700;
-    int32 method_option_1 = 66666708;
-    string method_option_2 = 66666709;
-    repeated string method_option_n = 66666710;
+    TestOption method_option = 66664700;
+    int32 method_option_1 = 66664708;
+    string method_option_2 = 66664709;
+    repeated string method_option_n = 66664710;
 }
 
 extend google.protobuf.EnumOptions {
-    TestOption enum_option = 66666700;
-    int32 enum_option_1 = 66666708;
-    string enum_option_2 = 66666709;
-    repeated string enum_option_n = 66666710;
+    TestOption enum_option = 66665700;
+    int32 enum_option_1 = 66665708;
+    string enum_option_2 = 66665709;
+    repeated string enum_option_n = 66665710;
 }
 
 extend google.protobuf.EnumValueOptions {
@@ -54,10 +54,10 @@ extend google.protobuf.EnumValueOptions {
 }
 
 extend google.protobuf.OneofOptions {
-    TestOption oneof_option = 66666700;
-    int32 oneof_option_1 = 66666708;
-    string oneof_option_2 = 66666709;
-    repeated string oneof_option_n = 66666710;
+    TestOption oneof_option = 66667700;
+    int32 oneof_option_1 = 66667708;
+    string oneof_option_2 = 66667709;
+    repeated string oneof_option_n = 66667710;
 }
 
 message TestOption {

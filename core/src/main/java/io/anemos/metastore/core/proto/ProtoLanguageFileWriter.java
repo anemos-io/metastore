@@ -235,7 +235,7 @@ public class ProtoLanguageFileWriter {
             for (int i = 0; i < values.size(); i++) {
               Object o = values.get(i);
               indent(indent + 1);
-              writeOptionForList(fieldDescriptor, o, indent);
+              writeOptionForList(fieldDescriptor, o, indent, optionType);
               if (i < values.size() - 1) {
                 writer.print(",");
               }
@@ -243,7 +243,7 @@ public class ProtoLanguageFileWriter {
             }
           } else {
             indent(indent + 1);
-            writeOptionForList(fieldDescriptor, value, indent);
+            writeOptionForList(fieldDescriptor, value, indent, optionType);
             if (iterator.hasNext()) {
               writer.print(",");
             }
@@ -395,7 +395,7 @@ public class ProtoLanguageFileWriter {
         writer.print(value.getName());
         writer.print(" = ");
         writer.print(value.getNumber());
-        writeOptionsForList(value.getOptions(), indent, "Enum");
+        writeOptionsForList(value.getOptions(), indent + 1, "EnumValue");
         writer.println(";");
       }
       indent(indent);
@@ -472,8 +472,8 @@ public class ProtoLanguageFileWriter {
     }
 
     private void writeOptionForList(
-        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent) {
-      if (fieldDescriptor.getFullName().startsWith("google.protobuf.FieldOptions")) {
+        Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent, String optionType) {
+      if (fieldDescriptor.getFullName().startsWith("google.protobuf." + optionType + "Options")) {
         writer.print(fieldDescriptor.getName());
       } else {
         writer.print("(");
