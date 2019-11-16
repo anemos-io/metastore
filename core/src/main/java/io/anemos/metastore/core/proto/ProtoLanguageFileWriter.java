@@ -348,8 +348,8 @@ public class ProtoLanguageFileWriter {
     private void writeServiceDescriptor(Descriptors.ServiceDescriptor serviceDescriptor) {
       writer.print("service ");
       writer.print(serviceDescriptor.getName());
-
       writer.println(" {");
+      writeOptionsForBlock(serviceDescriptor.getOptions(), 1, "Service");
       for (Descriptors.MethodDescriptor method : serviceDescriptor.getMethods()) {
         indent(1);
         writer.print("rpc ");
@@ -369,7 +369,7 @@ public class ProtoLanguageFileWriter {
           writer.println(") {}");
         } else {
           writer.println(") {");
-          writeOptionsForBlock(options, 2, "Service");
+          writeOptionsForBlock(options, 2, "Method");
           indent(1);
           writer.println("}");
         }

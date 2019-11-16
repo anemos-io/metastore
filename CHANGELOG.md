@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - ProtoFileWriter: Write service type
+- ProtoFileWriter: Write service options
 - ProtoFileWriter: Write method options
 
 ### Changed

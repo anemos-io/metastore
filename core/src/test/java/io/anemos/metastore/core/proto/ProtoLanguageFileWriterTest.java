@@ -391,6 +391,9 @@ public class ProtoLanguageFileWriterTest {
             .setOptions(
                 DescriptorProtos.ServiceOptions.newBuilder()
                     .setExtension(Option.serviceOption, TEST_OPTION)
+                    .setExtension(Option.serviceOption1, 12)
+                    .setExtension(Option.serviceOption2, "String")
+                    .setExtension(Option.serviceOptionN, STING_LIST)
                     .build())
             .build();
 
@@ -408,6 +411,27 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "\n"
             + "service Service {\n"
+            + "\toption (test.v1.service_option) = {\n"
+            + "\t\tsingle_string: \"testString\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tsingle_int32: 2\n"
+            + "\t\trepeated_int32: [3,4]\n"
+            + "\t\tsingle_int64: 10\n"
+            + "\t\tsingle_enum: ENUM2\n"
+            + "\t\tsingle_message: {\n"
+            + "\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3]\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t}\n"
+            + "\t};\n"
+            + "\toption (test.v1.service_option_1) = 12;\n"
+            + "\toption (test.v1.service_option_2) = \"String\";\n"
+            + "\toption (test.v1.service_option_n) = \"Value I\";\n"
+            + "\toption (test.v1.service_option_n) = \"Value II\";\n"
+            + "\toption (test.v1.service_option_n) = \"Value III\";\n"
+            + "\n"
             + "\trpc FirstMethod(MethodRequest) returns (MethodResponse) {}\n"
             + "\trpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse) {}\n"
             + "\trpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse) {\n"
