@@ -6,7 +6,6 @@ mkdir -p $MODULE/src/test/resources/io/anemos/metastore/$MODULE
 
 protoc \
  -Itestsets/base \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base.pb \
@@ -14,7 +13,6 @@ protoc \
 
 protoc \
  -Itestsets/base_deprecate_string \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_deprecate_string.pb \
@@ -22,7 +20,6 @@ protoc \
 
 protoc \
  -Itestsets/base_remove_string \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_remove_string.pb \
@@ -30,7 +27,6 @@ protoc \
 
 protoc \
  -Itestsets/base_reserve_string \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_reserve_string.pb \
@@ -38,7 +34,6 @@ protoc \
 
 protoc \
  -Itestsets/base_reserve_string_only_number \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_reserve_string_only_number.pb \
@@ -46,7 +41,6 @@ protoc \
 
 protoc \
  -Itestsets/base_add_file \
- -I/usr/local/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_add_file.pb \
@@ -55,7 +49,7 @@ protoc \
 
 protoc \
  -Itestsets/base_known_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_known_option.pb \
@@ -64,7 +58,7 @@ protoc \
 
 protoc \
  -Itestsets/base_known_option_add_field \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_known_option_add_field.pb \
@@ -73,7 +67,7 @@ protoc \
 
 protoc \
  -Itestsets/base_add_field_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_add_field_option.pb \
@@ -82,7 +76,7 @@ protoc \
 
 protoc \
  -Itestsets/base_change_field_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_change_field_option.pb \
@@ -91,7 +85,7 @@ protoc \
 
 protoc \
  -Itestsets/base_add_message_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_add_message_option.pb \
@@ -100,7 +94,7 @@ protoc \
 
 protoc \
  -Itestsets/base_change_message_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_change_message_option.pb \
@@ -109,7 +103,7 @@ protoc \
 
 protoc \
  -Itestsets/base_add_file_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_add_file_option.pb \
@@ -118,7 +112,7 @@ protoc \
 
 protoc \
  -Itestsets/base_change_file_option \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_change_file_option.pb \
@@ -127,7 +121,7 @@ protoc \
 
 protoc \
  -Itestsets/base_complex_message_options \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_complex_message_options.pb \
@@ -136,7 +130,7 @@ protoc \
 
 protoc \
  -Itestsets/base_multiple_options \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_multiple_options.pb \
@@ -146,7 +140,7 @@ protoc \
 
 protoc \
  -Itestsets/shadow_default_field_added \
- -I/usr/local/include \
+ -Itestsets/include \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/shadow_default_field_added.pb \
