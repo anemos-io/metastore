@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "test/v1/option.proto";
+
+option deprecated = true;
+option (test.v1.file_option) = {
+	single_string: "testString"
+	repeated_string: ["test1","test2"]
+	single_int32: 2
+	repeated_int32: [3,4]
+	single_int64: 10
+	single_enum: ENUM2
+	single_message: {
+		single_string: "minimal"
+		repeated_string: ["test1","test2"]
+		single_int32: 2
+		repeated_int32: [3]
+		single_enum: ENUM2
+	}
+};
+option (test.v1.file_option_1) = 12;
+option (test.v1.file_option_2) = "String";
+option (test.v1.file_option_n) = "Value I";
+option (test.v1.file_option_n) = "Value II";
+option (test.v1.file_option_n) = "Value III";
+
+
+enum Proto3FileEnum {
+
+    PROTO3_FILE_ENUM_UNSET = 0;
+}
+
+message Proto3FileMessage {
+
+}

@@ -4,7 +4,7 @@ import "test/v1/option.proto";
 
 package test.v1;
 
-option (test.v1.file_option).string = "test";
+option (test.v1.file_option).single_string = "test";
 
 message ProtoBeamBasicMessage {
     string test_name = 1;

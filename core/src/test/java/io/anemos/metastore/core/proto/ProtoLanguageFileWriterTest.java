@@ -110,14 +110,12 @@ public class ProtoLanguageFileWriterTest {
           .build();
 
   private void testOutput(
-      DescriptorProtos.FileDescriptorProto.Builder protoBuilder,
-      PContainer container,
-      String expected)
+      DescriptorProtos.FileDescriptorProto protoBuilder, PContainer container, String expected)
       throws Descriptors.DescriptorValidationException {
     Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
     dependencies[0] = Option.getDescriptor();
     Descriptors.FileDescriptor fileDescriptor =
-        Descriptors.FileDescriptor.buildFrom(protoBuilder.build(), dependencies);
+        Descriptors.FileDescriptor.buildFrom(protoBuilder, dependencies);
 
     testOutput(fileDescriptor, container, expected);
   }
@@ -125,6 +123,7 @@ public class ProtoLanguageFileWriterTest {
   private void testOutput(
       Descriptors.FileDescriptor fileDescriptor, PContainer container, String expected)
       throws Descriptors.DescriptorValidationException {
+    // expected = expected + "\n// test";
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     ProtoLanguageFileWriter.write(fileDescriptor, container, outputStream);
     Assert.assertEquals(expected, outputStream.toString());
@@ -141,7 +140,7 @@ public class ProtoLanguageFileWriterTest {
     fileDescriptorProtoBuilder.addMessageType(descriptor);
 
     testOutput(
-        fileDescriptorProtoBuilder,
+        fileDescriptorProtoBuilder.build(),
         null,
         "syntax = \"proto3\";\n"
             + "\n"
@@ -194,124 +193,11 @@ public class ProtoLanguageFileWriterTest {
     Assert.assertEquals(expected, outputStream.toString());
   }
 
-  @Test
-  public void unknownMessageOptionsTest() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
-    Descriptors.FileDescriptor fileDescriptor =
-        PContainer.getFileDescriptorByFileName("test/v1/complex.proto");
-
+  private void assertMessage(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+      throws Descriptors.DescriptorValidationException {
     testOutput(
-        fileDescriptor,
-        PContainer,
-        "syntax = \"proto3\";\n"
-            + "\n"
-            + "import \"test/v1/option.proto\";\n"
-            + "\n"
-            + "option (test.v1.test_file_option) = {\n"
-            + "\tstring: \"test\"\n"
-            + "\trepeated_string: [\"test1\",\"test2\"]\n"
-            + "\tint32: 42\n"
-            + "\trepeated_int32: [1,2]\n"
-            + "\tint64: 43\n"
-            + "};\n"
-            + "option (test.v1.string_file_option) = \"test\";\n"
-            + "option (test.v1.repeated_string_file_option) = \"test1\";\n"
-            + "option (test.v1.repeated_string_file_option) = \"test2\";\n"
-            + "option (test.v1.int32_file_option) = 42;\n"
-            + "option (test.v1.repeated_int32_file_option) = 42;\n"
-            + "option (test.v1.repeated_int32_file_option) = 43;\n"
-            + "option (test.v1.int64_file_option) = 42;\n"
-            + "option (test.v1.repeated_int64_file_option) = 42;\n"
-            + "option (test.v1.repeated_int64_file_option) = 43;\n"
-            + "option (test.v1.bool_file_option) = true;\n"
-            + "option (test.v1.double_file_option) = 3.14;\n"
-            + "option (test.v1.float_file_option) = 3.14;\n"
-            + "\n"
-            + "package test.v1;\n"
-            + "\n"
-            + "message ProtoBeamBasicMessage {\n"
-            + "\toption (test.v1.test_option) = {\n"
-            + "\t\tstring: \"test\"\n"
-            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
-            + "\t\tint32: 42\n"
-            + "\t\trepeated_int32: [1,2]\n"
-            + "\t\tint64: 43\n"
-            + "\t};\n"
-            + "\toption (test.v1.string_option) = \"test\";\n"
-            + "\toption (test.v1.repeated_string_option) = \"test1\";\n"
-            + "\toption (test.v1.repeated_string_option) = \"test2\";\n"
-            + "\toption (test.v1.int32_option) = 42;\n"
-            + "\toption (test.v1.repeated_int32_option) = 42;\n"
-            + "\toption (test.v1.repeated_int32_option) = 43;\n"
-            + "\toption (test.v1.int64_option) = 42;\n"
-            + "\toption (test.v1.repeated_int64_option) = 42;\n"
-            + "\toption (test.v1.repeated_int64_option) = 43;\n"
-            + "\toption (test.v1.bool_option) = true;\n"
-            + "\toption (test.v1.double_option) = 3.14;\n"
-            + "\toption (test.v1.float_option) = 3.14;\n"
-            + "\n"
-            + "\tstring test_name = 1;\n"
-            + "\tint32 test_index = 2 [\n"
-            + "\t\t(test.v1.test_field_option) = {\n"
-            + "\t\t\tstring: \"test\"\n"
-            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
-            + "\t\t\tint32: 42\n"
-            + "\t\t\trepeated_int32: [1,2]\n"
-            + "\t\t\tint64: 43\n"
-            + "\t\t},\n"
-            + "\t\t(test.v1.string_field_option) = \"test\",\n"
-            + "\t\t(test.v1.repeated_string_field_option) = \"test1\",\n"
-            + "\t\t(test.v1.repeated_string_field_option) = \"test2\"\n"
-            + "\t\t(test.v1.int32_field_option) = 42,\n"
-            + "\t\t(test.v1.repeated_int32_field_option) = 42,\n"
-            + "\t\t(test.v1.repeated_int32_field_option) = 43\n"
-            + "\t\t(test.v1.int64_field_option) = 42,\n"
-            + "\t\t(test.v1.repeated_int64_field_option) = 42,\n"
-            + "\t\t(test.v1.repeated_int64_field_option) = 43\n"
-            + "\t\t(test.v1.bool_field_option) = true,\n"
-            + "\t\t(test.v1.double_field_option) = 3.14,\n"
-            + "\t\t(test.v1.float_field_option) = 3.14\n"
-            + "\t];\n"
-            + "\tdouble primitive_double = 3;\n"
-            + "\tfloat primitive_float = 4;\n"
-            + "\tint32 primitive_int32 = 5;\n"
-            + "\tint64 primitive_int64 = 6;\n"
-            + "\tuint32 primitive_uint32 = 7;\n"
-            + "\tuint64 primitive_uint64 = 8;\n"
-            + "\tsint32 primitive_sint32 = 9;\n"
-            + "\tsint64 primitive_sint64 = 10;\n"
-            + "\tfixed32 primitive_fixed32 = 11;\n"
-            + "\tfixed64 primitive_fixed64 = 12;\n"
-            + "\tsfixed32 primitive_sfixed32 = 13;\n"
-            + "\tsfixed64 primitive_sfixed64 = 14;\n"
-            + "\tbool primitive_bool = 15;\n"
-            + "\tstring primitive_string = 16;\n"
-            + "\tbytes primitive_bytes = 17;\n"
-            + "}\n");
-  }
-
-  @Test
-  public void writeMessage() throws Exception {
-    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
-        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
-
-    DescriptorProtos.DescriptorProto.Builder descriptor =
-        DescriptorProtos.DescriptorProto.newBuilder()
-            .setName("Proto3Message")
-            .setOptions(MESSAGE_OPTIONS)
-            .addField(
-                DescriptorProtos.FieldDescriptorProto.newBuilder()
-                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
-                    .setNumber(1)
-                    .setName("field_1")
-                    .setOptions(FIELD_OPTIONS)
-                    .build());
-
-    fileDescriptorProtoBuilder.addMessageType(descriptor);
-
-    testOutput(
-        fileDescriptorProtoBuilder,
-        null,
+        proto,
+        domain,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"test/v1/option.proto\";\n"
@@ -368,60 +254,212 @@ public class ProtoLanguageFileWriterTest {
   }
 
   @Test
-  public void writeService() throws Exception {
+  public void writeMessageFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_message.proto");
+
+    assertMessage(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writeMessage() throws Exception {
     DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
-        DescriptorProtos.FileDescriptorProto.newBuilder()
-            .setName("test")
-            .setSyntax("proto3")
-            .addDependency("google/protobuf/descriptor.proto");
+        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
 
-    DescriptorProtos.DescriptorProto methodRequest =
-        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodRequest").build();
+    DescriptorProtos.DescriptorProto.Builder descriptor =
+        DescriptorProtos.DescriptorProto.newBuilder()
+            .setName("Proto3Message")
+            .setOptions(MESSAGE_OPTIONS)
+            .addField(
+                DescriptorProtos.FieldDescriptorProto.newBuilder()
+                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
+                    .setNumber(1)
+                    .setName("field_1")
+                    .setOptions(FIELD_OPTIONS)
+                    .build());
 
-    DescriptorProtos.DescriptorProto methodResponse =
-        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodResponse").build();
+    fileDescriptorProtoBuilder.addMessageType(descriptor);
+    assertMessage(fileDescriptorProtoBuilder.build(), null);
+  }
 
-    DescriptorProtos.ServiceDescriptorProto service =
-        DescriptorProtos.ServiceDescriptorProto.newBuilder()
-            .setName("Service")
-            .addMethod(
-                DescriptorProtos.MethodDescriptorProto.newBuilder()
-                    .setName("FirstMethod")
-                    .setInputType("MethodRequest")
-                    .setOutputType("MethodResponse"))
-            .addMethod(
-                DescriptorProtos.MethodDescriptorProto.newBuilder()
-                    .setName("ClientStreamingMethod")
-                    .setInputType("MethodRequest")
-                    .setOutputType("MethodResponse")
-                    .setClientStreaming(true))
-            .addMethod(
-                DescriptorProtos.MethodDescriptorProto.newBuilder()
-                    .setName("ServerStreamingMethod")
-                    .setInputType("MethodRequest")
-                    .setOutputType("MethodResponse")
-                    .setServerStreaming(true)
-                    .setOptions(
-                        DescriptorProtos.MethodOptions.newBuilder()
-                            .setExtension(Option.methodOption, TEST_MINIMAL)))
-            .addMethod(
-                DescriptorProtos.MethodDescriptorProto.newBuilder()
-                    .setName("BiStreamingMethod")
-                    .setInputType("MethodRequest")
-                    .setOutputType("MethodResponse")
-                    .setClientStreaming(true)
-                    .setServerStreaming(true)
-                    .setOptions(METHOD_OPTIONS))
-            .setOptions(SERVICE_OPTIONS)
-            .build();
-
-    fileDescriptorProtoBuilder.addService(service);
-    fileDescriptorProtoBuilder.addMessageType(methodRequest);
-    fileDescriptorProtoBuilder.addMessageType(methodResponse);
-
+  private void assertNested(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+      throws Descriptors.DescriptorValidationException {
     testOutput(
-        fileDescriptorProtoBuilder,
-        null,
+        proto,
+        domain,
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"test/v1/option.proto\";\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "message Proto3Nested {\n"
+            + "\n"
+            + "\tmessage Level1 {\n"
+            + "\n"
+            + "\t\tmessage Level2A {\n"
+            + "\n"
+            + "\t\t\tbool field_2A_1 = 1 [\n"
+            + "\t\t\t\tdeprecated = true,\n"
+            + "\t\t\t\t(test.v1.field_option) = {\n"
+            + "\t\t\t\t\tsingle_string: \"testString\"\n"
+            + "\t\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\t\t\tsingle_int64: 10\n"
+            + "\t\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\t\tsingle_message: {\n"
+            + "\t\t\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t(test.v1.field_option_1) = 12,\n"
+            + "\t\t\t\t(test.v1.field_option_2) = \"String\",\n"
+            + "\t\t\t\t(test.v1.field_option_n) = \"Value I\",\n"
+            + "\t\t\t\t(test.v1.field_option_n) = \"Value II\",\n"
+            + "\t\t\t\t(test.v1.field_option_n) = \"Value III\"\n"
+            + "\t\t\t];\n"
+            + "\t\t}\n"
+            + "\n"
+            + "\t\tmessage Level2B {\n"
+            + "\t\t\toption deprecated = true;\n"
+            + "\t\t\toption (test.v1.message_option) = {\n"
+            + "\t\t\t\tsingle_string: \"testString\"\n"
+            + "\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\t\tsingle_int64: 10\n"
+            + "\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\tsingle_message: {\n"
+            + "\t\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t};\n"
+            + "\t\t\toption (test.v1.message_option_1) = 12;\n"
+            + "\t\t\toption (test.v1.message_option_2) = \"String\";\n"
+            + "\t\t\toption (test.v1.message_option_n) = \"Value I\";\n"
+            + "\t\t\toption (test.v1.message_option_n) = \"Value II\";\n"
+            + "\t\t\toption (test.v1.message_option_n) = \"Value III\";\n"
+            + "\n"
+            + "\t\t\tbool field_2B_1 = 1;\n"
+            + "\t\t}\n"
+            + "\n"
+            + "\t\tmessage Level2C {\n"
+            + "\n"
+            + "\t\t\tenum ELevel2C {\n"
+            + "\n"
+            + "\t\t\t\tELEVEL2C_ENUM_UNSET = 0 [\n"
+            + "\t\t\t\t\tdeprecated = true,\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option) = {\n"
+            + "\t\t\t\t\t\tsingle_string: \"testString\"\n"
+            + "\t\t\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\t\t\trepeated_int32: [3,4]\n"
+            + "\t\t\t\t\t\tsingle_int64: 10\n"
+            + "\t\t\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\t\t\tsingle_message: {\n"
+            + "\t\t\t\t\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\t\t\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\t\t\t\t\tsingle_int32: 2\n"
+            + "\t\t\t\t\t\t\trepeated_int32: [3]\n"
+            + "\t\t\t\t\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option_1) = 12,\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option_2) = \"String\",\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option_n) = \"Value I\",\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option_n) = \"Value II\",\n"
+            + "\t\t\t\t\t(test.v1.enum_value_option_n) = \"Value III\"\n"
+            + "\t\t\t\t];\n"
+            + "\t\t\t}\n"
+            + "\n"
+            + "\t\t\tstring field_2C_1 = 1;\n"
+            + "\t\t}\n"
+            + "\n"
+            + "\t}\n"
+            + "\n"
+            + "}\n");
+  }
+
+  @Test
+  public void writeNestedFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_nested.proto");
+
+    assertNested(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writNested() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder().setName("test").setSyntax("proto3");
+
+    DescriptorProtos.DescriptorProto.Builder descriptor =
+        DescriptorProtos.DescriptorProto.newBuilder()
+            .setName("Proto3Nested")
+            .addNestedType(
+                DescriptorProtos.DescriptorProto.newBuilder()
+                    .setName("Level1")
+                    .addNestedType(
+                        DescriptorProtos.DescriptorProto.newBuilder()
+                            .setName("Level2A")
+                            .addField(
+                                DescriptorProtos.FieldDescriptorProto.newBuilder()
+                                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
+                                    .setNumber(1)
+                                    .setName("field_2A_1")
+                                    .setOptions(FIELD_OPTIONS)
+                                    .build())
+                            .build())
+                    .addNestedType(
+                        DescriptorProtos.DescriptorProto.newBuilder()
+                            .setName("Level2B")
+                            .setOptions(MESSAGE_OPTIONS)
+                            .addField(
+                                DescriptorProtos.FieldDescriptorProto.newBuilder()
+                                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
+                                    .setNumber(1)
+                                    .setName("field_2B_1")
+                                    .build())
+                            .build())
+                    .addNestedType(
+                        DescriptorProtos.DescriptorProto.newBuilder()
+                            .setName("Level2C")
+                            .addEnumType(
+                                DescriptorProtos.EnumDescriptorProto.newBuilder()
+                                    .setName("ELevel2C")
+                                    .addValue(
+                                        DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                                            .setNumber(0)
+                                            .setName("ELEVEL2C_ENUM_UNSET")
+                                            .setOptions(ENUM_VALUE_OPTIONS)
+                                            .build())
+                                    .build())
+                            .addField(
+                                DescriptorProtos.FieldDescriptorProto.newBuilder()
+                                    .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING)
+                                    .setNumber(1)
+                                    .setName("field_2C_1")
+                                    .build())
+                            .build()));
+
+    fileDescriptorProtoBuilder.addMessageType(descriptor);
+    assertNested(fileDescriptorProtoBuilder.build(), null);
+  }
+
+  private void assertService(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+      throws Descriptors.DescriptorValidationException {
+    testOutput(
+        proto,
+        domain,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"test/v1/option.proto\";\n"
@@ -499,30 +537,74 @@ public class ProtoLanguageFileWriterTest {
   }
 
   @Test
-  public void writeEnum() throws Exception {
+  public void writeServiceFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_service.proto");
+
+    assertService(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writeService() throws Exception {
     DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
         DescriptorProtos.FileDescriptorProto.newBuilder()
             .setName("test")
             .setSyntax("proto3")
             .addDependency("google/protobuf/descriptor.proto");
 
-    DescriptorProtos.EnumDescriptorProto enumDescriptor =
-        DescriptorProtos.EnumDescriptorProto.newBuilder()
-            .setName("WriteEnum")
-            .setOptions(ENUM_OPTIONS)
-            .addValue(
-                DescriptorProtos.EnumValueDescriptorProto.newBuilder()
-                    .setNumber(0)
-                    .setName("WRITE_ENUM_UNSET")
-                    .setOptions(ENUM_VALUE_OPTIONS)
-                    .build())
+    DescriptorProtos.DescriptorProto methodRequest =
+        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodRequest").build();
+
+    DescriptorProtos.DescriptorProto methodResponse =
+        DescriptorProtos.DescriptorProto.newBuilder().setName("MethodResponse").build();
+
+    DescriptorProtos.ServiceDescriptorProto service =
+        DescriptorProtos.ServiceDescriptorProto.newBuilder()
+            .setName("Service")
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("FirstMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse"))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("ClientStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setClientStreaming(true))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("ServerStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setServerStreaming(true)
+                    .setOptions(
+                        DescriptorProtos.MethodOptions.newBuilder()
+                            .setExtension(Option.methodOption, TEST_MINIMAL)))
+            .addMethod(
+                DescriptorProtos.MethodDescriptorProto.newBuilder()
+                    .setName("BiStreamingMethod")
+                    .setInputType("MethodRequest")
+                    .setOutputType("MethodResponse")
+                    .setClientStreaming(true)
+                    .setServerStreaming(true)
+                    .setOptions(METHOD_OPTIONS))
+            .setOptions(SERVICE_OPTIONS)
             .build();
 
-    fileDescriptorProtoBuilder.addEnumType(enumDescriptor);
+    fileDescriptorProtoBuilder.addService(service);
+    fileDescriptorProtoBuilder.addMessageType(methodRequest);
+    fileDescriptorProtoBuilder.addMessageType(methodResponse);
 
+    assertService(fileDescriptorProtoBuilder.build(), null);
+  }
+
+  private void assertEnum(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+      throws Descriptors.DescriptorValidationException {
     testOutput(
-        fileDescriptorProtoBuilder,
-        null,
+        proto,
+        domain,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"test/v1/option.proto\";\n"
@@ -579,34 +661,44 @@ public class ProtoLanguageFileWriterTest {
   }
 
   @Test
-  public void writeFile() throws Exception {
+  public void writeEnumFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_enum.proto");
+
+    assertEnum(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writeEnum() throws Exception {
     DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
         DescriptorProtos.FileDescriptorProto.newBuilder()
             .setName("test")
             .setSyntax("proto3")
-            .addDependency("google/protobuf/descriptor.proto")
-            .setOptions(FILE_OPTIONS);
+            .addDependency("google/protobuf/descriptor.proto");
 
     DescriptorProtos.EnumDescriptorProto enumDescriptor =
         DescriptorProtos.EnumDescriptorProto.newBuilder()
             .setName("WriteEnum")
+            .setOptions(ENUM_OPTIONS)
             .addValue(
                 DescriptorProtos.EnumValueDescriptorProto.newBuilder()
                     .setNumber(0)
                     .setName("WRITE_ENUM_UNSET")
+                    .setOptions(ENUM_VALUE_OPTIONS)
                     .build())
             .build();
 
-    DescriptorProtos.DescriptorProto.Builder descriptor =
-        DescriptorProtos.DescriptorProto.newBuilder();
-    descriptor.setName("Proto3Message");
-
     fileDescriptorProtoBuilder.addEnumType(enumDescriptor);
-    fileDescriptorProtoBuilder.addMessageType(descriptor);
 
+    assertEnum(fileDescriptorProtoBuilder.build(), null);
+  }
+
+  private void assertFile(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+      throws Descriptors.DescriptorValidationException {
     testOutput(
-        fileDescriptorProtoBuilder,
-        null,
+        proto,
+        domain,
         "syntax = \"proto3\";\n"
             + "\n"
             + "import \"test/v1/option.proto\";\n"
@@ -634,13 +726,60 @@ public class ProtoLanguageFileWriterTest {
             + "option (test.v1.file_option_n) = \"Value III\";\n"
             + "\n"
             + "\n"
-            + "enum WriteEnum {\n"
+            + "enum Proto3FileEnum {\n"
             + "\n"
-            + "\tWRITE_ENUM_UNSET = 0;\n"
+            + "\tPROTO3_FILE_ENUM_UNSET = 0;\n"
             + "}\n"
             + "\n"
-            + "message Proto3Message {\n"
+            + "message Proto3FileMessage {\n"
             + "\n"
             + "}\n");
+  }
+
+  @Test
+  public void writeFileFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_file.proto");
+
+    assertFile(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writeFileFromFile() throws Exception {
+    PContainer PContainer = TestSets.baseComplexMessageOptions().update(null);
+    Descriptors.FileDescriptor fileDescriptor =
+        PContainer.getFileDescriptorByFileName("test/v1/proto3_file.proto");
+
+    assertFile(fileDescriptor.toProto(), PContainer);
+  }
+
+  @Test
+  public void writeFile() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder()
+            .setName("test")
+            .setSyntax("proto3")
+            .addDependency("google/protobuf/descriptor.proto")
+            .setOptions(FILE_OPTIONS);
+
+    DescriptorProtos.EnumDescriptorProto enumDescriptor =
+        DescriptorProtos.EnumDescriptorProto.newBuilder()
+            .setName("Proto3FileEnum")
+            .addValue(
+                DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                    .setNumber(0)
+                    .setName("PROTO3_FILE_ENUM_UNSET")
+                    .build())
+            .build();
+
+    DescriptorProtos.DescriptorProto.Builder descriptor =
+        DescriptorProtos.DescriptorProto.newBuilder();
+    descriptor.setName("Proto3FileMessage");
+
+    fileDescriptorProtoBuilder.addEnumType(enumDescriptor);
+    fileDescriptorProtoBuilder.addMessageType(descriptor);
+
+    assertFile(fileDescriptorProtoBuilder.build(), null);
   }
 }

@@ -276,7 +276,7 @@ public class PContainer {
                         methodOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                         methodOptionMap.put(extension.getNumber(), extension);
                         break;
-                      case ".google.protobuf.Enumptions":
+                      case ".google.protobuf.EnumOptions":
                         enumOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                         enumOptionMap.put(extension.getNumber(), extension);
                         break;

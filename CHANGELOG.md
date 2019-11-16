@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- ProtoFileWriter: Writing of unknown options
 
 ## 0.6.5
 

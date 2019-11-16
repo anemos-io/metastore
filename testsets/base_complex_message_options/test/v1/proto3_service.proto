@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+import "test/v1/option.proto";
+
+
+
+service Service {
+    option deprecated = true;
+    option (test.v1.service_option) = {
+		single_string: "testString"
+		repeated_string: ["test1","test2"]
+		single_int32: 2
+		repeated_int32: [3,4]
+		single_int64: 10
+		single_enum: ENUM2
+		single_message: {
+			single_string: "minimal"
+			repeated_string: ["test1","test2"]
+			single_int32: 2
+			repeated_int32: [3]
+			single_enum: ENUM2
+		}
+    };
+    option (test.v1.service_option_1) = 12;
+    option (test.v1.service_option_2) = "String";
+    option (test.v1.service_option_n) = "Value I";
+    option (test.v1.service_option_n) = "Value II";
+    option (test.v1.service_option_n) = "Value III";
+
+    rpc FirstMethod(MethodRequest) returns (MethodResponse) {}
+    rpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse) {}
+    rpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse) {
+        option (test.v1.method_option) = {
+			single_string: "minimal"
+			repeated_string: ["test1","test2"]
+			single_int32: 2
+			repeated_int32: [3]
+			single_enum: ENUM2
+		};
+
+    }
+    rpc BiStreamingMethod(stream MethodRequest) returns (stream MethodResponse) {
+        option deprecated = true;
+        option (test.v1.method_option) = {
+			single_string: "testString"
+			repeated_string: ["test1","test2"]
+			single_int32: 2
+			repeated_int32: [3,4]
+			single_int64: 10
+			single_enum: ENUM2
+			single_message: {
+				single_string: "minimal"
+				repeated_string: ["test1","test2"]
+				single_int32: 2
+				repeated_int32: [3]
+				single_enum: ENUM2
+			}
+        };
+        option (test.v1.method_option_1) = 12;
+        option (test.v1.method_option_2) = "String";
+        option (test.v1.method_option_n) = "Value I";
+        option (test.v1.method_option_n) = "Value II";
+        option (test.v1.method_option_n) = "Value III";
+
+    }
+}
+
+message MethodRequest {
+
+}
+
+message MethodResponse {
+
+}

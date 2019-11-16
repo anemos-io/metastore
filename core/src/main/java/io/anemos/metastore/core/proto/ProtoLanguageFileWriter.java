@@ -218,10 +218,21 @@ public class ProtoLanguageFileWriter {
         com.google.protobuf.GeneratedMessageV3.ExtendableMessage options,
         int indent,
         String optionType) {
+      Map<Integer, Descriptors.FieldDescriptor> unknownMap;
+      switch (optionType) {
+        case "Field":
+          unknownMap = domain.getFieldOptionMap();
+          break;
+        case "EnumValue":
+          unknownMap = domain.getEnumValueOptionMap();
+          break;
+        default:
+          throw new RuntimeException("Exception");
+      }
+
       Map<Descriptors.FieldDescriptor, Object> resolved = new LinkedHashMap<>();
       resolved.putAll(options.getAllFields());
-      resolved.putAll(
-          convertUnknownFieldValue(options.getUnknownFields(), domain.getFieldOptionMap()));
+      resolved.putAll(convertUnknownFieldValue(options.getUnknownFields(), unknownMap));
       if (resolved.size() > 0) {
         writer.print(" [\n");
         Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iterator =
@@ -371,7 +382,7 @@ public class ProtoLanguageFileWriter {
         }
         writer.print(method.getOutputType().getFullName());
         DescriptorProtos.MethodOptions options = method.getOptions();
-        if (options.getAllFields().size() == 0) {
+        if (options.getAllFields().size() == 0 && options.getUnknownFields().asMap().size() == 0) {
           writer.println(") {}");
         } else {
           writer.println(") {");
@@ -491,24 +502,18 @@ public class ProtoLanguageFileWriter {
     private void writeOptionsForBlock(
         com.google.protobuf.GeneratedMessageV3.ExtendableMessage options,
         int indent,
-        String optionMap) {
+        String optionType) {
 
       Map<Integer, Descriptors.FieldDescriptor> unknownMap;
-      switch (optionMap) {
+      switch (optionType) {
         case "File":
           unknownMap = domain.getFileOptionMap();
           break;
         case "Message":
           unknownMap = domain.getMessageOptionMap();
           break;
-        case "Field":
-          unknownMap = domain.getFieldOptionMap();
-          break;
         case "Enum":
           unknownMap = domain.getEnumOptionMap();
-          break;
-        case "EnumValue":
-          unknownMap = domain.getEnumValueOptionMap();
           break;
         case "Service":
           unknownMap = domain.getServiceOptionMap();
@@ -528,9 +533,9 @@ public class ProtoLanguageFileWriter {
           (fieldDescriptor, value) -> {
             if (fieldDescriptor.isRepeated()) {
               List values = (List) value;
-              values.forEach(v -> writeOptionForBlock(fieldDescriptor, v, indent, optionMap));
+              values.forEach(v -> writeOptionForBlock(fieldDescriptor, v, indent, optionType));
             } else {
-              writeOptionForBlock(fieldDescriptor, value, indent, optionMap);
+              writeOptionForBlock(fieldDescriptor, value, indent, optionType);
             }
           });
 

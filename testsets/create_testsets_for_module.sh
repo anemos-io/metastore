@@ -125,7 +125,11 @@ protoc \
  -I$GOOGLEAPIS_DIR \
  -I$PROTOBUFFER_DIR \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/base_complex_message_options.pb \
- test/v1/complex.proto \
+ test/v1/proto3_file.proto \
+ test/v1/proto3_message.proto \
+ test/v1/proto3_enum.proto \
+ test/v1/proto3_service.proto \
+ test/v1/proto3_nested.proto \
  test/v1/option.proto
 
 protoc \

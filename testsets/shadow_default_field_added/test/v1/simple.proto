@@ -6,7 +6,7 @@ import "test/v1/option.proto";
 
 
 message ProtoBeamBasicMessage {
-    option (test.v1.test_option).string = "test";
+    option (test.v1.message_option).single_string = "test";
 
 
     string test_name = 1;
