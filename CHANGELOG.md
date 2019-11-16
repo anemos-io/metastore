@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - ProtoFileWriter: Write service type
 - ProtoFileWriter: Write service options
 - ProtoFileWriter: Write method options
+- ProtoFileWriter: Write enum options
+- ProtoFileWriter: Write enum value options
 
 ### Changed
 

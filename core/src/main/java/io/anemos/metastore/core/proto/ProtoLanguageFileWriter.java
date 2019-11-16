@@ -98,7 +98,7 @@ public class ProtoLanguageFileWriter {
         writer.println();
         writer.println("extend " + toExtend + " {");
         for (Descriptors.FieldDescriptor fieldDescriptor : extensions.get(toExtend)) {
-          field(fieldDescriptor, 1);
+          writeField(fieldDescriptor, 1);
         }
         writer.println("}\n");
       }
@@ -202,7 +202,7 @@ public class ProtoLanguageFileWriter {
       }
     }
 
-    private void field(Descriptors.FieldDescriptor field, int indent) {
+    private void writeField(Descriptors.FieldDescriptor field, int indent) {
       indent(indent);
       writeFieldType(field);
       writer.print(" ");
@@ -210,11 +210,18 @@ public class ProtoLanguageFileWriter {
       writer.print(" = ");
       writer.print(field.getNumber());
 
+      writeOptionsForList(field.getOptions(), indent, "Field");
+      writer.println(";");
+    }
+
+    private void writeOptionsForList(
+        com.google.protobuf.GeneratedMessageV3.ExtendableMessage options,
+        int indent,
+        String optionType) {
       Map<Descriptors.FieldDescriptor, Object> resolved = new LinkedHashMap<>();
-      resolved.putAll(field.getOptions().getAllFields());
+      resolved.putAll(options.getAllFields());
       resolved.putAll(
-          convertUnknownFieldValue(
-              field.getOptions().getUnknownFields(), domain.getFieldOptionMap()));
+          convertUnknownFieldValue(options.getUnknownFields(), domain.getFieldOptionMap()));
       if (resolved.size() > 0) {
         writer.print(" [\n");
         Iterator<Map.Entry<Descriptors.FieldDescriptor, Object>> iterator =
@@ -246,7 +253,6 @@ public class ProtoLanguageFileWriter {
         indent(indent);
         writer.print("]");
       }
-      writer.println(";");
     }
 
     private String value(Descriptors.FieldDescriptor fd, Object value) {
@@ -383,11 +389,13 @@ public class ProtoLanguageFileWriter {
       writer.print("enum ");
       writer.print(enumType.getName());
       writer.println(" {");
+      writeOptionsForBlock(enumType.getOptions(), indent + 1, "Enum");
       for (Descriptors.EnumValueDescriptor value : enumType.getValues()) {
         indent(indent + 1);
         writer.print(value.getName());
         writer.print(" = ");
         writer.print(value.getNumber());
+        writeOptionsForList(value.getOptions(), indent, "Enum");
         writer.println(";");
       }
       indent(indent);
@@ -428,13 +436,13 @@ public class ProtoLanguageFileWriter {
           writer.print(oneof.getName());
           writer.println(" {");
           for (Descriptors.FieldDescriptor oneofField : oneof.getFields()) {
-            field(oneofField, indent + 2);
+            writeField(oneofField, indent + 2);
             ix++;
           }
           indent(indent + 1);
           writer.println("}");
         } else {
-          field(field, indent + 1);
+          writeField(field, indent + 1);
           ix++;
         }
       }
@@ -443,7 +451,7 @@ public class ProtoLanguageFileWriter {
       writer.println("}");
     }
 
-    private void writeOptionForMethod(
+    private void writeOptionForBlock(
         Descriptors.FieldDescriptor fieldDescriptor, Object value, int indent, String optionType) {
       indent(indent);
       writer.print("option ");
@@ -520,9 +528,9 @@ public class ProtoLanguageFileWriter {
           (fieldDescriptor, value) -> {
             if (fieldDescriptor.isRepeated()) {
               List values = (List) value;
-              values.forEach(v -> writeOptionForMethod(fieldDescriptor, v, indent, optionMap));
+              values.forEach(v -> writeOptionForBlock(fieldDescriptor, v, indent, optionMap));
             } else {
-              writeOptionForMethod(fieldDescriptor, value, indent, optionMap);
+              writeOptionForBlock(fieldDescriptor, value, indent, optionMap);
             }
           });
 

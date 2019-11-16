@@ -38,7 +38,7 @@ public class ProtoLanguageFileWriterTest {
           .setSingleMessage(TEST_MINIMAL)
           .build();
 
-  static final List STING_LIST = new ArrayList<String>();
+  static final List<String> STING_LIST = new ArrayList<>();
 
   static {
     STING_LIST.add("Value I");
@@ -475,6 +475,96 @@ public class ProtoLanguageFileWriterTest {
             + "\n"
             + "message MethodResponse {\n"
             + "\n"
+            + "}\n");
+  }
+
+  @Test
+  public void writeEnum() throws Exception {
+    DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
+        DescriptorProtos.FileDescriptorProto.newBuilder()
+            .setName("test")
+            .setSyntax("proto3")
+            .addDependency("google/protobuf/descriptor.proto");
+
+    DescriptorProtos.EnumDescriptorProto enumDescriptor =
+        DescriptorProtos.EnumDescriptorProto.newBuilder()
+            .setName("WriteEnum")
+            .setOptions(
+                DescriptorProtos.EnumOptions.newBuilder()
+                    .setExtension(Option.enumOption, TEST_OPTION)
+                    .setExtension(Option.enumOption1, 12)
+                    .setExtension(Option.enumOption2, "String")
+                    .setExtension(Option.enumOptionN, STING_LIST)
+                    .build())
+            .addValue(
+                DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                    .setNumber(0)
+                    .setName("WRITE_ENUM_UNSET")
+                    .setOptions(
+                        DescriptorProtos.EnumValueOptions.newBuilder()
+                            .setExtension(Option.enumValueOption, TEST_OPTION)
+                            .setExtension(Option.enumValueOption1, 12)
+                            .setExtension(Option.enumValueOption2, "String")
+                            .setExtension(Option.enumValueOptionN, STING_LIST)
+                            .build())
+                    .build())
+            .build();
+
+    fileDescriptorProtoBuilder.addEnumType(enumDescriptor);
+
+    testOutput(
+        fileDescriptorProtoBuilder,
+        null,
+        "syntax = \"proto3\";\n"
+            + "\n"
+            + "import \"test/v1/option.proto\";\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "enum WriteEnum {\n"
+            + "\toption (test.v1.enum_option) = {\n"
+            + "\t\tsingle_string: \"testString\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tsingle_int32: 2\n"
+            + "\t\trepeated_int32: [3,4]\n"
+            + "\t\tsingle_int64: 10\n"
+            + "\t\tsingle_enum: ENUM2\n"
+            + "\t\tsingle_message: {\n"
+            + "\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3]\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t}\n"
+            + "\t};\n"
+            + "\toption (test.v1.enum_option_1) = 12;\n"
+            + "\toption (test.v1.enum_option_2) = \"String\";\n"
+            + "\toption (test.v1.enum_option_n) = \"Value I\";\n"
+            + "\toption (test.v1.enum_option_n) = \"Value II\";\n"
+            + "\toption (test.v1.enum_option_n) = \"Value III\";\n"
+            + "\n"
+            + "\tWRITE_ENUM_UNSET = 0 [\n"
+            + "\t(test.v1.enum_value_option) = {\n"
+            + "\t\tsingle_string: \"testString\"\n"
+            + "\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\tsingle_int32: 2\n"
+            + "\t\trepeated_int32: [3,4]\n"
+            + "\t\tsingle_int64: 10\n"
+            + "\t\tsingle_enum: ENUM2\n"
+            + "\t\tsingle_message: {\n"
+            + "\t\t\tsingle_string: \"minimal\"\n"
+            + "\t\t\trepeated_string: [\"test1\",\"test2\"]\n"
+            + "\t\t\tsingle_int32: 2\n"
+            + "\t\t\trepeated_int32: [3]\n"
+            + "\t\t\tsingle_enum: ENUM2\n"
+            + "\t\t}\n"
+            + "\t},\n"
+            + "\t(test.v1.enum_value_option_1) = 12,\n"
+            + "\t(test.v1.enum_value_option_2) = \"String\",\n"
+            + "\t(test.v1.enum_value_option_n) = \"Value I\",\n"
+            + "\t(test.v1.enum_value_option_n) = \"Value II\",\n"
+            + "\t(test.v1.enum_value_option_n) = \"Value III\"\n"
+            + "];\n"
             + "}\n");
   }
 }
