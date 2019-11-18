@@ -31,10 +31,11 @@ import net.sourceforge.argparse4j.inf.Subparsers;
 public class MetaStep {
 
   private File workspace;
-  private String protoInclude;
+  private List<String> protoIncludes;
   private RegistryGrpc.RegistryBlockingStub schemaRegistry;
   private File descriptorFile;
   private Namespace res;
+  private boolean includeSource = false;
 
   public MetaStep(String... args) throws IOException, ArgumentParserException {
     ArgumentParser parser = ArgumentParsers.newFor("metastep").build();
@@ -50,6 +51,8 @@ public class MetaStep {
     submitParser.addArgument("-r", "--registry").required(false);
     submitParser.addArgument("-t", "--tls").required(false);
     submitParser.addArgument("-e", "--tls_env").required(false);
+    submitParser.addArgument("-c", "--source").required(false);
+    submitParser.addArgument("-i", "--include").nargs("*").required(false);
 
     Subparser validateParser = subparsers.addParser("validate").help("validate help");
     validateParser.setDefault("sub-command", "validate");
@@ -61,11 +64,8 @@ public class MetaStep {
     validateParser.addArgument("-r", "--registry").required(false);
     validateParser.addArgument("-t", "--tls").required(false);
     validateParser.addArgument("-e", "--tls_env").required(false);
-
-    //        streamParser.addArgument("-e", "--env")
-    //                .choices("production", "staging", "integration")
-    //                .required(true);
-    //
+    validateParser.addArgument("-c", "--source").required(false);
+    validateParser.addArgument("-i", "--include").nargs("*").required(false);
     res = parser.parseArgs(args);
 
     descriptorFile = File.createTempFile("descriptor", ".pb");
@@ -82,9 +82,14 @@ public class MetaStep {
     workspace = new File(protoWorkspace);
     System.out.println("Workspace set to: " + workspace);
 
-    protoInclude = System.getenv("PROTO_INCLUDE");
-    if (protoInclude == null) {
-      protoInclude = "/usr/include";
+    protoIncludes = res.getList("include");
+    if (protoIncludes == null) {
+      protoIncludes = new ArrayList<>();
+    }
+    protoIncludes.add("/usr/include");
+
+    if (res.get("source") != null) {
+      includeSource = true;
     }
 
     String tlsFileName = res.getString("tls");
@@ -193,12 +198,14 @@ public class MetaStep {
       List<String> command = new ArrayList<>();
       command.add("protoc");
       if (true) {
-        command.add("-I" + protoInclude);
+        protoIncludes.forEach(include -> command.add("-I" + include));
         command.add("-I" + workspace.getCanonicalPath());
       }
       command.add("--descriptor_set_out=" + descriptorFile.getCanonicalPath());
       command.add("--include_imports");
-      //            command.add("--include_source_info");
+      if (includeSource) {
+        command.add("--include_source_info");
+      }
       command.add("@" + file.getCanonicalPath());
 
       int pcexit = ProtocUtil.protoc(command);

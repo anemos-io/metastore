@@ -9,7 +9,9 @@ All notable changes to this project will be documented in this file.
 - ProtoFileWriter: Write method options
 - ProtoFileWriter: Write enum options
 - ProtoFileWriter: Write enum value options
+- ProtoFileWriter: Partial comment write
 - More tests for ProtoFileWriter
+- MetaStep: Support for include and source command line
 
 ### Changed
 

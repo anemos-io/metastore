@@ -10,6 +10,11 @@ public class TestSets {
     return new PContainer(resourceAsStream);
   }
 
+  public static PContainer source() throws IOException {
+    InputStream resourceAsStream = TestSets.class.getResourceAsStream("../source.pb");
+    return new PContainer(resourceAsStream);
+  }
+
   public static PContainer baseDeprecateString() throws IOException {
     InputStream resourceAsStream =
         TestSets.class.getResourceAsStream("../base_deprecate_string.pb");

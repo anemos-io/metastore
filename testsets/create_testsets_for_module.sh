@@ -150,3 +150,13 @@ protoc \
  --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/shadow_default_field_added.pb \
  test/v1/simple.proto \
  test/v1/option.proto
+
+protoc \
+ -Itestsets/source \
+ -Itestsets/include \
+ -I$GOOGLEAPIS_DIR \
+ -I$PROTOBUFFER_DIR \
+ --descriptor_set_out=$MODULE/src/test/resources/io/anemos/metastore/$MODULE/source.pb \
+ --include_source_info \
+ test/v1/simple.proto \
+ test/v1/option.proto

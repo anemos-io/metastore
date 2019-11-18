@@ -1,0 +1,145 @@
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// Foobar
+
+// S before
+syntax = "proto3";
+// S after
+
+// P before
+package test.v1;
+// P before
+
+// I II:0 before
+import "test/v1/option.proto";
+// I II:0 after
+
+// M:1 line:1
+// M:1 line:2
+message CommentMessageA {
+
+    // before M1_F2_I1
+    int32 test_index = 2;
+    // after M1_F2_I1
+
+    // between M1_F2_I1 and M1_F1_I2
+
+    // before M1_F1_I2
+    string test_name = 1;
+    // after M1_F1_I2
+}
+
+// M:B MI:1 detach
+
+// M:B MI:1 before
+message CommentMessageB {
+
+    // M:B N:A NI:0 before
+    message CommentMessageBA {
+        string test_name = 1;
+        int32 test_index = 2;
+    } // M:B N:A NI:0 inline
+
+    message CommentMessageBB {
+        string test_name = 1;
+        int32 test_index = 2;
+    }
+    // M:B N:B NI:1 after
+
+    string test_name = 1; // M:B F:0 inline
+
+    // M:B F:2 FI:1 before
+    int32 test_index = 2;
+    // M:B F:2 FI:1 after
+}
+// M:B MI:1 after
+
+// E:A EI:0 before
+enum CommentEnumA {
+    // E:A before option deprecated
+    option deprecated = true;
+    option (test.v1.enum_option) = {
+		single_string: "testString"
+		repeated_string: ["test1","test2"]
+		single_int32: 2
+		single_message: {
+			single_string: "minimal"
+		}
+    };
+    option (test.v1.enum_option_1) = 12;
+
+    // E:A EV:0 before
+    COMMENT_ENUM_UNSET = 0 [
+         deprecated = true, // E:A EV:0 inline option deprecated
+            (test.v1.enum_value_option) = {
+            single_string: "testString"
+        }
+    ];
+    // E:A EV:0 after
+}
+// E:A EI:0 after
+
+// M:C MI:2 detach:1 line:1
+// M:C MI:2 detach:1 line:2
+
+// M:C MI:2 detach:2
+
+// M:C MI:2 line 1
+// M:C MI:2 line 2
+message CommentMessageC {
+    string test_name = 1;
+    int32 test_index = 2;
+}
+
+// S:A SI:0 before
+service CommendServiceA {
+    option deprecated = true;
+
+    rpc FirstMethod(MethodRequest) returns (MethodResponse) {}
+
+    // S:A MI:1 before
+    rpc ClientStreamingMethod(stream MethodRequest) returns (MethodResponse) {}
+    // S:A MI:1 after
+    rpc ServerStreamingMethod(MethodRequest) returns (stream MethodResponse) {
+        option (test.v1.method_option) = {
+			single_string: "minimal"
+			repeated_string: ["test1","test2"]
+			single_int32: 2
+			repeated_int32: [3]
+			single_enum: ENUM2
+		};
+
+    }
+    rpc BiStreamingMethod(stream MethodRequest) returns (stream MethodResponse) {
+        option deprecated = true;
+    }
+}
+// S:A SI:0 before
+
+message MethodRequest {
+
+}
+
+message MethodResponse {
+
+}
