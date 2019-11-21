@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 ## unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 0.7.0
+
+### Added
 - ProtoFileWriter: Write service type
 - ProtoFileWriter: Write service options
 - ProtoFileWriter: Write method options
@@ -12,8 +20,6 @@ All notable changes to this project will be documented in this file.
 - ProtoFileWriter: Partial comment write
 - More tests for ProtoFileWriter
 - MetaStep: Support for include and source command line
-
-### Changed
 
 ### Fixed
 - ProtoFileWriter: Writing of unknown options

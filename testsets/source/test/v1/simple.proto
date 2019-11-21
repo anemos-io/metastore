@@ -51,16 +51,23 @@ message CommentMessageA {
 
 // M:B MI:1 detach
 
-// M:B MI:1 before
+// M:B before
 message CommentMessageB {
 
-    // M:B N:A NI:0 before
+    // M:BA before
     message CommentMessageBA {
         string test_name = 1;
         int32 test_index = 2;
-    } // M:B N:A NI:0 inline
+    } // M:BA inline
 
     message CommentMessageBB {
+        // M:BBA before
+        message CommentMessageBBA {
+            // F:BBA>m1 before
+            string method_1 = 1;
+            int32 method_2 = 2;
+        }
+        // M:BBA after
         string test_name = 1;
         int32 test_index = 2;
     }
@@ -80,10 +87,13 @@ enum CommentEnumA {
     option deprecated = true;
     option (test.v1.enum_option) = {
 		single_string: "testString"
+		// M:A Option value before
 		repeated_string: ["test1","test2"]
 		single_int32: 2
 		single_message: {
+            // M:A Option embedded value before
 			single_string: "minimal"
+            // M:A Option embedded value after
 		}
     };
     option (test.v1.enum_option_1) = 12;

@@ -23,6 +23,12 @@ service Registry {
 
 message SubmitSchemaRequest {
 
+    message SubmitMessage {
+        string name = 1;
+        string email = 2;
+        string description = 3;
+    }
+
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
@@ -38,6 +44,8 @@ message SubmitSchemaRequest {
         string package_prefix = 4;
         string file_name = 5;
     }
+
+    SubmitMessage message = 6;
 }
 
 message SubmitSchemaResponse {

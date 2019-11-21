@@ -101,7 +101,7 @@ public class ProtoLanguageFileWriter {
         writer.println();
         writer.println("extend " + toExtend + " {");
         for (Descriptors.FieldDescriptor fieldDescriptor : extensions.get(toExtend)) {
-          writeField(fieldDescriptor, 1);
+          writeField(fieldDescriptor, new PathLocation(), 1);
         }
         writer.println("}\n");
       }
@@ -205,7 +205,9 @@ public class ProtoLanguageFileWriter {
       }
     }
 
-    private void writeField(Descriptors.FieldDescriptor field, int indent) {
+    private void writeField(Descriptors.FieldDescriptor field, PathLocation parent, int indent) {
+      PathLocation location = parent.addField(field);
+      writeLeadingComment(commentIndexer.getLocation(location), indent);
       indent(indent);
       writeFieldType(field);
       writer.print(" ");
@@ -214,7 +216,8 @@ public class ProtoLanguageFileWriter {
       writer.print(field.getNumber());
 
       writeOptionsForList(field.getOptions(), indent, "Field");
-      writer.println(";");
+      writer.print(";");
+      writeTrailingComment(commentIndexer.getLocation(location), indent);
     }
 
     private void writeOptionsForList(
@@ -356,8 +359,8 @@ public class ProtoLanguageFileWriter {
     }
 
     private void write() {
-      DescriptorProtos.SourceCodeInfo.Location location = commentIndexer.getSyntaxLocation();
-      writeLeadingComment(location, 0);
+      PathLocation location = new PathLocation();
+      writeLeadingComment(commentIndexer.getSyntaxLocation(), 0);
       switch (fd.getSyntax()) {
         case PROTO2:
           writer.print("syntax = \"proto2\";");
@@ -368,16 +371,15 @@ public class ProtoLanguageFileWriter {
         default:
           break;
       }
-      writeTrailingComment(location, 0);
+      writeTrailingComment(commentIndexer.getSyntaxLocation(), 0);
       writer.println();
 
-      location = commentIndexer.getPackageLocation();
       if (!fd.getPackage().isEmpty()) {
-        writeLeadingComment(location, 0);
+        writeLeadingComment(commentIndexer.getPackageLocation(), 0);
         writer.print("package ");
         writer.print(fd.getPackage());
         writer.print(";");
-        writeTrailingComment(location, 0);
+        writeTrailingComment(commentIndexer.getPackageLocation(), 0);
         writer.println();
       }
 
@@ -385,12 +387,11 @@ public class ProtoLanguageFileWriter {
       if (dependencies.size() > 0) {
         int index = 0;
         for (Descriptors.FileDescriptor dependency : dependencies) {
-          location = commentIndexer.importLocations.get(index++);
-          writeLeadingComment(location, 0);
+          writeLeadingComment(commentIndexer.importLocations.get(index++), 0);
           writer.print("import \"");
           writer.print(dependency.getName());
           writer.print("\";");
-          writeTrailingComment(location, 0);
+          writeTrailingComment(commentIndexer.importLocations.get(index++), 0);
         }
         writer.println();
       }
@@ -401,30 +402,31 @@ public class ProtoLanguageFileWriter {
 
       for (Descriptors.EnumDescriptor enumDescriptor : fd.getEnumTypes()) {
         writer.println();
-        writeEnumDescriptor(enumDescriptor, 0);
+        writeEnumDescriptor(enumDescriptor, location, 0);
       }
 
       for (Descriptors.ServiceDescriptor serviceDescriptor : fd.getServices()) {
         writer.println();
-        writeServiceDescriptor(serviceDescriptor);
+        writeServiceDescriptor(serviceDescriptor, location);
       }
 
       for (Descriptors.Descriptor messageType : fd.getMessageTypes()) {
         writer.println();
-        writeMessageDescriptor(messageType, 0);
+        writeMessageDescriptor(messageType, location, 0);
       }
-
-      List<DescriptorProtos.UninterpretedOption> uninterpretedOptionList =
-          fd.getOptions().getUninterpretedOptionList();
-      System.out.println();
     }
 
-    private void writeServiceDescriptor(Descriptors.ServiceDescriptor serviceDescriptor) {
+    private void writeServiceDescriptor(
+        Descriptors.ServiceDescriptor serviceDescriptor, PathLocation parent) {
+      PathLocation location = parent.addService(serviceDescriptor);
+      writeLeadingComment(commentIndexer.getLocation(location), 0);
       writer.print("service ");
       writer.print(serviceDescriptor.getName());
       writer.println(" {");
       writeOptionsForBlock(serviceDescriptor.getOptions(), 1, "Service");
       for (Descriptors.MethodDescriptor method : serviceDescriptor.getMethods()) {
+        PathLocation methodLocation = location.addMethod(method);
+        writeLeadingComment(commentIndexer.getLocation(methodLocation), 1);
         indent(1);
         writer.print("rpc ");
         writer.print(method.getName());
@@ -440,19 +442,23 @@ public class ProtoLanguageFileWriter {
         writer.print(method.getOutputType().getFullName());
         DescriptorProtos.MethodOptions options = method.getOptions();
         if (options.getAllFields().size() == 0 && options.getUnknownFields().asMap().size() == 0) {
-          writer.println(") {}");
+          writer.print(") {}");
         } else {
           writer.println(") {");
           writeOptionsForBlock(options, 2, "Method");
           indent(1);
-          writer.println("}");
+          writer.print("}");
         }
+        writeTrailingComment(commentIndexer.getLocation(methodLocation), 1);
       }
-
-      writer.println("}");
+      writer.print("}");
+      writeTrailingComment(commentIndexer.getLocation(location), 0);
     }
 
-    private void writeEnumDescriptor(Descriptors.EnumDescriptor enumType, int indent) {
+    private void writeEnumDescriptor(
+        Descriptors.EnumDescriptor enumType, PathLocation parent, int indent) {
+      PathLocation location = parent.addEnum(enumType);
+      writeLeadingComment(commentIndexer.getLocation(location), indent);
       indent(indent);
       writer.print("enum ");
       writer.print(enumType.getName());
@@ -467,10 +473,14 @@ public class ProtoLanguageFileWriter {
         writer.println(";");
       }
       indent(indent);
-      writer.println("}");
+      writer.print("}");
+      writeTrailingComment(commentIndexer.getLocation(location), indent);
     }
 
-    private void writeMessageDescriptor(Descriptors.Descriptor messageType, int indent) {
+    private void writeMessageDescriptor(
+        Descriptors.Descriptor messageType, PathLocation parent, int indent) {
+      PathLocation location = parent.addMessage(messageType);
+      writeLeadingComment(commentIndexer.getLocation(location), indent);
       indent(indent);
       writer.print("message ");
       writer.print(messageType.getName());
@@ -480,12 +490,12 @@ public class ProtoLanguageFileWriter {
 
       for (Descriptors.Descriptor nestedType : messageType.getNestedTypes()) {
         if (!nestedType.getOptions().getMapEntry()) {
-          writeMessageDescriptor(nestedType, indent + 1);
+          writeMessageDescriptor(nestedType, location, indent + 1);
           writer.println();
         }
       }
       for (Descriptors.EnumDescriptor enumType : messageType.getEnumTypes()) {
-        writeEnumDescriptor(enumType, indent + 1);
+        writeEnumDescriptor(enumType, location, indent + 1);
         writer.println();
       }
 
@@ -504,19 +514,20 @@ public class ProtoLanguageFileWriter {
           writer.print(oneof.getName());
           writer.println(" {");
           for (Descriptors.FieldDescriptor oneofField : oneof.getFields()) {
-            writeField(oneofField, indent + 2);
+            writeField(oneofField, location, indent + 2);
             ix++;
           }
           indent(indent + 1);
           writer.println("}");
         } else {
-          writeField(field, indent + 1);
+          writeField(field, location, indent + 1);
           ix++;
         }
       }
 
       indent(indent);
-      writer.println("}");
+      writer.print("}");
+      writeTrailingComment(commentIndexer.getLocation(location), indent);
     }
 
     private void writeOptionForBlock(
@@ -720,24 +731,65 @@ public class ProtoLanguageFileWriter {
     }
   }
 
+  private class PathLocation {
+
+    private String path;
+
+    public String toString() {
+      return path;
+    }
+
+    private PathLocation() {
+      this.path = "]";
+    }
+
+    private PathLocation(String path) {
+      this.path = path;
+    }
+
+    PathLocation add(char t, int index) {
+      return new PathLocation(path + "->" + t + "[" + index + "]");
+    }
+
+    PathLocation addMessage(Descriptors.Descriptor type) {
+      return add('M', type.getIndex());
+    }
+
+    PathLocation addField(Descriptors.FieldDescriptor type) {
+      return add('f', type.getIndex());
+    }
+
+    PathLocation addEnum(Descriptors.EnumDescriptor type) {
+      return add('E', type.getIndex());
+    }
+
+    PathLocation addEnunValue(Descriptors.EnumValueDescriptor type) {
+      return add('e', type.getIndex());
+    }
+
+    public PathLocation addService(Descriptors.ServiceDescriptor type) {
+      return add('S', type.getIndex());
+    }
+
+    public PathLocation addMethod(Descriptors.MethodDescriptor type) {
+      return add('m', type.getIndex());
+    }
+  }
+
   private class CommentIndexer {
 
     private DescriptorProtos.SourceCodeInfo.Location syntaxLocation;
     private DescriptorProtos.SourceCodeInfo.Location packageLocation;
+    private Map<String, DescriptorProtos.SourceCodeInfo.Location> locations;
     private Map<Integer, DescriptorProtos.SourceCodeInfo.Location> importLocations;
-    private Map<Integer, DescriptorProtos.SourceCodeInfo.Location> enumLocations;
-    private Map<Integer, DescriptorProtos.SourceCodeInfo.Location> messageLocations;
-    private Map<Integer, DescriptorProtos.SourceCodeInfo.Location> serviceLocations;
 
     private boolean isBlank(String string) {
       return Strings.nullToEmpty(string).trim().isEmpty();
     }
 
     private CommentIndexer() {
+      locations = new HashMap<>();
       importLocations = new HashMap<>();
-      enumLocations = new HashMap<>();
-      messageLocations = new HashMap<>();
-      serviceLocations = new HashMap<>();
       fd.toProto()
           .getSourceCodeInfo()
           .getLocationList()
@@ -748,9 +800,13 @@ public class ProtoLanguageFileWriter {
                         && isBlank(location.getTrailingComments())
                         && location.getLeadingDetachedCommentsCount() == 0;
                 if (!onlyWhitespace) {
-
                   System.out.println("=====");
-
+                  List<Integer> pathList = location.getPathList();
+                  List<Integer> rest = new ArrayList();
+                  if (location.getPathCount() > 2) {
+                    rest = pathList.subList(2, pathList.size());
+                  }
+                  String p;
                   switch (location.getPath(0)) {
                     case 2:
                       packageLocation = location;
@@ -759,25 +815,25 @@ public class ProtoLanguageFileWriter {
                       importLocations.put(location.getPath(1), location);
                       break;
                     case 4:
-                      if (location.getPathCount() > 2) {
-                        System.out.println(location);
-                      } else {
-                        messageLocations.put(location.getPath(1), location);
-                      }
+                      p =
+                          pathForMessage(new PathLocation().add('M', location.getPath(1)), rest)
+                              .toString();
+                      System.out.println(p);
+                      locations.put(p, location);
                       break;
                     case 5:
-                      if (location.getPathCount() > 2) {
-                        System.out.println(location);
-                      } else {
-                        enumLocations.put(location.getPath(1), location);
-                      }
+                      p =
+                          pathForEnum(new PathLocation().add('E', location.getPath(1)), rest)
+                              .toString();
+                      System.out.println(p);
+                      locations.put(p, location);
                       break;
                     case 6:
-                      if (location.getPathCount() > 2) {
-                        System.out.println(location);
-                      } else {
-                        serviceLocations.put(location.getPath(1), location);
-                      }
+                      p =
+                          pathForService(new PathLocation().add('S', location.getPath(1)), rest)
+                              .toString();
+                      System.out.println(p);
+                      locations.put(p, location);
                       break;
                     case 12:
                       syntaxLocation = location;
@@ -791,12 +847,82 @@ public class ProtoLanguageFileWriter {
               });
     }
 
+    private PathLocation pathForMessage(PathLocation root, List<Integer> pathList) {
+      if (pathList.size() == 0) {
+        return root;
+      }
+      List<Integer> rest = new ArrayList();
+      if (pathList.size() > 2) {
+        rest = pathList.subList(2, pathList.size());
+      }
+      PathLocation pathLocation = null;
+      switch (pathList.get(0)) {
+        case 2:
+          pathLocation = pathForMessage(root.add('f', pathList.get(1)), rest);
+          break;
+        case 3:
+          pathLocation = pathForMessage(root.add('M', pathList.get(1)), rest);
+          break;
+        default:
+          throw new RuntimeException("Unknown path type " + pathList.get(0));
+      }
+      return pathLocation;
+    }
+
+    private PathLocation pathForEnum(PathLocation root, List<Integer> pathList) {
+      if (pathList.size() == 0) {
+        return root;
+      }
+      List<Integer> rest = new ArrayList();
+      if (pathList.size() > 2) {
+        rest = pathList.subList(2, pathList.size());
+      }
+      PathLocation pathLocation = null;
+      switch (pathList.get(0)) {
+        case 2:
+          pathLocation = pathForMessage(root.add('v', pathList.get(1)), rest);
+          break;
+        case 3:
+          pathLocation = pathForMessage(root.add('O', pathList.get(1)), rest);
+          break;
+        default:
+          throw new RuntimeException("Unknown path type " + pathList.get(0));
+      }
+      return pathLocation;
+    }
+
+    private PathLocation pathForService(PathLocation root, List<Integer> pathList) {
+      if (pathList.size() == 0) {
+        return root;
+      }
+      List<Integer> rest = new ArrayList();
+      if (pathList.size() > 2) {
+        rest = pathList.subList(2, pathList.size());
+      }
+      PathLocation pathLocation = null;
+      switch (pathList.get(0)) {
+        case 2:
+          pathLocation = pathForMessage(root.add('m', pathList.get(1)), rest);
+          break;
+          //        case 3:
+          //          pathLocation = pathForMessage(root.add('e', pathList.get(1)),rest);
+          //          break;
+        default:
+          throw new RuntimeException("Unknown path type " + pathList.get(0));
+      }
+      return pathLocation;
+    }
+
     public DescriptorProtos.SourceCodeInfo.Location getPackageLocation() {
       return packageLocation;
     }
 
     public DescriptorProtos.SourceCodeInfo.Location getSyntaxLocation() {
       return syntaxLocation;
+    }
+
+    public DescriptorProtos.SourceCodeInfo.Location getLocation(PathLocation location) {
+      return locations.get(location.toString());
     }
   }
 }
