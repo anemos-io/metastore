@@ -6,8 +6,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Plugin updated Jib to 1.8.0
+- Plugin updated spotless to 3.26.0
+- Dependencies upgrade
 
 ### Fixed
+- MetaStep: Only list proto files
 
 ## 0.7.0
 

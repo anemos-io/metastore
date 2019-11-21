@@ -80,11 +80,10 @@ public class ProtocUtil {
   public static void iterateProtoFiles(File[] files, PrintWriter writer) throws IOException {
     for (File file : files) {
       if (file.isDirectory()) {
-        System.out.println("D: " + file.getCanonicalPath());
         iterateProtoFiles(file.listFiles(), writer); // Calls same method again.
       } else {
         if (file.getName().toLowerCase().endsWith(".proto")) {
-          System.out.println("P: " + file.getCanonicalPath());
+          System.out.println(file.getCanonicalPath());
           writer.println(file.getCanonicalPath());
         }
       }

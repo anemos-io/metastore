@@ -1,6 +1,6 @@
 plugins {
     id "net.ltgt.apt" version "0.20"
-    id "com.diffplug.gradle.spotless" version "3.24.1"
+    id "com.diffplug.gradle.spotless" version "3.26.0"
     id "com.google.protobuf" version "0.8.10"
     id "java-library"
     id "maven-publish"
@@ -26,7 +26,7 @@ dependencies {
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
     compile("commons-io:commons-io:2.6")
-    runtime("io.opencensus:opencensus-api:0.24.0")
+    runtime("io.opencensus:opencensus-api:${versions.opencensus}")
 
     testImplementation("junit:junit:4.12")
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'

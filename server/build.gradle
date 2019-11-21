@@ -3,11 +3,11 @@ import java.text.SimpleDateFormat
 
 plugins {
     id "net.ltgt.apt" version "0.20"
-    id "com.diffplug.gradle.spotless" version "3.24.1"
+    id "com.diffplug.gradle.spotless" version "3.26.0"
     id "com.google.protobuf" version "0.8.10"
     id "java"
     id "idea"
-    id "com.google.cloud.tools.jib" version "1.4.0"
+    id "com.google.cloud.tools.jib" version "1.8.0"
     id 'maven-publish'
 }
 
@@ -27,7 +27,7 @@ dependencies {
     compile("net.sourceforge.argparse4j:argparse4j:0.8.1")
     compile("com.google.cloud:google-cloud-storage:${versions.gcp}")
     compile("com.google.cloud:google-cloud-pubsub:${versions.gcp}")
-    compile("com.google.cloud:google-cloud-datacatalog:0.16.0-alpha")
+    compile("com.google.cloud:google-cloud-datacatalog:0.29.0-alpha")
 
     compile("io.opencensus:opencensus-api:${versions.opencensus}")
     runtime("io.opencensus:opencensus-impl:${versions.opencensus}")

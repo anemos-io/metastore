@@ -2,9 +2,9 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.24.1"
+    id "com.diffplug.gradle.spotless" version "3.26.0"
     id "java"
-    id "com.google.cloud.tools.jib" version '1.4.0'
+    id "com.google.cloud.tools.jib" version '1.8.0'
     id "maven-publish"
 }
 
