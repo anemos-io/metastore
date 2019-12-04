@@ -6,12 +6,12 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.ProviderConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.provider.BindProvider;
 import io.anemos.metastore.provider.BindResult;
 import io.anemos.metastore.provider.EventingProvider;
 import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.Status;
@@ -33,7 +33,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
   MetaStoreConfig config;
   RegistryConfig registryConfig;
   final StorageProvider storageProvider;
-  PContainer protoContainer;
+  ProtoDomain protoContainer;
   private MetaGit metaGit;
 
   AbstractRegistry(
@@ -86,11 +86,11 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public abstract ByteString raw();
 
-  public abstract PContainer get();
+  public abstract ProtoDomain get();
 
-  public abstract PContainer ref();
+  public abstract ProtoDomain ref();
 
-  public abstract void update(PContainer ref, PContainer in, Report report);
+  public abstract void update(ProtoDomain ref, ProtoDomain in, Report report);
 
   void syncGitRepo(String message) {
     metaGit.sync(protoContainer, message);

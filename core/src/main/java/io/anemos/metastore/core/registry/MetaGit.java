@@ -8,7 +8,7 @@ import com.jcraft.jsch.UserInfo;
 import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.GitHostConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -50,7 +50,7 @@ class MetaGit {
     gitRepo.pull().setTransportConfigCallback(transportConfigCallback).call();
   }
 
-  void sync(PContainer protoContainer, String message) {
+  void sync(ProtoDomain protoContainer, String message) {
     if (config.git == null) {
       return;
     }

@@ -3,13 +3,13 @@ package io.anemos.metastore;
 import static io.anemos.metastore.v1alpha1.RegistryP.GetResourceBindingeRequest.SchemaContext;
 
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
 import io.anemos.metastore.core.proto.profile.ValidationProfile;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.registry.AbstractRegistry;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
@@ -49,9 +49,9 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       RegistryP.SubmitSchemaRequest request,
       StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver,
       boolean submit) {
-    PContainer in;
+    ProtoDomain in;
     try {
-      in = new PContainer(request.getFileDescriptorProtoList());
+      in = ProtoDomain.buildFrom(request.getFileDescriptorProtoList());
     } catch (IOException e) {
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
@@ -95,8 +95,8 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
   private Report validate(
       AbstractRegistry registry,
       RegistryP.SubmitSchemaRequest request,
-      PContainer ref,
-      PContainer in)
+      ProtoDomain ref,
+      ProtoDomain in)
       throws StatusException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
@@ -134,7 +134,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
           RegistryP.GetSchemaResponse.newBuilder();
 
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      PContainer pContainer = registry.get();
+      ProtoDomain pContainer = registry.get();
 
       List<Descriptors.FileDescriptor> fdl = new ArrayList<>();
       switch (request.getEntityScopeCase()) {
@@ -271,7 +271,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       RegistryP.GetResourceBindingResponse.Builder response =
           RegistryP.GetResourceBindingResponse.newBuilder().setBinding(resourceBinding);
 
-      PContainer pContainer = registry.get();
+      ProtoDomain pContainer = registry.get();
       if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_FULL_DOMAIN) {
         response.addAllFileDescriptorProto(
             pContainer.getFileDescriptors().stream()

@@ -1,7 +1,8 @@
-package io.anemos.metastore.core.proto;
+package io.anemos.metastore.putils;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import io.anemos.metastore.core.proto.TestSets;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +111,7 @@ public class ProtoLanguageFileWriterTest {
           .build();
 
   private void testOutput(
-      DescriptorProtos.FileDescriptorProto protoBuilder, PContainer container, String expected)
+      DescriptorProtos.FileDescriptorProto protoBuilder, ProtoDomain container, String expected)
       throws Descriptors.DescriptorValidationException {
     Descriptors.FileDescriptor[] dependencies = new Descriptors.FileDescriptor[1];
     dependencies[0] = Option.getDescriptor();
@@ -121,7 +122,7 @@ public class ProtoLanguageFileWriterTest {
   }
 
   private void testOutput(
-      Descriptors.FileDescriptor fileDescriptor, PContainer container, String expected)
+      Descriptors.FileDescriptor fileDescriptor, ProtoDomain container, String expected)
       throws Descriptors.DescriptorValidationException {
     // expected = expected + "\n// test";
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -193,7 +194,7 @@ public class ProtoLanguageFileWriterTest {
     Assert.assertEquals(expected, outputStream.toString());
   }
 
-  private void assertMessage(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertMessage(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -255,7 +256,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeMessageFromFile() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_message.proto");
 
@@ -264,7 +265,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeMessageFromShadow() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_message.proto");
 
@@ -292,7 +293,7 @@ public class ProtoLanguageFileWriterTest {
     assertMessage(fileDescriptorProtoBuilder.build(), null);
   }
 
-  private void assertNested(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertNested(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -399,7 +400,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeNestedFromFile() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_nested.proto");
 
@@ -408,7 +409,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeNestedFromShadow() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_nested.proto");
 
@@ -473,7 +474,7 @@ public class ProtoLanguageFileWriterTest {
     assertNested(fileDescriptorProtoBuilder.build(), null);
   }
 
-  private void assertService(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertService(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -556,7 +557,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeServiceFromFile() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_service.proto");
 
@@ -565,7 +566,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeServiceFromShadow() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_service.proto");
 
@@ -627,7 +628,7 @@ public class ProtoLanguageFileWriterTest {
     assertService(fileDescriptorProtoBuilder.build(), null);
   }
 
-  private void assertEnum(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertEnum(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -689,7 +690,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeEnumFromFile() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_enum.proto");
 
@@ -698,7 +699,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeEnumFromShadow() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_enum.proto");
 
@@ -730,7 +731,7 @@ public class ProtoLanguageFileWriterTest {
     assertEnum(fileDescriptorProtoBuilder.build(), null);
   }
 
-  private void assertFile(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertFile(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -774,7 +775,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeFileFromFile() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions();
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_file.proto");
 
@@ -783,7 +784,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeFileFromShadow() throws Exception {
-    PContainer PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_file.proto");
 
@@ -819,7 +820,7 @@ public class ProtoLanguageFileWriterTest {
     assertFile(fileDescriptorProtoBuilder.build(), null);
   }
 
-  private void assertSource(DescriptorProtos.FileDescriptorProto proto, PContainer domain)
+  private void assertSource(DescriptorProtos.FileDescriptorProto proto, ProtoDomain domain)
       throws Descriptors.DescriptorValidationException {
     testOutput(
         proto,
@@ -979,7 +980,7 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeSourceFromFile() throws Exception {
-    PContainer PContainer = TestSets.source();
+    ProtoDomain PContainer = TestSets.source();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/simple.proto");
 

@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
@@ -35,17 +35,17 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public PContainer get() {
+  public ProtoDomain get() {
     return protoContainer;
   }
 
   @Override
-  public PContainer ref() {
+  public ProtoDomain ref() {
     return protoContainer;
   }
 
   @Override
-  public void update(PContainer ref, PContainer in, Report report) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report) {
     protoContainer = in;
     update();
     syncGitRepo("Change detected");
@@ -66,10 +66,10 @@ class SchemaRegistry extends AbstractRegistry {
     try {
       ByteString buffer = storageProvider.read();
       if (buffer == null) {
-        this.protoContainer = new PContainer();
+        this.protoContainer = ProtoDomain.empty();
         return true;
       } else {
-        this.protoContainer = new PContainer(buffer);
+        this.protoContainer = ProtoDomain.buildFrom(buffer);
         return false;
       }
     } catch (IOException e) {

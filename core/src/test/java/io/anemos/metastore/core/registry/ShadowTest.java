@@ -1,10 +1,10 @@
 package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Report;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,8 +26,8 @@ public class ShadowTest {
 
   @Test
   public void addMessageOptionDeltaTest() throws Exception {
-    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddMessageOption = TestSets.baseAddMessageOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddMessageOption, results);
@@ -38,7 +38,7 @@ public class ShadowTest {
 
     //    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
     //    shadowRegistry.setDelta(result);
-    PContainer shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddMessageOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -49,8 +49,8 @@ public class ShadowTest {
 
   @Test
   public void addFieldOptionDeltaTest() throws Exception {
-    PContainer baseAddFieldOption = TestSets.baseAddFieldOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddFieldOption = TestSets.baseAddFieldOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddFieldOption, results);
@@ -59,7 +59,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    PContainer shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddFieldOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -71,8 +71,8 @@ public class ShadowTest {
   @Test
   public void addFileOptionDeltaTest() throws Exception {
     String fileName = "test/v1/simple.proto";
-    PContainer baseAddFileOption = TestSets.baseAddFileOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddFileOption = TestSets.baseAddFileOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseAddFileOption, results);
@@ -81,7 +81,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    PContainer shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseAddFileOption.getFileDescriptorByFileName(fileName);
@@ -92,8 +92,8 @@ public class ShadowTest {
   @Test
   public void multipleOptionsTest() throws Exception {
     String fileName = "test/v1/simple.proto";
-    PContainer baseMultipleOptions = TestSets.baseMultipleOptions();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseMultipleOptions = TestSets.baseMultipleOptions();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(base, baseMultipleOptions, results);
@@ -102,7 +102,7 @@ public class ShadowTest {
     Report result = results.getReport();
     System.out.println(result);
 
-    PContainer shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseMultipleOptions.getFileDescriptorByFileName(fileName);

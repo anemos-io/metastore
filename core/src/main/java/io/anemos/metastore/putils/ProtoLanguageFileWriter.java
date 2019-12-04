@@ -1,4 +1,4 @@
-package io.anemos.metastore.core.proto;
+package io.anemos.metastore.putils;
 
 import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
@@ -21,13 +21,13 @@ import java.util.Map;
 
 public class ProtoLanguageFileWriter {
   private Descriptors.FileDescriptor fd;
-  private PContainer domain;
+  private ProtoDomain domain;
 
-  private ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor, PContainer domain) {
+  private ProtoLanguageFileWriter(Descriptors.FileDescriptor fileDescriptor, ProtoDomain domain) {
     this.fd = fileDescriptor;
     this.domain = domain;
     if (domain == null) {
-      this.domain = new PContainer();
+      this.domain = new ProtoDomain();
     }
   }
 
@@ -36,13 +36,13 @@ public class ProtoLanguageFileWriter {
   }
 
   public static void write(
-      Descriptors.FileDescriptor fd, PContainer PContainer, OutputStream outputStream) {
+      Descriptors.FileDescriptor fd, ProtoDomain PContainer, OutputStream outputStream) {
     PrintWriter printWriter = new PrintWriter(outputStream);
     new ProtoLanguageFileWriter(fd, PContainer).write(printWriter);
     printWriter.flush();
   }
 
-  public static String write(Descriptors.FileDescriptor fd, PContainer PContainer) {
+  public static String write(Descriptors.FileDescriptor fd, ProtoDomain PContainer) {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     write(fd, PContainer, byteArrayOutputStream);
     return byteArrayOutputStream.toString();
@@ -227,10 +227,10 @@ public class ProtoLanguageFileWriter {
       Map<Integer, Descriptors.FieldDescriptor> unknownMap;
       switch (optionType) {
         case "Field":
-          unknownMap = domain.getFieldOptionMap();
+          unknownMap = domain.getOptions().getFieldOptionMap();
           break;
         case "EnumValue":
-          unknownMap = domain.getEnumValueOptionMap();
+          unknownMap = domain.getOptions().getEnumValueOptionMap();
           break;
         default:
           throw new RuntimeException("Exception");
@@ -575,19 +575,19 @@ public class ProtoLanguageFileWriter {
       Map<Integer, Descriptors.FieldDescriptor> unknownMap;
       switch (optionType) {
         case "File":
-          unknownMap = domain.getFileOptionMap();
+          unknownMap = domain.getOptions().getFileOptionMap();
           break;
         case "Message":
-          unknownMap = domain.getMessageOptionMap();
+          unknownMap = domain.getOptions().getMessageOptionMap();
           break;
         case "Enum":
-          unknownMap = domain.getEnumOptionMap();
+          unknownMap = domain.getOptions().getEnumOptionMap();
           break;
         case "Service":
-          unknownMap = domain.getServiceOptionMap();
+          unknownMap = domain.getOptions().getServiceOptionMap();
           break;
         case "Method":
-          unknownMap = domain.getMethodOptionMap();
+          unknownMap = domain.getOptions().getMethodOptionMap();
           break;
         default:
           throw new RuntimeException("Exception");

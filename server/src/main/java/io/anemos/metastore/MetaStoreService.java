@@ -1,8 +1,8 @@
 package io.anemos.metastore;
 
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtoToJsonSchema;
 import io.anemos.metastore.core.registry.AbstractRegistry;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.MetaStoreGrpc;
 import io.anemos.metastore.v1alpha1.MetaStoreP;
 import io.grpc.Status;
@@ -38,7 +38,7 @@ public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
 
     try {
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      PContainer pContainer = registry.get();
+      ProtoDomain pContainer = registry.get();
       String jsonSchema = ProtoToJsonSchema.convert(pContainer, request.getMessageName());
 
       responseObserver.onNext(

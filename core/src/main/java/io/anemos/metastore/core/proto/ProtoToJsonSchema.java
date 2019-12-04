@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.protobuf.Descriptors;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class ProtoToJsonSchema {
    * @return
    * @throws StatusRuntimeException
    */
-  public static String convert(PContainer pContainer, String messageName)
+  public static String convert(ProtoDomain pContainer, String messageName)
       throws StatusRuntimeException {
 
     Descriptors.Descriptor descriptor = pContainer.getDescriptorByName(messageName);

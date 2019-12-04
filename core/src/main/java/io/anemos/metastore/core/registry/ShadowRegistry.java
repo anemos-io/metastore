@@ -4,9 +4,9 @@ import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
@@ -35,7 +35,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   private void updateShadowCache() {
-    PContainer original = null;
+    ProtoDomain original = null;
     try {
       original = registries.get(shadowOf).get();
     } catch (StatusException e) {
@@ -51,12 +51,12 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public PContainer get() {
+  public ProtoDomain get() {
     return protoContainer;
   }
 
   @Override
-  public PContainer ref() {
+  public ProtoDomain ref() {
     try {
       return registries.get(shadowOf).get();
     } catch (StatusException e) {
@@ -65,7 +65,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(PContainer ref, PContainer in, Report report) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.scope != null) {

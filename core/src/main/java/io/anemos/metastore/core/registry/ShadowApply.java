@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.UnknownFieldSet;
-import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.FieldResult;
 import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
@@ -17,9 +17,9 @@ import java.util.Map;
 
 class ShadowApply {
 
-  private PContainer shadow;
+  private ProtoDomain shadow;
 
-  public PContainer applyDelta(PContainer defaultDescriptor, Report delta) {
+  public ProtoDomain applyDelta(ProtoDomain defaultDescriptor, Report delta) {
     try {
       shadow = defaultDescriptor;
 

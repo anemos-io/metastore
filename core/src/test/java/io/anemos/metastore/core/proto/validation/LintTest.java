@@ -2,12 +2,12 @@ package io.anemos.metastore.core.proto.validation;
 
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.Lint;
-import io.anemos.metastore.core.proto.*;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.test.v1.VersionScopeInvalid;
 import io.anemos.metastore.core.test.v1.VersionScopeValid;
 import io.anemos.metastore.invalid.Invalid;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.unused.UsedValidImport;
 import io.anemos.metastore.unused.invalid.UnusedInvalidImport;
 import io.anemos.metastore.v1alpha1.*;
@@ -96,7 +96,7 @@ public class LintTest {
   }
 
   private Report lintMessage(Descriptors.Descriptor d) throws IOException {
-    PContainer pd = new PContainer(d);
+    ProtoDomain pd = ProtoDomain.buildFrom(d);
     String message = d.getFullName();
 
     ValidationResults results = new ValidationResults();
@@ -106,7 +106,7 @@ public class LintTest {
   }
 
   private Report lintService(Descriptors.Descriptor ref, String name) throws IOException {
-    PContainer pd = new PContainer(ref);
+    ProtoDomain pd = ProtoDomain.buildFrom(ref);
 
     ValidationResults results = new ValidationResults();
     ProtoLint lint = new ProtoLint(pd, results);
@@ -212,7 +212,7 @@ public class LintTest {
   }
 
   private Report lintPackage(Descriptors.Descriptor ref) throws IOException {
-    PContainer pd = new PContainer(ref);
+    ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);
@@ -239,7 +239,7 @@ public class LintTest {
   }
 
   private Report lintVersion(Descriptors.Descriptor ref) throws IOException {
-    PContainer pd = new PContainer(ref);
+    ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);
@@ -265,7 +265,7 @@ public class LintTest {
   }
 
   private Report lintImport(Descriptors.Descriptor ref) throws IOException {
-    PContainer pd = new PContainer(ref);
+    ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 
     ProtoLint lint = new ProtoLint(pd, results);

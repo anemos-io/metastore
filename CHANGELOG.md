@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 - Plugin updated Jib to 1.8.0
 - Plugin updated spotless to 3.26.0
 - Dependencies upgrade
+- PContainer refactored to ProtoDomain to be more
+  aligned with the version in Apache Beam
 
 ### Fixed
 - MetaStep: Only list proto files

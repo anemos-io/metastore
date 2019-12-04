@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.UnknownFieldSet;
-import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.ChangeInfo;
 import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.FieldChangeInfo;
@@ -22,11 +22,11 @@ import javax.annotation.Nullable;
  */
 public class ProtoDiff {
 
-  private PContainer proto_ref;
-  private PContainer proto_new;
+  private ProtoDomain proto_ref;
+  private ProtoDomain proto_new;
   private ValidationResults results;
 
-  public ProtoDiff(PContainer fd_ref, PContainer fd_new, ValidationResults results) {
+  public ProtoDiff(ProtoDomain fd_ref, ProtoDomain fd_new, ValidationResults results) {
     this.proto_ref = fd_ref;
     this.proto_new = fd_new;
     this.results = results;

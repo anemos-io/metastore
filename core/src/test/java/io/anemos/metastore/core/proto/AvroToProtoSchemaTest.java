@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.putils.ProtoDomain;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Assert;
@@ -127,7 +128,7 @@ public class AvroToProtoSchemaTest {
   @Test
   public void testDebeziumExample1() throws IOException {
     JsonNode node = getJsonNode("testDebeziumExample1");
-    PContainer descriptor = new AvroToProtoSchema(node).get();
+    ProtoDomain descriptor = new AvroToProtoSchema(node).get();
     System.out.println(descriptor);
   }
 
@@ -157,8 +158,8 @@ public class AvroToProtoSchemaTest {
     return node;
   }
 
-  private PContainer getProtoDescriptor(Descriptors.Descriptor input) throws IOException {
-    return new PContainer(input);
+  private ProtoDomain getProtoDescriptor(Descriptors.Descriptor input) throws IOException {
+    return ProtoDomain.buildFrom(input);
   }
 
   //    if (input instanceof DescriptorProtos.FileDescriptorProto) {

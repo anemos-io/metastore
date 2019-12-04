@@ -5,6 +5,7 @@ import com.google.common.base.CaseFormat;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Int64Value;
+import io.anemos.metastore.putils.ProtoDomain;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ public class AvroToProtoSchema {
     this.root = node;
   }
 
-  public PContainer get() {
+  public ProtoDomain get() {
     rootNamespace = root.path("namespace").asText();
 
     protoMessageOf(root);
@@ -86,7 +87,7 @@ public class AvroToProtoSchema {
         });
     fds.addFile(Int64Value.getDescriptor().getFile().toProto());
 
-    return new PContainer(fds.build());
+    return ProtoDomain.buildFrom(fds.build());
   }
 
   private DescriptorProtos.EnumDescriptorProto.Builder protoEnumOf(

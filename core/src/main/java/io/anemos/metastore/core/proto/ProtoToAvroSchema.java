@@ -2,6 +2,7 @@ package io.anemos.metastore.core.proto;
 
 import com.google.gson.Gson;
 import com.google.protobuf.Descriptors;
+import io.anemos.metastore.putils.ProtoDomain;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class ProtoToAvroSchema {
     this.descriptor = descriptor;
   }
 
-  public static String convert(PContainer pd, String messageName) {
+  public static String convert(ProtoDomain pd, String messageName) {
     Descriptors.Descriptor descriptor = pd.getDescriptorByName(messageName);
     Gson gson = new Gson();
     return gson.toJson(new ProtoToAvroSchema(descriptor).toRecord(descriptor));

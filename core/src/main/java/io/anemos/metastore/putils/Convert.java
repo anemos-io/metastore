@@ -1,4 +1,4 @@
-package io.anemos.metastore.core.proto;
+package io.anemos.metastore.putils;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;

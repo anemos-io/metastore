@@ -1,5 +1,6 @@
 package io.anemos.metastore.core.proto;
 
+import io.anemos.metastore.putils.ProtoDomain;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class ProtocUtil {
 
-  public static PContainer createDescriptorSet(String workDir) throws IOException {
+  public static ProtoDomain createDescriptorSet(String workDir) throws IOException {
     File descriptorFile = File.createTempFile("descriptor", ".pb");
 
     String protoInclude = System.getenv("PROTO_INCLUDE");
@@ -42,7 +43,7 @@ public class ProtocUtil {
     } catch (Exception err) {
       err.printStackTrace();
     }
-    return new PContainer(descriptorFile);
+    return ProtoDomain.buildFrom(descriptorFile);
   }
 
   public static int protoc(List<String> command) throws IOException, InterruptedException {

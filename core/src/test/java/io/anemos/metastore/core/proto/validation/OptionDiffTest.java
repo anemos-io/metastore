@@ -1,10 +1,10 @@
 package io.anemos.metastore.core.proto.validation;
 
 import com.google.protobuf.ByteString;
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
@@ -18,8 +18,8 @@ public class OptionDiffTest {
 
   @Test
   public void addMessageOptionTest() throws IOException {
-    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddMessageOption = TestSets.baseAddMessageOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseAddMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -34,8 +34,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeMessageOptionTest() throws IOException {
-    PContainer base = TestSets.baseAddMessageOption();
-    PContainer baseRemoveFieldOption = TestSets.baseKnownOption();
+    ProtoDomain base = TestSets.baseAddMessageOption();
+    ProtoDomain baseRemoveFieldOption = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -50,8 +50,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeMessageOptionTest() throws IOException {
-    PContainer baseAddMessageOption = TestSets.baseAddMessageOption();
-    PContainer baseChangeMessageOption = TestSets.baseChangeMessageOption();
+    ProtoDomain baseAddMessageOption = TestSets.baseAddMessageOption();
+    ProtoDomain baseChangeMessageOption = TestSets.baseChangeMessageOption();
 
     MessageResult messageResult = diffMessage(baseAddMessageOption, baseChangeMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
@@ -69,8 +69,8 @@ public class OptionDiffTest {
 
   @Test
   public void addFieldOptionTest() throws IOException {
-    PContainer baseAddFieldOption = TestSets.baseAddFieldOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddFieldOption = TestSets.baseAddFieldOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseAddFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -86,8 +86,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeFieldOptionTest() throws IOException {
-    PContainer base = TestSets.baseAddFieldOption();
-    PContainer baseRemoveFieldOption = TestSets.baseKnownOption();
+    ProtoDomain base = TestSets.baseAddFieldOption();
+    ProtoDomain baseRemoveFieldOption = TestSets.baseKnownOption();
 
     MessageResult messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -103,8 +103,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeFieldOptionTest() throws IOException {
-    PContainer base = TestSets.baseAddFieldOption();
-    PContainer baseChangeFieldOption = TestSets.baseChangeFieldOption();
+    ProtoDomain base = TestSets.baseAddFieldOption();
+    ProtoDomain baseChangeFieldOption = TestSets.baseChangeFieldOption();
 
     MessageResult messageResult = diffMessage(base, baseChangeFieldOption);
     OptionChangeInfo optionChangeInfo =
@@ -123,8 +123,8 @@ public class OptionDiffTest {
 
   @Test
   public void addFileOptionTest() throws IOException {
-    PContainer baseAddFileOption = TestSets.baseAddFileOption();
-    PContainer base = TestSets.baseKnownOption();
+    ProtoDomain baseAddFileOption = TestSets.baseAddFileOption();
+    ProtoDomain base = TestSets.baseKnownOption();
 
     FileResult fileResult = diffFile(base, baseAddFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -139,8 +139,8 @@ public class OptionDiffTest {
 
   @Test
   public void removeFileOptionTest() throws IOException {
-    PContainer baseRemoveFileOption = TestSets.baseKnownOption();
-    PContainer base = TestSets.baseAddFileOption();
+    ProtoDomain baseRemoveFileOption = TestSets.baseKnownOption();
+    ProtoDomain base = TestSets.baseAddFileOption();
 
     FileResult fileResult = diffFile(base, baseRemoveFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -155,8 +155,8 @@ public class OptionDiffTest {
 
   @Test
   public void changeFileOptionTest() throws IOException {
-    PContainer baseChangeFileOption = TestSets.baseChangeFileOption();
-    PContainer base = TestSets.baseAddFileOption();
+    ProtoDomain baseChangeFileOption = TestSets.baseChangeFileOption();
+    ProtoDomain base = TestSets.baseAddFileOption();
 
     FileResult fileResult = diffFile(base, baseChangeFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
@@ -169,7 +169,7 @@ public class OptionDiffTest {
     Option.TestOption option = Option.TestOption.parseFrom(payload);
   }
 
-  private MessageResult diffMessage(PContainer dRef, PContainer dNew) throws IOException {
+  private MessageResult diffMessage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
@@ -179,7 +179,7 @@ public class OptionDiffTest {
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage");
   }
 
-  private FileResult diffFile(PContainer dRef, PContainer dNew) throws IOException {
+  private FileResult diffFile(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnFileName("test/v1/simple.proto");

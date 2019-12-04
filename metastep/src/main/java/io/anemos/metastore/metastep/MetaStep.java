@@ -1,7 +1,7 @@
 package io.anemos.metastore.metastep;
 
-import io.anemos.metastore.core.proto.PContainer;
 import io.anemos.metastore.core.proto.ProtocUtil;
+import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
@@ -191,7 +191,7 @@ public class MetaStep {
     }
   }
 
-  private PContainer createDescriptorSet() throws IOException {
+  private ProtoDomain createDescriptorSet() throws IOException {
     File file = ProtocUtil.listProtos(workspace);
 
     try {
@@ -216,7 +216,7 @@ public class MetaStep {
       err.printStackTrace();
     }
 
-    return new PContainer(descriptorFile);
+    return ProtoDomain.buildFrom(descriptorFile);
   }
 
   private void validate() throws IOException {
@@ -249,7 +249,7 @@ public class MetaStep {
   }
 
   private RegistryP.SubmitSchemaRequest createSchemaRequest() throws IOException {
-    PContainer protoContainer = createDescriptorSet();
+    ProtoDomain protoContainer = createDescriptorSet();
 
     RegistryP.SubmitSchemaRequest.Builder schemaRequestBuilder =
         RegistryP.SubmitSchemaRequest.newBuilder()

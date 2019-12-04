@@ -3,7 +3,7 @@ package io.anemos.metastore.provider;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import io.anemos.metastore.core.proto.PContainer;
+import io.anemos.metastore.putils.ProtoDomain;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +26,16 @@ public class StorageProviderTest {
 
   @Rule public TemporaryFolder localTempFolder = new TemporaryFolder();
 
-  public static PContainer baseKnownOption() throws IOException {
+  public static ProtoDomain baseKnownOption() throws IOException {
     InputStream resourceAsStream =
         StorageProviderTest.class.getResourceAsStream("../server/base_known_option.pb");
-    return new PContainer(resourceAsStream);
+    return ProtoDomain.buildFrom(resourceAsStream);
   }
 
-  public static PContainer baseAddMessageOption() throws IOException {
+  public static ProtoDomain baseAddMessageOption() throws IOException {
     InputStream resourceAsStream =
         StorageProviderTest.class.getResourceAsStream("../server/base_add_message_option.pb");
-    return new PContainer(resourceAsStream);
+    return ProtoDomain.buildFrom(resourceAsStream);
   }
 
   @Before
@@ -87,7 +87,7 @@ public class StorageProviderTest {
 
   private void writeReadTest(StorageProvider provider) throws Exception {
     provider.write(baseKnownOption().toByteString());
-    PContainer PContainer = new PContainer(provider.read());
+    ProtoDomain PContainer = ProtoDomain.buildFrom(provider.read());
     Assert.assertEquals(baseKnownOption().toFileDescriptorSet(), PContainer.toFileDescriptorSet());
   }
 
