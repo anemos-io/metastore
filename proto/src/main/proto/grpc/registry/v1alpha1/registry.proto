@@ -45,7 +45,8 @@ message SubmitSchemaRequest {
         string file_name = 5;
     }
 
-    SubmitMessage message = 6;
+    string validation_profile = 6;
+    SubmitMessage message = 7;
 }
 
 message SubmitSchemaResponse {

@@ -1,9 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## 0.7.1
 
 ### Added
+- Selecting validation profile via API and metastep
 
 ### Changed
 - Plugin updated Jib to 1.8.0

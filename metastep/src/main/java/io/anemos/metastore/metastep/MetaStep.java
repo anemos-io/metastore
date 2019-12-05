@@ -46,6 +46,7 @@ public class MetaStep {
     submitParser.setDefault("sub-command", "publish");
     submitParser.addArgument("-p", "--package_prefix").required(true);
     submitParser.addArgument("-d", "--descriptor_set").required(false);
+    submitParser.addArgument("-f", "--profile").required(false);
     submitParser.addArgument("-w", "--workspace").required(false);
     submitParser.addArgument("-s", "--server").required(true);
     submitParser.addArgument("-r", "--registry").required(false);
@@ -264,6 +265,9 @@ public class MetaStep {
     Map<String, Object> attributes = res.getAttrs();
     if (attributes.containsKey("registry") && attributes.get("registry") != null) {
       schemaRequestBuilder.setRegistryName((String) attributes.get("registry"));
+    }
+    if (attributes.containsKey("profile") && attributes.get("profile") != null) {
+      schemaRequestBuilder.setValidationProfile((String) attributes.get("profile"));
     }
     return schemaRequestBuilder.build();
   }

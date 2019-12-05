@@ -3,7 +3,10 @@ package io.anemos.metastore;
 import static io.anemos.metastore.v1alpha1.RegistryP.GetResourceBindingeRequest.SchemaContext;
 
 import com.google.protobuf.Descriptors;
+import io.anemos.metastore.core.proto.profile.ProfileAllowAll;
+import io.anemos.metastore.core.proto.profile.ProfileAllowNone;
 import io.anemos.metastore.core.proto.profile.ProfileAvroEvolve;
+import io.anemos.metastore.core.proto.profile.ProfileProtoEvolve;
 import io.anemos.metastore.core.proto.profile.ValidationProfile;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
@@ -121,7 +124,23 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
     }
 
-    ValidationProfile profile = new ProfileAvroEvolve();
+    ValidationProfile profile;
+    switch (request.getValidationProfile()) {
+      case "allow:all":
+        profile = new ProfileAllowAll();
+        break;
+      case "allow:none":
+        profile = new ProfileAllowNone();
+        break;
+      case "proto:default":
+        profile = new ProfileProtoEvolve();
+        break;
+      case "avro:forward":
+      case "avro:backward":
+      default:
+        profile = new ProfileAvroEvolve();
+    }
+
     return profile.validate(results.getReport());
   }
 
