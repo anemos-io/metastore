@@ -7,13 +7,16 @@ import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.FieldResult;
 import io.anemos.metastore.v1alpha1.FileResult;
+import io.anemos.metastore.v1alpha1.ImportChangeInfo;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
 import io.anemos.metastore.v1alpha1.Report;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class ShadowApply {
 
@@ -49,7 +52,11 @@ class ShadowApply {
           getOrCreateFileDescriptorProtoBuilder(
               fileDescriptorProtoBuilders, fileResultEntry.getKey(), fileDescriptor);
       fileDescriptorProtoBuilder.mergeFrom(
-          applyFileOptionChanges(fileDescriptor, fileResultEntry.getValue().getOptionChangeList()));
+          applyImportChanges(
+                  applyFileOptionChanges(
+                      fileDescriptor, fileResultEntry.getValue().getOptionChangeList()),
+                  fileResultEntry.getValue().getImportChangeList())
+              .build());
     }
   }
 
@@ -133,14 +140,36 @@ class ShadowApply {
     return indexMap;
   }
 
-  private DescriptorProtos.FileDescriptorProto applyFileOptionChanges(
+  private DescriptorProtos.FileDescriptorProto.Builder applyFileOptionChanges(
       Descriptors.FileDescriptor fileDescriptor, List<OptionChangeInfo> optionChanges) {
     DescriptorProtos.FileDescriptorProto.Builder newDescriptorBuilder =
         fileDescriptor.toProto().toBuilder();
     UnknownFieldSet unknownFieldSet = buildUnknownFieldSet(optionChanges);
     DescriptorProtos.FileOptions fileOptions =
         DescriptorProtos.FileOptions.newBuilder().setUnknownFields(unknownFieldSet).build();
-    return newDescriptorBuilder.setOptions(fileOptions).clearMessageType().build();
+    return newDescriptorBuilder.setOptions(fileOptions).clearMessageType();
+  }
+
+  private DescriptorProtos.FileDescriptorProto.Builder applyImportChanges(
+      DescriptorProtos.FileDescriptorProto.Builder builder, List<ImportChangeInfo> importChanges) {
+
+    Set<String> dependencyList = new HashSet<>(builder.getDependencyList());
+    importChanges.forEach(
+        changeInfo -> {
+          switch (changeInfo.getChangeType()) {
+            case IMPORT_ADDED:
+              dependencyList.add(changeInfo.getName());
+              break;
+            case IMPORT_REMOVED:
+              dependencyList.remove(changeInfo.getName());
+              break;
+            case IMPORT_UNCHANGED:
+            case UNRECOGNIZED:
+          }
+        });
+    builder.clearDependency();
+    builder.addAllDependency(dependencyList);
+    return builder;
   }
 
   private DescriptorProtos.DescriptorProto applyMessageOptionChanges(

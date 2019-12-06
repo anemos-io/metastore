@@ -113,7 +113,7 @@ public class ProtoDomain implements Serializable {
     }
   }
 
-  public static ProtoDomain buildFrom(List<ByteString> fileDescriptorProtoList)
+  public static ProtoDomain buildFrom(Collection<ByteString> fileDescriptorProtoList)
       throws InvalidProtocolBufferException {
     return buildFrom(Convert.convertFileDescriptorByteStringList(fileDescriptorProtoList));
   }
@@ -348,86 +348,21 @@ public class ProtoDomain implements Serializable {
     return setBuilder.build();
   }
 
-  public ProtoDomain update(
-      Collection<DescriptorProtos.FileDescriptorProto> newFileDescriptorProtos) {
-    DescriptorProtos.FileDescriptorSet fileDescriptorSet = this.toFileDescriptorSet();
-    Map<String, Integer> fileIndices = new HashMap<>();
-    for (int i = 0; i < fileDescriptorSet.getFileCount(); i++) {
-      fileIndices.put(fileDescriptorSet.getFile(i).getName(), i);
-    }
-    DescriptorProtos.FileDescriptorSet.Builder setBuilder =
-        DescriptorProtos.FileDescriptorSet.newBuilder(fileDescriptorSet);
-
-    for (DescriptorProtos.FileDescriptorProto newFileDescriptorProto : newFileDescriptorProtos) {
-
-      // TODO add recursive options
-      Set<Integer> fileOptionDependencyNumbers =
-          new HashSet<>(newFileDescriptorProto.getOptions().getUnknownFields().asMap().keySet());
-      Set<Integer> messageOptionDependencyNumbers = new HashSet<>();
-      Set<Integer> fieldOptionDependencyNumbers = new HashSet<>();
-      for (DescriptorProtos.DescriptorProto descriptorProto :
-          newFileDescriptorProto.getMessageTypeList()) {
-        messageOptionDependencyNumbers.addAll(
-            descriptorProto.getOptions().getUnknownFields().asMap().keySet());
-        descriptorProto
-            .getFieldList()
-            .forEach(
-                field ->
-                    fieldOptionDependencyNumbers.addAll(
-                        field.getOptions().getUnknownFields().asMap().keySet()));
-      }
-
-      Set<Descriptors.FileDescriptor> dependencies = new HashSet<>();
-      fileOptionDependencyNumbers.forEach(
-          number -> {
-            if (this.optionsCatalog.fileOptionDependencyMap.containsKey(number)) {
-              dependencies.add(this.optionsCatalog.fileOptionDependencyMap.get(number));
-            } else {
-              throw new RuntimeException(
-                  "fileOptionDependencyMap does not contain option with number " + number);
-            }
-          });
-      messageOptionDependencyNumbers.forEach(
-          number -> {
-            if (this.optionsCatalog.messageOptionDependencyMap.containsKey(number)) {
-              dependencies.add(this.optionsCatalog.messageOptionDependencyMap.get(number));
-            } else {
-              throw new RuntimeException(
-                  "messageOptionDependencyMap does not contain option with number " + number);
-            }
-          });
-      fieldOptionDependencyNumbers.forEach(
-          number -> {
-            if (this.optionsCatalog.fieldOptionDependencyMap.containsKey(number)) {
-              dependencies.add(this.optionsCatalog.fieldOptionDependencyMap.get(number));
-            } else {
-              throw new RuntimeException(
-                  "fieldOptionDependencyMap does not contain option with number " + number);
-            }
-          });
-      newFileDescriptorProto
-          .getDependencyList()
-          .forEach(dependency -> dependencies.add(fileDescriptorMap.get(dependency)));
-      Descriptors.FileDescriptor newFileDescriptor;
-      try {
-        newFileDescriptor =
-            Descriptors.FileDescriptor.buildFrom(
-                newFileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
-
-      } catch (Descriptors.DescriptorValidationException e) {
-        throw new RuntimeException(e);
-      }
-
-      DescriptorProtos.FileDescriptorProto.Builder newFileDescriptorProtoBuilder =
-          DescriptorProtos.FileDescriptorProto.newBuilder(newFileDescriptorProto);
-      dependencies.forEach(
-          fd -> {
-            newFileDescriptorProtoBuilder.addDependency(fd.getFullName());
-          });
-      setBuilder.setFile(
-          fileIndices.get(newFileDescriptor.getFullName()), newFileDescriptorProtoBuilder.build());
-    }
-    return new ProtoDomain(setBuilder.build());
+  public ProtoDomain update(Collection<DescriptorProtos.FileDescriptorProto> updateProtos)
+      throws InvalidProtocolBufferException {
+    Map<String, ByteString> updated =
+        updateProtos.stream()
+            .collect(
+                Collectors.toMap(
+                    DescriptorProtos.FileDescriptorProto::getName,
+                    DescriptorProtos.FileDescriptorProto::toByteString));
+    fileDescriptorMap.forEach(
+        (name, fd) -> {
+          if (!updated.containsKey(name)) {
+            updated.put(name, fd.toProto().toByteString());
+          }
+        });
+    return ProtoDomain.buildFrom(updated.values());
   }
 
   @Override

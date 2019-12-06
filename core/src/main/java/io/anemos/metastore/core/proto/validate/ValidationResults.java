@@ -9,9 +9,8 @@ import java.util.Map;
 
 public class ValidationResults {
   private Map<String, FileResultContainer> fileMap = new HashMap<>();
-
   private Map<String, MessageResultContainer> messageMap = new HashMap<>();
-  Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
+  private Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
 
   public List<RuleInfo> getInfo(String messageName, String fieldName) {
     List<RuleInfo> rules = new ArrayList<>();
@@ -98,6 +97,11 @@ public class ValidationResults {
   void addOptionChange(Descriptors.FileDescriptor fileDescriptor, OptionChangeInfo info) {
     FileResultContainer fileResultContainer = getOrCreateFile(fileDescriptor.getFullName());
     fileResultContainer.addOptionChange(info);
+  }
+
+  void addImportChange(String fullName, ImportChangeInfo info) {
+    FileResultContainer fileResultContainer = getOrCreateFile(fullName);
+    fileResultContainer.addImportChange(info);
   }
 
   void addOptionChange(Descriptors.Descriptor descriptor, OptionChangeInfo info) {
@@ -235,6 +239,7 @@ public class ValidationResults {
     // Map<String, FieldResultContainer> fieldMap = new HashMap<>();
     ChangeInfo patch;
     List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
+    List<ImportChangeInfo> importChangeInfo = new ArrayList<>();
 
     public void setPatch(ChangeInfo patch) {
       this.patch = patch;
@@ -246,7 +251,8 @@ public class ValidationResults {
           FileResult.newBuilder()
               .setFileName(fullName)
               .addAllInfo(info)
-              .addAllOptionChange(optionChangeInfos);
+              .addAllOptionChange(optionChangeInfos)
+              .addAllImportChange(importChangeInfo);
       if (patch != null) {
         builder.setChange(patch);
       }
@@ -259,6 +265,10 @@ public class ValidationResults {
 
     public void addOptionChange(OptionChangeInfo optionChangeInfo) {
       this.optionChangeInfos.add(optionChangeInfo);
+    }
+
+    public void addImportChange(ImportChangeInfo changeInfo) {
+      this.importChangeInfo.add(changeInfo);
     }
   }
 

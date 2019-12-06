@@ -1,6 +1,10 @@
 package io.anemos.metastore.core.proto.validate;
 
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_ADDED;
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_CHANGED;
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_REMOVED;
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_RESERVED;
+import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.FIELD_UNRESERVED;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
@@ -10,10 +14,18 @@ import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.ChangeInfo;
 import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.FieldChangeInfo;
+import io.anemos.metastore.v1alpha1.ImportChangeInfo;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -67,34 +79,50 @@ public class ProtoDiff {
     List<Descriptors.Descriptor> refDescriptors;
     List<Descriptors.EnumDescriptor> refEnumDescriptors;
     List<Descriptors.ServiceDescriptor> refServiceDescriptors;
+    List<String> refDependencies;
     List<Descriptors.Descriptor> newDescriptors;
     List<Descriptors.EnumDescriptor> newEnumDescriptors;
     List<Descriptors.ServiceDescriptor> newServiceDescriptors;
+    List<String> newDependencies;
+    String fileName = null;
     if (fdRef != null) {
+      fileName = fdRef.getFullName();
       refDescriptors = fdRef.getMessageTypes();
       refEnumDescriptors = fdRef.getEnumTypes();
       refServiceDescriptors = fdRef.getServices();
+      refDependencies =
+          fdRef.getDependencies().stream()
+              .map(Descriptors.FileDescriptor::getFullName)
+              .collect(Collectors.toList());
     } else {
       results.setPatch(fdNew, ChangeInfo.newBuilder().setChangeType(ChangeType.ADDITION).build());
       refDescriptors = new ArrayList<>(0);
       refEnumDescriptors = new ArrayList<>(0);
       refServiceDescriptors = new ArrayList<>(0);
+      refDependencies = new ArrayList<>(0);
     }
 
     if (fdNew != null) {
+      fileName = fdNew.getFullName();
       newDescriptors = fdNew.getMessageTypes();
       newEnumDescriptors = fdNew.getEnumTypes();
       newServiceDescriptors = fdNew.getServices();
+      newDependencies =
+          fdNew.getDependencies().stream()
+              .map(Descriptors.FileDescriptor::getFullName)
+              .collect(Collectors.toList());
     } else {
       results.setPatch(fdRef, ChangeInfo.newBuilder().setChangeType(ChangeType.REMOVAL).build());
       newDescriptors = new ArrayList<>(0);
       newEnumDescriptors = new ArrayList<>(0);
       newServiceDescriptors = new ArrayList<>(0);
+      newDependencies = new ArrayList<>(0);
     }
 
     diffMessageTypes(refDescriptors, newDescriptors);
     diffEnumTypes(refEnumDescriptors, newEnumDescriptors);
     diffServices(refServiceDescriptors, newServiceDescriptors);
+    diffImports(fileName, refDependencies, newDependencies);
   }
 
   public void diffOnMessage(String messageName) {
@@ -157,6 +185,35 @@ public class ProtoDiff {
     intersect.removeAll(onlyInLeftInts(left, right));
     intersect.removeAll(onlyInLeftInts(right, left));
     return intersect;
+  }
+
+  private void diffImports(String fullFileName, List<String> c_ref, List<String> c_new) {
+    Map<String, String> m_ref =
+        c_ref.stream().collect(Collectors.toMap(String::toString, String::toString));
+    Map<String, String> m_new =
+        c_new.stream().collect(Collectors.toMap(String::toString, String::toString));
+
+    onlyInLeft(m_ref, m_new)
+        .forEach(
+            v -> {
+              results.addImportChange(
+                  fullFileName,
+                  ImportChangeInfo.newBuilder()
+                      .setChangeType(ImportChangeInfo.ImportChangeType.IMPORT_REMOVED)
+                      .setName(v)
+                      .build());
+            });
+
+    onlyInLeft(m_new, m_ref)
+        .forEach(
+            v -> {
+              results.addImportChange(
+                  fullFileName,
+                  ImportChangeInfo.newBuilder()
+                      .setChangeType(ImportChangeInfo.ImportChangeType.IMPORT_ADDED)
+                      .setName(v)
+                      .build());
+            });
   }
 
   private void diffMessageTypes(

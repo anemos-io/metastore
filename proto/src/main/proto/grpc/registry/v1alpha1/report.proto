@@ -54,7 +54,7 @@ message FileResult {
     ChangeInfo change = 4;
 
     //ResultCount result_count = 6;
-
+    repeated ImportChangeInfo import_change = 9;
     repeated OptionChangeInfo option_change = 10;
 
 }
@@ -202,6 +202,18 @@ message RuleInfo {
     LintRule lint_rule = 1;
     string code = 2;
 }
+
+message ImportChangeInfo {
+    enum ImportChangeType {
+        IMPORT_UNCHANGED = 0;
+        IMPORT_ADDED = 1;
+        IMPORT_REMOVED = 2;
+    }
+
+    ImportChangeType change_type = 1;
+    string name = 2;
+}
+
 
 //message SchemaDiff {
 //    repeated RuleInfo rules = 1;

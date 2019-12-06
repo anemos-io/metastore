@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## unreleased
+
+### Added
+- Diff on imports on a FileDescriptor
+
+### Changed
+
+### Fixed
+
 ## 0.7.1
 
 ### Added

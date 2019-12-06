@@ -6,6 +6,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ class Convert {
   }
 
   static Map<String, Descriptors.FileDescriptor> convertFileDescriptorByteStringList(
-      List<ByteString> fileDescriptorProtoList) throws InvalidProtocolBufferException {
+      Collection<ByteString> fileDescriptorProtoList) throws InvalidProtocolBufferException {
     Map<String, DescriptorProtos.FileDescriptorProto> inMap = new HashMap<>();
     for (ByteString byteString : fileDescriptorProtoList) {
       DescriptorProtos.FileDescriptorProto fileDescriptorProto =
