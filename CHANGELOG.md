@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Default behaviour of pushing contracts is merge
 
 ## 0.7.1
 

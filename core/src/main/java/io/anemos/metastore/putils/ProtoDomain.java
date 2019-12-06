@@ -159,6 +159,10 @@ public class ProtoDomain implements Serializable {
     return new ProtoDomain();
   }
 
+  public Builder toBuilder() {
+    return new Builder(this.fileDescriptorMap);
+  }
+
   private void crosswire() {
     HashMap<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
     fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
@@ -348,23 +352,6 @@ public class ProtoDomain implements Serializable {
     return setBuilder.build();
   }
 
-  public ProtoDomain update(Collection<DescriptorProtos.FileDescriptorProto> updateProtos)
-      throws InvalidProtocolBufferException {
-    Map<String, ByteString> updated =
-        updateProtos.stream()
-            .collect(
-                Collectors.toMap(
-                    DescriptorProtos.FileDescriptorProto::getName,
-                    DescriptorProtos.FileDescriptorProto::toByteString));
-    fileDescriptorMap.forEach(
-        (name, fd) -> {
-          if (!updated.containsKey(name)) {
-            updated.put(name, fd.toProto().toByteString());
-          }
-        });
-    return ProtoDomain.buildFrom(updated.values());
-  }
-
   @Override
   public String toString() {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -407,6 +394,50 @@ public class ProtoDomain implements Serializable {
     return fds;
   }
 
+  public static class Builder {
+    private Map<String, DescriptorProtos.FileDescriptorProto> fileDescriptorMap;
+
+    public Builder(Map<String, Descriptors.FileDescriptor> in) {
+      fileDescriptorMap =
+          in.values().stream()
+              .map(p -> p.toProto())
+              .collect(Collectors.toMap(DescriptorProtos.FileDescriptorProto::getName, v -> v));
+    }
+
+    public Builder mergeBinary(Collection<ByteString> updateBytes)
+        throws InvalidProtocolBufferException {
+      Collection<DescriptorProtos.FileDescriptorProto> updateProtos = new ArrayList<>();
+      for (ByteString bs : updateBytes) {
+        updateProtos.add(DescriptorProtos.FileDescriptorProto.parseFrom(bs));
+      }
+      return merge(updateProtos);
+    }
+
+    public Builder replaceFileBinary(String file, Collection<ByteString> updateBytes) {
+      throw new RuntimeException("Not implemented");
+    }
+
+    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes) {
+      throw new RuntimeException("Not implemented");
+    }
+
+    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes) {
+      throw new RuntimeException("Not implemented");
+    }
+
+    public Builder merge(Collection<DescriptorProtos.FileDescriptorProto> updateProtos) {
+      updateProtos.forEach(proto -> fileDescriptorMap.put(proto.getName(), proto));
+      return this;
+    }
+
+    public ProtoDomain build() throws InvalidProtocolBufferException {
+      return ProtoDomain.buildFrom(
+          fileDescriptorMap.values().stream()
+              .map(v -> v.toByteString())
+              .collect(Collectors.toList()));
+    }
+  }
+
   public class OptionsCatalog {
     private Map<Integer, Descriptors.FieldDescriptor> fileOptionMap;
     private Map<Integer, Descriptors.FieldDescriptor> messageOptionMap;
@@ -416,29 +447,14 @@ public class ProtoDomain implements Serializable {
     private Map<Integer, Descriptors.FieldDescriptor> enumOptionMap;
     private Map<Integer, Descriptors.FieldDescriptor> enumValueOptionMap;
 
-    private Map<Integer, Descriptors.FileDescriptor> fileOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> messageOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> fieldOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> serviceOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> methodOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> enumOptionDependencyMap;
-    private Map<Integer, Descriptors.FileDescriptor> enumValueOptionDependencyMap;
-
     OptionsCatalog(Map<String, Descriptors.FileDescriptor> fileDescriptorMap) {
       fileOptionMap = new HashMap<>();
-      fileOptionDependencyMap = new HashMap<>();
       messageOptionMap = new HashMap<>();
-      messageOptionDependencyMap = new HashMap<>();
       fieldOptionMap = new HashMap<>();
-      fieldOptionDependencyMap = new HashMap<>();
       serviceOptionMap = new HashMap<>();
-      serviceOptionDependencyMap = new HashMap<>();
       methodOptionMap = new HashMap<>();
-      methodOptionDependencyMap = new HashMap<>();
       enumOptionMap = new HashMap<>();
-      enumOptionDependencyMap = new HashMap<>();
       enumValueOptionMap = new HashMap<>();
-      enumValueOptionDependencyMap = new HashMap<>();
 
       fileDescriptorMap.forEach(
           (fileName, fileDescriptor) -> {
@@ -448,31 +464,24 @@ public class ProtoDomain implements Serializable {
                     extension -> {
                       switch (extension.toProto().getExtendee()) {
                         case ".google.protobuf.FileOptions":
-                          fileOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           fileOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.MessageOptions":
-                          messageOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           messageOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.FieldOptions":
-                          fieldOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           fieldOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.ServiceOptions":
-                          serviceOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           serviceOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.MethodOptions":
-                          methodOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           methodOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.EnumOptions":
-                          enumOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           enumOptionMap.put(extension.getNumber(), extension);
                           break;
                         case ".google.protobuf.EnumValueOptions":
-                          enumValueOptionDependencyMap.put(extension.getNumber(), fileDescriptor);
                           enumValueOptionMap.put(extension.getNumber(), extension);
                           break;
                       }

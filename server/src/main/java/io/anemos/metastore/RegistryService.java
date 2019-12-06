@@ -52,9 +52,31 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       RegistryP.SubmitSchemaRequest request,
       StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver,
       boolean submit) {
+
+    AbstractRegistry registry;
+    try {
+      registry = metaStore.registries.get(request.getRegistryName());
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+      return;
+    }
+
     ProtoDomain in;
     try {
-      in = ProtoDomain.buildFrom(request.getFileDescriptorProtoList());
+      switch (request.getEntityScopeCase()) {
+        case PACKAGE_NAME:
+          in = ProtoDomain.empty();
+          break;
+        case PACKAGE_PREFIX:
+          in = ProtoDomain.empty();
+          break;
+        case FILE_NAME:
+          in = ProtoDomain.empty();
+          break;
+        case ENTITYSCOPE_NOT_SET:
+        default:
+          in = registry.get().toBuilder().mergeBinary(request.getFileDescriptorProtoList()).build();
+      }
     } catch (IOException e) {
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
@@ -65,7 +87,6 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     }
 
     try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       Report report = validate(registry, request, registry.get(), in);
 
       if (submit) {

@@ -35,7 +35,7 @@ class ShadowApply {
           (name, fd) -> {
             fileDescriptorProtos.add(fd.build());
           });
-      return shadow.update(fileDescriptorProtos);
+      return shadow.toBuilder().merge(fileDescriptorProtos).build();
     } catch (Exception e) {
       throw new RuntimeException("Failed to apply delta", e);
     }

@@ -5,7 +5,6 @@ import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.TestSets;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,101 +13,6 @@ import test.v1.Option;
 
 @RunWith(JUnit4.class)
 public class ProtoLanguageFileWriterTest {
-
-  private static final Option.TestOption TEST_MINIMAL =
-      Option.TestOption.newBuilder()
-          .setSingleString("minimal")
-          .addRepeatedString("test1")
-          .addRepeatedString("test2")
-          .setSingleInt32(2)
-          .addRepeatedInt32(3)
-          .setSingleEnum(Option.TestOption.TestEnum.ENUM2)
-          .build();
-
-  private static final Option.TestOption TEST_OPTION =
-      Option.TestOption.newBuilder()
-          .setSingleString("testString")
-          .addRepeatedString("test1")
-          .addRepeatedString("test2")
-          .setSingleInt32(2)
-          .addRepeatedInt32(3)
-          .addRepeatedInt32(4)
-          .setSingleInt64(10)
-          //              .setSingleBytes(ByteString.copyFrom(new byte[] { 0x00, 0x01, 0x02 }))
-          .setSingleEnum(Option.TestOption.TestEnum.ENUM2)
-          .setSingleMessage(TEST_MINIMAL)
-          .build();
-
-  private static final List<String> STING_LIST = new ArrayList<>();
-
-  static {
-    STING_LIST.add("Value I");
-    STING_LIST.add("Value II");
-    STING_LIST.add("Value III");
-  }
-
-  private static final DescriptorProtos.FileOptions FILE_OPTIONS =
-      DescriptorProtos.FileOptions.newBuilder()
-          .setExtension(Option.fileOption, TEST_OPTION)
-          .setExtension(Option.fileOption1, 12)
-          .setExtension(Option.fileOption2, "String")
-          .setExtension(Option.fileOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.MessageOptions MESSAGE_OPTIONS =
-      DescriptorProtos.MessageOptions.newBuilder()
-          .setExtension(Option.messageOption, TEST_OPTION)
-          .setExtension(Option.messageOption1, 12)
-          .setExtension(Option.messageOption2, "String")
-          .setExtension(Option.messageOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.FieldOptions FIELD_OPTIONS =
-      DescriptorProtos.FieldOptions.newBuilder()
-          .setExtension(Option.fieldOption, TEST_OPTION)
-          .setExtension(Option.fieldOption1, 12)
-          .setExtension(Option.fieldOption2, "String")
-          .setExtension(Option.fieldOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.ServiceOptions SERVICE_OPTIONS =
-      DescriptorProtos.ServiceOptions.newBuilder()
-          .setExtension(Option.serviceOption, TEST_OPTION)
-          .setExtension(Option.serviceOption1, 12)
-          .setExtension(Option.serviceOption2, "String")
-          .setExtension(Option.serviceOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.MethodOptions METHOD_OPTIONS =
-      DescriptorProtos.MethodOptions.newBuilder()
-          .setExtension(Option.methodOption, TEST_OPTION)
-          .setExtension(Option.methodOption1, 12)
-          .setExtension(Option.methodOption2, "String")
-          .setExtension(Option.methodOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.EnumOptions ENUM_OPTIONS =
-      DescriptorProtos.EnumOptions.newBuilder()
-          .setExtension(Option.enumOption, TEST_OPTION)
-          .setExtension(Option.enumOption1, 12)
-          .setExtension(Option.enumOption2, "String")
-          .setExtension(Option.enumOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
-
-  private static final DescriptorProtos.EnumValueOptions ENUM_VALUE_OPTIONS =
-      DescriptorProtos.EnumValueOptions.newBuilder()
-          .setExtension(Option.enumValueOption, TEST_OPTION)
-          .setExtension(Option.enumValueOption1, 12)
-          .setExtension(Option.enumValueOption2, "String")
-          .setExtension(Option.enumValueOptionN, STING_LIST)
-          .setDeprecated(true)
-          .build();
 
   private void testOutput(
       DescriptorProtos.FileDescriptorProto protoBuilder, ProtoDomain container, String expected)
@@ -265,7 +169,8 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeMessageFromShadow() throws Exception {
-    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer =
+        TestSets.baseComplexMessageOptions().toBuilder().merge(new ArrayList<>()).build();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_message.proto");
 
@@ -280,13 +185,13 @@ public class ProtoLanguageFileWriterTest {
     DescriptorProtos.DescriptorProto.Builder descriptor =
         DescriptorProtos.DescriptorProto.newBuilder()
             .setName("Proto3Message")
-            .setOptions(MESSAGE_OPTIONS)
+            .setOptions(TestProto.MESSAGE_OPTIONS)
             .addField(
                 DescriptorProtos.FieldDescriptorProto.newBuilder()
                     .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
                     .setNumber(1)
                     .setName("field_1")
-                    .setOptions(FIELD_OPTIONS)
+                    .setOptions(TestProto.FIELD_OPTIONS)
                     .build());
 
     fileDescriptorProtoBuilder.addMessageType(descriptor);
@@ -409,7 +314,8 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeNestedFromShadow() throws Exception {
-    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer =
+        TestSets.baseComplexMessageOptions().toBuilder().merge(new ArrayList<>()).build();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_nested.proto");
 
@@ -435,13 +341,13 @@ public class ProtoLanguageFileWriterTest {
                                     .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
                                     .setNumber(1)
                                     .setName("field_2A_1")
-                                    .setOptions(FIELD_OPTIONS)
+                                    .setOptions(TestProto.FIELD_OPTIONS)
                                     .build())
                             .build())
                     .addNestedType(
                         DescriptorProtos.DescriptorProto.newBuilder()
                             .setName("Level2B")
-                            .setOptions(MESSAGE_OPTIONS)
+                            .setOptions(TestProto.MESSAGE_OPTIONS)
                             .addField(
                                 DescriptorProtos.FieldDescriptorProto.newBuilder()
                                     .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL)
@@ -459,7 +365,7 @@ public class ProtoLanguageFileWriterTest {
                                         DescriptorProtos.EnumValueDescriptorProto.newBuilder()
                                             .setNumber(0)
                                             .setName("ELEVEL2C_ENUM_UNSET")
-                                            .setOptions(ENUM_VALUE_OPTIONS)
+                                            .setOptions(TestProto.ENUM_VALUE_OPTIONS)
                                             .build())
                                     .build())
                             .addField(
@@ -566,7 +472,8 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeServiceFromShadow() throws Exception {
-    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer =
+        TestSets.baseComplexMessageOptions().toBuilder().merge(new ArrayList<>()).build();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_service.proto");
 
@@ -609,7 +516,7 @@ public class ProtoLanguageFileWriterTest {
                     .setServerStreaming(true)
                     .setOptions(
                         DescriptorProtos.MethodOptions.newBuilder()
-                            .setExtension(Option.methodOption, TEST_MINIMAL)))
+                            .setExtension(Option.methodOption, TestProto.TEST_MINIMAL)))
             .addMethod(
                 DescriptorProtos.MethodDescriptorProto.newBuilder()
                     .setName("BiStreamingMethod")
@@ -617,8 +524,8 @@ public class ProtoLanguageFileWriterTest {
                     .setOutputType("MethodResponse")
                     .setClientStreaming(true)
                     .setServerStreaming(true)
-                    .setOptions(METHOD_OPTIONS))
-            .setOptions(SERVICE_OPTIONS)
+                    .setOptions(TestProto.METHOD_OPTIONS))
+            .setOptions(TestProto.SERVICE_OPTIONS)
             .build();
 
     fileDescriptorProtoBuilder.addService(service);
@@ -699,7 +606,8 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeEnumFromShadow() throws Exception {
-    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer =
+        TestSets.baseComplexMessageOptions().toBuilder().merge(new ArrayList<>()).build();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_enum.proto");
 
@@ -717,12 +625,12 @@ public class ProtoLanguageFileWriterTest {
     DescriptorProtos.EnumDescriptorProto enumDescriptor =
         DescriptorProtos.EnumDescriptorProto.newBuilder()
             .setName("WriteEnum")
-            .setOptions(ENUM_OPTIONS)
+            .setOptions(TestProto.ENUM_OPTIONS)
             .addValue(
                 DescriptorProtos.EnumValueDescriptorProto.newBuilder()
                     .setNumber(0)
                     .setName("WRITE_ENUM_UNSET")
-                    .setOptions(ENUM_VALUE_OPTIONS)
+                    .setOptions(TestProto.ENUM_VALUE_OPTIONS)
                     .build())
             .build();
 
@@ -784,7 +692,8 @@ public class ProtoLanguageFileWriterTest {
 
   @Test
   public void writeFileFromShadow() throws Exception {
-    ProtoDomain PContainer = TestSets.baseComplexMessageOptions().update(new ArrayList<>());
+    ProtoDomain PContainer =
+        TestSets.baseComplexMessageOptions().toBuilder().merge(new ArrayList<>()).build();
     Descriptors.FileDescriptor fileDescriptor =
         PContainer.getFileDescriptorByFileName("test/v1/proto3_file.proto");
 
@@ -798,7 +707,7 @@ public class ProtoLanguageFileWriterTest {
             .setName("test")
             .setSyntax("proto3")
             .addDependency("google/protobuf/descriptor.proto")
-            .setOptions(FILE_OPTIONS);
+            .setOptions(TestProto.FILE_OPTIONS);
 
     DescriptorProtos.EnumDescriptorProto enumDescriptor =
         DescriptorProtos.EnumDescriptorProto.newBuilder()
