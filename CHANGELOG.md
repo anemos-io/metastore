@@ -1,9 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## 0.7.2
 
 ### Added
+- Ability to push a single file
 - Diff on imports on a FileDescriptor
 
 ### Changed

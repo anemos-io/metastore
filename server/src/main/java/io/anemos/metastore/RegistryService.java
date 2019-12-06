@@ -63,19 +63,29 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
 
     ProtoDomain in;
     try {
+      ProtoDomain.Builder builder = registry.get().toBuilder();
       switch (request.getEntityScopeCase()) {
         case PACKAGE_NAME:
-          in = ProtoDomain.empty();
-          break;
+          in =
+              builder
+                  .replacePackageBinary(request.getFileName(), request.getFileDescriptorProtoList())
+                  .build();
         case PACKAGE_PREFIX:
-          in = ProtoDomain.empty();
+          in =
+              builder
+                  .replacePackagePrefixBinary(
+                      request.getFileName(), request.getFileDescriptorProtoList())
+                  .build();
           break;
         case FILE_NAME:
-          in = ProtoDomain.empty();
+          in =
+              builder
+                  .replaceFileBinary(request.getFileName(), request.getFileDescriptorProtoList())
+                  .build();
           break;
         case ENTITYSCOPE_NOT_SET:
         default:
-          in = registry.get().toBuilder().mergeBinary(request.getFileDescriptorProtoList()).build();
+          in = builder.mergeBinary(request.getFileDescriptorProtoList()).build();
       }
     } catch (IOException e) {
       responseObserver.onError(

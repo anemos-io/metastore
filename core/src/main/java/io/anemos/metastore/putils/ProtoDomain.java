@@ -404,6 +404,17 @@ public class ProtoDomain implements Serializable {
               .collect(Collectors.toMap(DescriptorProtos.FileDescriptorProto::getName, v -> v));
     }
 
+    private Map<String, DescriptorProtos.FileDescriptorProto> toMap(
+        Collection<ByteString> updateBytes) throws InvalidProtocolBufferException {
+      Map<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
+      for (ByteString updateByte : updateBytes) {
+        DescriptorProtos.FileDescriptorProto proto =
+            DescriptorProtos.FileDescriptorProto.parseFrom(updateByte);
+        map.put(proto.getName(), proto);
+      }
+      return map;
+    }
+
     public Builder mergeBinary(Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Collection<DescriptorProtos.FileDescriptorProto> updateProtos = new ArrayList<>();
@@ -413,15 +424,22 @@ public class ProtoDomain implements Serializable {
       return merge(updateProtos);
     }
 
-    public Builder replaceFileBinary(String file, Collection<ByteString> updateBytes) {
+    public Builder replaceFileBinary(String file, Collection<ByteString> updateBytes)
+        throws InvalidProtocolBufferException {
+      Map<String, DescriptorProtos.FileDescriptorProto> map = toMap(updateBytes);
+      if (map.containsKey(file)) {
+        fileDescriptorMap.put(file, map.get(file));
+      } else {
+        fileDescriptorMap.remove(file);
+      }
+      return this;
+    }
+
+    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes) throws InvalidProtocolBufferException {
       throw new RuntimeException("Not implemented");
     }
 
-    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes) {
-      throw new RuntimeException("Not implemented");
-    }
-
-    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes) {
+    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes) throws InvalidProtocolBufferException {
       throw new RuntimeException("Not implemented");
     }
 
