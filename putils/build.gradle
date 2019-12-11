@@ -14,26 +14,10 @@ repositories {
 
 dependencies {
     compile(project(':proto'))
-    compile(project(':putils'))
     compile("org.slf4j:slf4j-api:1.7.28")
     compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
-    compile("io.grpc:grpc-stub:${versions.grpc}")
-    compile("io.grpc:grpc-protobuf:${versions.grpc}")
-    runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
-    compile("org.yaml:snakeyaml:1.21")
-    compile("io.grpc:grpc-services:${versions.grpc}")
-    compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
-    // Support common types like, color, date, latlng, ...
-    compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
-    implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
-    compile("commons-io:commons-io:2.6")
-    runtime("io.opencensus:opencensus-api:${versions.opencensus}")
 
     testImplementation("junit:junit:4.12")
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
-    testCompile(project(':proto'))
-    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
-    
 }
 
 protobuf {
@@ -85,7 +69,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId 'io.anemos'
-            artifactId 'metastore-core'
+            artifactId 'metastore-putils'
             from components.java
         }
     }

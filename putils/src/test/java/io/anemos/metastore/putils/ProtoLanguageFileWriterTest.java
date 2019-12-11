@@ -2,7 +2,6 @@ package io.anemos.metastore.putils;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.core.proto.TestSets;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import org.junit.Assert;

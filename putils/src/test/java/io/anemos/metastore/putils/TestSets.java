@@ -1,6 +1,5 @@
-package io.anemos.metastore.core.proto;
+package io.anemos.metastore.putils;
 
-import io.anemos.metastore.putils.ProtoDomain;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
