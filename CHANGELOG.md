@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## unreleased
+
+# Fixed
+- Make ProtoLint not crash on deletion
+
 ## 0.7.2
 
 ### Added

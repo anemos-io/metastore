@@ -23,9 +23,11 @@ public class ProtoLint {
 
   public void lintOnFileName(String fileName) {
     Descriptors.FileDescriptor fileDescriptor = proto.getFileDescriptorByFileName(fileName);
-    fileDescriptor.getMessageTypes().forEach(message -> lintOnMessage(message.getFullName()));
-    fileDescriptor.getServices().forEach(service -> lintOnService(service.getFullName()));
-    fileDescriptor.getEnumTypes().forEach(enu -> lintOnEnum(enu.getFullName()));
+    if (fileDescriptor != null) {
+      fileDescriptor.getMessageTypes().forEach(message -> lintOnMessage(message.getFullName()));
+      fileDescriptor.getServices().forEach(service -> lintOnService(service.getFullName()));
+      fileDescriptor.getEnumTypes().forEach(enu -> lintOnEnum(enu.getFullName()));
+    }
   }
 
   public void lintOnMessage(String fullName) {
