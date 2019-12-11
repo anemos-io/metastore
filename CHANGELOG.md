@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 # Fixed
 - Make ProtoLint not crash on deletion
+- Make submission more rebust with better error message
+  on API.
 
 ## 0.7.2
 

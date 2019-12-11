@@ -70,6 +70,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
               builder
                   .replacePackageBinary(request.getFileName(), request.getFileDescriptorProtoList())
                   .build();
+          break;
         case PACKAGE_PREFIX:
           in =
               builder
@@ -87,7 +88,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         default:
           in = builder.mergeBinary(request.getFileDescriptorProtoList()).build();
       }
-    } catch (IOException e) {
+    } catch (IOException | RuntimeException e) {
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
               .withDescription("Invalid FileDescriptor Set.")

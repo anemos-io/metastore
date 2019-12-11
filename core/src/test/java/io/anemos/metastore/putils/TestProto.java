@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import test.v1.Option;
 
-public class TestProto {
+class TestProto {
   static final Option.TestOption TEST_MINIMAL =
       Option.TestOption.newBuilder()
           .setSingleString("minimal")

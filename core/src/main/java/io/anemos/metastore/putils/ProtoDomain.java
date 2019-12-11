@@ -435,11 +435,13 @@ public class ProtoDomain implements Serializable {
       return this;
     }
 
-    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes) throws InvalidProtocolBufferException {
+    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes)
+        throws InvalidProtocolBufferException {
       throw new RuntimeException("Not implemented");
     }
 
-    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes) throws InvalidProtocolBufferException {
+    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes)
+        throws InvalidProtocolBufferException {
       throw new RuntimeException("Not implemented");
     }
 
