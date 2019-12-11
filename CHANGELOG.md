@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - Make ProtoLint not crash on deletion
 - Make submission more rebust with better error message
   on API.
+- Allow metastep to submit without setting the package
+  prefix
 
 ## 0.7.2
 

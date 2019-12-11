@@ -44,7 +44,7 @@ public class MetaStep {
 
     Subparser submitParser = subparsers.addParser("publish").help("publish help");
     submitParser.setDefault("sub-command", "publish");
-    submitParser.addArgument("-p", "--package_prefix").required(true);
+    submitParser.addArgument("-p", "--package_prefix").required(false);
     submitParser.addArgument("-d", "--descriptor_set").required(false);
     submitParser.addArgument("-f", "--profile").required(false);
     submitParser.addArgument("-w", "--workspace").required(false);
@@ -57,7 +57,7 @@ public class MetaStep {
 
     Subparser validateParser = subparsers.addParser("validate").help("validate help");
     validateParser.setDefault("sub-command", "validate");
-    validateParser.addArgument("-p", "--package_prefix").required(true);
+    validateParser.addArgument("-p", "--package_prefix").required(false);
     validateParser.addArgument("-d", "--descriptor_set").required(false);
     validateParser.addArgument("-f", "--profile").required(false);
     validateParser.addArgument("-w", "--workspace").required(false);
@@ -253,8 +253,7 @@ public class MetaStep {
     ProtoDomain protoContainer = createDescriptorSet();
 
     RegistryP.SubmitSchemaRequest.Builder schemaRequestBuilder =
-        RegistryP.SubmitSchemaRequest.newBuilder()
-            .setPackagePrefix(res.getString("package_prefix"));
+        RegistryP.SubmitSchemaRequest.newBuilder();
     protoContainer
         .iterator()
         .forEach(
@@ -263,6 +262,10 @@ public class MetaStep {
                     fileDescriptor.toProto().toByteString()));
 
     Map<String, Object> attributes = res.getAttrs();
+
+    if (attributes.containsKey("package_prefix") && attributes.get("package_prefix") != null) {
+      schemaRequestBuilder.setPackagePrefix((String) attributes.get("package_prefix"));
+    }
     if (attributes.containsKey("registry") && attributes.get("registry") != null) {
       schemaRequestBuilder.setRegistryName((String) attributes.get("registry"));
     }
