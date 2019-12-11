@@ -435,14 +435,35 @@ public class ProtoDomain implements Serializable {
       return this;
     }
 
-    public Builder replacePackageBinary(String file, Collection<ByteString> updateBytes)
+    public Builder replacePackageBinary(String packageName, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
-      throw new RuntimeException("Not implemented");
+      Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
+      List<String> removing = new ArrayList();
+      fileDescriptorMap.forEach(
+          (k, v) -> {
+            if (v.getPackage().equals(packageName)) {
+              removing.add(k);
+            }
+          });
+      removing.forEach(f -> fileDescriptorMap.remove(f));
+      fileDescriptorMap.putAll(updated);
+      return this;
     }
 
-    public Builder replacePackagePrefixBinary(String file, Collection<ByteString> updateBytes)
+    public Builder replacePackagePrefixBinary(
+        String packagePrefix, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
-      throw new RuntimeException("Not implemented");
+      Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
+      List<String> removing = new ArrayList();
+      fileDescriptorMap.forEach(
+          (k, v) -> {
+            if (v.getPackage().startsWith(packagePrefix)) {
+              removing.add(k);
+            }
+          });
+      removing.forEach(f -> fileDescriptorMap.remove(f));
+      fileDescriptorMap.putAll(updated);
+      return this;
     }
 
     public Builder merge(Collection<DescriptorProtos.FileDescriptorProto> updateProtos) {

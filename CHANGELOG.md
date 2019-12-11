@@ -1,9 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## 0.7.4
 
-# Fixed
+### Added
+- Added API implementation for scope: prefix and package
+
+### Fixed
 - Make ProtoLint not crash on deletion
 - Make submission more rebust with better error message
   on API.
