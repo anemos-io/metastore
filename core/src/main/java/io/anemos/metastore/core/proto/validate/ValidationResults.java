@@ -94,25 +94,26 @@ public class ValidationResults {
     fileResult.setPatch(patch);
   }
 
-  void addOptionChange(Descriptors.FileDescriptor fileDescriptor, OptionChangeInfo info) {
-    FileResultContainer fileResultContainer = getOrCreateFile(fileDescriptor.getFullName());
-    fileResultContainer.addOptionChange(info);
+  void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChangeInfo info) {
+    if (descriptor instanceof Descriptors.FileDescriptor) {
+      FileResultContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
+      fileResultContainer.addOptionChange(info);
+    }
+    else if (descriptor instanceof Descriptors.Descriptor) {
+      MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+      messageResult.addOptionChange(info);
+    }
+    else if (descriptor instanceof Descriptors.FieldDescriptor) {
+      Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor)descriptor;
+      MessageResultContainer messageResult =
+              getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
+      messageResult.addOptionChange(fieldDescriptor, info);
+    }
   }
 
   void addImportChange(String fullName, ImportChangeInfo info) {
     FileResultContainer fileResultContainer = getOrCreateFile(fullName);
     fileResultContainer.addImportChange(info);
-  }
-
-  void addOptionChange(Descriptors.Descriptor descriptor, OptionChangeInfo info) {
-    MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
-    messageResult.addOptionChange(info);
-  }
-
-  void addOptionChange(Descriptors.FieldDescriptor fieldDescriptor, OptionChangeInfo info) {
-    MessageResultContainer messageResult =
-        getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
-    messageResult.addOptionChange(fieldDescriptor, info);
   }
 
   public Report getReport() {

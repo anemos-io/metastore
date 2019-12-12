@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## unreleases
 
+### Added
+- Add use of Proto extension registry to parse options
+
+### Fixed
+- Unified unknown option parsing, making it more robust
+
 ## 0.7.4
 ### Added
 - Added API implementation for scope: prefix and package

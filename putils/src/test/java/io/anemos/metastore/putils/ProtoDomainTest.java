@@ -1,6 +1,7 @@
 package io.anemos.metastore.putils;
 
 import com.google.protobuf.ByteString;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.junit.Assert;
@@ -42,5 +43,11 @@ public class ProtoDomainTest {
     update.add(TestProto.FILE_DESCRIPTOR_PROTO3.toByteString());
     domain = domain.toBuilder().mergeBinary(update).build();
     Assert.assertEquals(3, domain.getFileNames().size());
+  }
+
+  @Test
+  public void testGetDescriptorByOptionName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    domain.findDescriptorsByOption("x.y");
   }
 }

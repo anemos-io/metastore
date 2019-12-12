@@ -3,6 +3,8 @@ package io.anemos.metastore.putils;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,7 +68,8 @@ public class ProtoDomain implements Serializable {
   private static Descriptors.FileDescriptor convertToFileDescriptorMap(
       String name,
       Map<String, DescriptorProtos.FileDescriptorProto> inMap,
-      Map<String, Descriptors.FileDescriptor> outMap) {
+      Map<String, Descriptors.FileDescriptor> outMap,
+      ExtensionRegistry registry) {
     if (outMap.containsKey(name)) {
       return outMap.get(name);
     }
@@ -87,7 +90,7 @@ public class ProtoDomain implements Serializable {
             .forEach(
                 dependencyName -> {
                   Descriptors.FileDescriptor fileDescriptor =
-                      convertToFileDescriptorMap(dependencyName, inMap, outMap);
+                      convertToFileDescriptorMap(dependencyName, inMap, outMap, registry);
                   if (fileDescriptor != null) {
                     dependencies.add(fileDescriptor);
                   }
@@ -97,6 +100,18 @@ public class ProtoDomain implements Serializable {
         Descriptors.FileDescriptor fileDescriptor =
             Descriptors.FileDescriptor.buildFrom(
                 fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
+        fileDescriptor
+            .getExtensions()
+            .forEach(
+                extension -> {
+                  if (extension.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                    registry.add(
+                        extension, DynamicMessage.newBuilder(extension.getMessageType()).build());
+                  } else {
+                    registry.add(extension);
+                  }
+                });
+        Descriptors.FileDescriptor.internalUpdateFileDescriptor(fileDescriptor, registry);
         outMap.put(name, fileDescriptor);
         return fileDescriptor;
       } catch (Descriptors.DescriptorValidationException e) {
@@ -168,7 +183,9 @@ public class ProtoDomain implements Serializable {
     fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
 
     Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
-    map.forEach((fileName, proto) -> convertToFileDescriptorMap(fileName, map, outMap));
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    map.forEach(
+        (fileName, proto) -> convertToFileDescriptorMap(fileName, map, outMap, extensionRegistry));
     fileDescriptorMap = outMap;
 
     indexOptionsByNumber();
@@ -392,6 +409,10 @@ public class ProtoDomain implements Serializable {
       return getDependantFileDescriptors(fds);
     }
     return fds;
+  }
+
+  public Collection<Descriptors.Descriptor> findDescriptorsByOption(String optionName) {
+    return null;
   }
 
   public static class Builder {
