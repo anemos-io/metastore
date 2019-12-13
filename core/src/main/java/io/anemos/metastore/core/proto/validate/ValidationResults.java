@@ -98,15 +98,13 @@ public class ValidationResults {
     if (descriptor instanceof Descriptors.FileDescriptor) {
       FileResultContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
       fileResultContainer.addOptionChange(info);
-    }
-    else if (descriptor instanceof Descriptors.Descriptor) {
+    } else if (descriptor instanceof Descriptors.Descriptor) {
       MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
       messageResult.addOptionChange(info);
-    }
-    else if (descriptor instanceof Descriptors.FieldDescriptor) {
-      Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor)descriptor;
+    } else if (descriptor instanceof Descriptors.FieldDescriptor) {
+      Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor) descriptor;
       MessageResultContainer messageResult =
-              getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
+          getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
       messageResult.addOptionChange(fieldDescriptor, info);
     }
   }

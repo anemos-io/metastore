@@ -109,7 +109,7 @@ message OptionChangeInfo {
     bytes payload_new = 6;
 
     int32 option_number = 7;
-
+    string option_name = 8;
 }
 
 message FieldChangeInfo {

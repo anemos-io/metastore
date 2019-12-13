@@ -10,6 +10,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.ChangeInfo;
@@ -158,33 +160,17 @@ public class ProtoDiff {
     return out;
   }
 
-  private Set<String> onlyInLeft(Map<String, ?> left, Map<String, ?> right) {
-    HashSet<String> strings = new HashSet<>(left.keySet());
-    strings.removeAll(right.keySet());
-    return strings;
-  }
-
-  private Set<String> onlyInCommon(Map<String, ?> left, Map<String, ?> right) {
-    Set<String> intersect = new HashSet<>(left.keySet());
-    intersect.addAll(right.keySet());
-
-    intersect.removeAll(onlyInLeft(left, right));
-    intersect.removeAll(onlyInLeft(right, left));
-    return intersect;
-  }
-
-  private Set<Integer> onlyInLeftInts(Map<Integer, ?> left, Map<Integer, ?> right) {
-    HashSet<Integer> integers = new HashSet<>(left.keySet());
+  private <T> Set<T> onlyInLeft(Map<T, ?> left, Map<T, ?> right) {
+    HashSet<T> integers = new HashSet<T>(left.keySet());
     integers.removeAll(right.keySet());
     return integers;
   }
 
-  private Set<Integer> onlyInCommonInts(Map<Integer, ?> left, Map<Integer, ?> right) {
-    Set<Integer> intersect = new HashSet<>(left.keySet());
+  private <T> Set<T> onlyInCommon(Map<T, ?> left, Map<T, ?> right) {
+    Set<T> intersect = new HashSet<>(left.keySet());
     intersect.addAll(right.keySet());
-
-    intersect.removeAll(onlyInLeftInts(left, right));
-    intersect.removeAll(onlyInLeftInts(right, left));
+    intersect.removeAll(onlyInLeft(left, right));
+    intersect.removeAll(onlyInLeft(right, left));
     return intersect;
   }
 
@@ -390,101 +376,193 @@ public class ProtoDiff {
     return false;
   }
 
-    private void diffUnknownOptions(
-            OptionChangeInfo.OptionType changeType,
-            Descriptors.GenericDescriptor descriptorRef,
-            UnknownFieldSet unknownFieldSetRef,
-            Descriptors.GenericDescriptor descriptorNew,
-             UnknownFieldSet unknownFieldSetNew) {
+  private void diffUnknownOptions(
+      OptionChangeInfo.OptionType changeType,
+      Descriptors.GenericDescriptor descriptorRef,
+      UnknownFieldSet unknownFieldSetRef,
+      Descriptors.GenericDescriptor descriptorNew,
+      UnknownFieldSet unknownFieldSetNew) {
 
-        Map<Integer, UnknownFieldSet.Field> fieldsRef =
-                unknownFieldSetRef.asMap();
-        Map<Integer, UnknownFieldSet.Field> fieldsNew =
-                unknownFieldSetNew.asMap();
+    Map<Integer, UnknownFieldSet.Field> fieldsRef = unknownFieldSetRef.asMap();
+    Map<Integer, UnknownFieldSet.Field> fieldsNew = unknownFieldSetNew.asMap();
 
-        Set<Integer> onlyInLeft = onlyInLeftInts(fieldsRef, fieldsNew);
-        onlyInLeft.forEach(
-                optionNumber -> {
-                    UnknownFieldSet.Field field = fieldsRef.get(optionNumber);
-                    ByteString payload = serializeUnknownField(optionNumber, field);
-                    OptionChangeInfo.Builder builder =
-                            OptionChangeInfo.newBuilder()
-                                    .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_REMOVED)
-                                    .setType(changeType)
-                                    .setOptionNumber(optionNumber)
-                                    .setPayloadNew(payload);
-                    results.addOptionChange(descriptorRef, builder.build());
-                });
+    Set<Integer> onlyInLeft = onlyInLeft(fieldsRef, fieldsNew);
+    onlyInLeft.forEach(
+        optionNumber -> {
+          UnknownFieldSet.Field field = fieldsRef.get(optionNumber);
+          ByteString payload = serializeUnknownField(optionNumber, field);
+          OptionChangeInfo.Builder builder =
+              OptionChangeInfo.newBuilder()
+                  .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_REMOVED)
+                  .setType(changeType)
+                  .setOptionNumber(optionNumber)
+                  .setPayloadNew(payload);
+          results.addOptionChange(descriptorRef, builder.build());
+        });
 
-        Set<Integer> onlyNew = onlyInLeftInts(fieldsNew, fieldsRef);
-        onlyNew.forEach(
-                optionNumber -> {
-                    UnknownFieldSet.Field field = fieldsNew.get(optionNumber);
-                    ByteString payload = serializeUnknownField(optionNumber, field);
-                    OptionChangeInfo.Builder builder =
-                            OptionChangeInfo.newBuilder()
-                                    .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_ADDED)
-                                    .setType(changeType)
-                                    .setOptionNumber(optionNumber)
-                                    .setPayloadNew(payload);
-                    results.addOptionChange(descriptorNew, builder.build());
-                });
+    Set<Integer> onlyNew = onlyInLeft(fieldsNew, fieldsRef);
+    onlyNew.forEach(
+        optionNumber -> {
+          UnknownFieldSet.Field field = fieldsNew.get(optionNumber);
+          ByteString payload = serializeUnknownField(optionNumber, field);
+          OptionChangeInfo.Builder builder =
+              OptionChangeInfo.newBuilder()
+                  .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_ADDED)
+                  .setType(changeType)
+                  .setOptionNumber(optionNumber)
+                  .setPayloadNew(payload);
+          results.addOptionChange(descriptorNew, builder.build());
+        });
 
-        Set<Integer> common = onlyInCommonInts(fieldsRef, fieldsNew);
-        common.forEach(
-                optionNumber -> {
-                    UnknownFieldSet.Field fieldOld = fieldsRef.get(optionNumber);
-                    UnknownFieldSet.Field fieldNew = fieldsNew.get(optionNumber);
+    Set<Integer> common = onlyInCommon(fieldsRef, fieldsNew);
+    common.forEach(
+        optionNumber -> {
+          UnknownFieldSet.Field fieldOld = fieldsRef.get(optionNumber);
+          UnknownFieldSet.Field fieldNew = fieldsNew.get(optionNumber);
 
-                    ByteString payloadOld = serializeUnknownField(optionNumber, fieldOld);
-                    ByteString payloadNew = serializeUnknownField(optionNumber, fieldNew);
-                    if (!payloadOld.equals(payloadNew)) {
-                        OptionChangeInfo.Builder builder =
-                                OptionChangeInfo.newBuilder()
-                                        .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED)
-                                        .setType(changeType)
-                                        .setPayloadOld(payloadOld)
-                                        .setPayloadNew(payloadNew)
-                                        .setOptionNumber(optionNumber);
-                        results.addOptionChange(descriptorNew, builder.build());
-                    }
-                });
-    }
+          ByteString payloadOld = serializeUnknownField(optionNumber, fieldOld);
+          ByteString payloadNew = serializeUnknownField(optionNumber, fieldNew);
+          if (!payloadOld.equals(payloadNew)) {
+            OptionChangeInfo.Builder builder =
+                OptionChangeInfo.newBuilder()
+                    .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED)
+                    .setType(changeType)
+                    .setPayloadOld(payloadOld)
+                    .setPayloadNew(payloadNew)
+                    .setOptionNumber(optionNumber);
+            results.addOptionChange(descriptorNew, builder.build());
+          }
+        });
+  }
 
-    private void diffFileOptions(
+  private void diffOptions(
+      OptionChangeInfo.OptionType changeType,
+      Descriptors.GenericDescriptor descriptorRef,
+      Map<Descriptors.FieldDescriptor, Object> optionFieldMapRef,
+      Descriptors.GenericDescriptor descriptorNew,
+      Map<Descriptors.FieldDescriptor, Object> optionFieldMapNew) {
+
+    Map<Integer, Message> fieldsRef =
+        optionFieldMapRef.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    k -> k.getKey().getNumber(), // k.getKey().toString(),
+                    v ->
+                        DynamicMessage.newBuilder(v.getKey().getContainingType())
+                            .setField(v.getKey(), v.getValue())
+                            .build()));
+    Map<Integer, Message> fieldsNew =
+        optionFieldMapNew.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    k -> k.getKey().getNumber(), // k.getKey().toString(),
+                    v ->
+                        DynamicMessage.newBuilder(v.getKey().getContainingType())
+                            .setField(v.getKey(), v.getValue())
+                            .build()));
+
+    Set<Integer> onlyInLeft = onlyInLeft(fieldsRef, fieldsNew);
+    onlyInLeft.forEach(
+        optionNumber -> {
+          Message field = fieldsRef.get(optionNumber);
+          ByteString payload = serializePayload(field);
+          OptionChangeInfo.Builder builder =
+              OptionChangeInfo.newBuilder()
+                  .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_REMOVED)
+                  .setType(changeType)
+                  .setOptionNumber(optionNumber)
+                  .setPayloadNew(payload);
+          results.addOptionChange(descriptorRef, builder.build());
+        });
+
+    Set<Integer> onlyNew = onlyInLeft(fieldsNew, fieldsRef);
+    onlyNew.forEach(
+        optionNumber -> {
+          Message field = fieldsNew.get(optionNumber);
+          ByteString payload = serializePayload(field);
+          OptionChangeInfo.Builder builder =
+              OptionChangeInfo.newBuilder()
+                  .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_ADDED)
+                  .setType(changeType)
+                  .setOptionNumber(optionNumber)
+                  .setPayloadNew(payload);
+          results.addOptionChange(descriptorNew, builder.build());
+        });
+
+    Set<Integer> common = onlyInCommon(fieldsRef, fieldsNew);
+    common.forEach(
+        optionNumber -> {
+          Message fieldRef = fieldsRef.get(optionNumber);
+          Message fieldNew = fieldsNew.get(optionNumber);
+          ByteString payloadRef = serializePayload(fieldRef);
+          ByteString payloadNew = serializePayload(fieldNew);
+          if (!payloadRef.equals(payloadNew)) {
+            OptionChangeInfo.Builder builder =
+                OptionChangeInfo.newBuilder()
+                    .setChangeType(OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED)
+                    .setType(changeType)
+                    .setOptionNumber(optionNumber)
+                    .setPayloadOld(payloadRef)
+                    .setPayloadNew(payloadNew);
+            results.addOptionChange(descriptorNew, builder.build());
+          }
+        });
+
+    System.out.println();
+  }
+
+  private void diffFileOptions(
       Descriptors.FileDescriptor descriptorRef, Descriptors.FileDescriptor descriptorNew) {
-        DescriptorProtos.FileOptions optionsRef = descriptorRef.getOptions();
-        DescriptorProtos.FileOptions optionsNew = descriptorNew.getOptions();
-        diffUnknownOptions(OptionChangeInfo.OptionType.FILE_OPTION,
-                descriptorRef,
-                optionsRef.getUnknownFields(),
-                descriptorNew,
-                optionsNew.getUnknownFields()
-                );
+    DescriptorProtos.FileOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.FileOptions optionsNew = descriptorNew.getOptions();
+    diffOptions(
+        OptionChangeInfo.OptionType.FILE_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.FILE_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
   }
 
   private void diffMessageOptions(
       Descriptors.Descriptor descriptorRef, Descriptors.Descriptor descriptorNew) {
-      DescriptorProtos.MessageOptions optionsRef = descriptorRef.getOptions();
-      DescriptorProtos.MessageOptions optionsNew = descriptorNew.getOptions();
-          diffUnknownOptions(OptionChangeInfo.OptionType.MESSAGE_OPTION,
-                  descriptorRef,
-                  optionsRef.getUnknownFields(),
-                  descriptorNew,
-                  optionsNew.getUnknownFields()
-          );
+    DescriptorProtos.MessageOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.MessageOptions optionsNew = descriptorNew.getOptions();
+    diffOptions(
+        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
   }
 
   private void diffFieldOptions(
       Descriptors.FieldDescriptor descriptorRef, Descriptors.FieldDescriptor descriptorNew) {
-      DescriptorProtos.FieldOptions optionsRef = descriptorRef.getOptions();
-      DescriptorProtos.FieldOptions optionsNew = descriptorNew.getOptions();
-      diffUnknownOptions(OptionChangeInfo.OptionType.FIELD_OPTION,
-              descriptorRef,
-              optionsRef.getUnknownFields(),
-              descriptorNew,
-              optionsNew.getUnknownFields()
-      );
+    DescriptorProtos.FieldOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.FieldOptions optionsNew = descriptorNew.getOptions();
+    diffOptions(
+        OptionChangeInfo.OptionType.FIELD_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.FIELD_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
   }
 
   private ByteString serializeUnknownField(int optionNumber, UnknownFieldSet.Field field) {
@@ -495,6 +573,59 @@ public class ProtoDiff {
     } catch (IOException e) {
       throw new RuntimeException(
           "failed to serialize unknown field with number " + optionNumber, e);
+    }
+    return ByteString.copyFrom(byteBuffer);
+  }
+
+  private ByteString serializePayload(Message field) {
+    ByteBuffer byteBuffer = ByteBuffer.allocate(field.getSerializedSize());
+    try {
+      CodedOutputStream stream = CodedOutputStream.newInstance(byteBuffer);
+      field.writeTo(stream);
+      //
+      //    try {
+      //      switch (field.get.getType()) {
+      //        case DOUBLE:
+      //          break;
+      //        case FLOAT:
+      //          break;
+      //        case INT64:
+      //          break;
+      //        case UINT64:
+      //          break;
+      //        case INT32:
+      //          break;
+      //        case FIXED64:
+      //          break;
+      //        case FIXED32:
+      //          break;
+      //        case BOOL:
+      //          break;
+      //        case STRING:
+      //          break;
+      //        case GROUP:
+      //          break;
+      //        case MESSAGE:
+      //          stream.writeBytes(fieldDescriptor.getNumber(), ((Message) value).toByteString());
+      //          break;
+      //        case BYTES:
+      //          break;
+      //        case UINT32:
+      //          break;
+      //        case ENUM:
+      //          break;
+      //        case SFIXED32:
+      //          break;
+      //        case SFIXED64:
+      //          break;
+      //        case SINT32:
+      //          break;
+      //        case SINT64:
+      //          break;
+      //      }
+      //
+    } catch (IOException e) {
+      throw new RuntimeException("failed to serialize unknown field with number ", e);
     }
     return ByteString.copyFrom(byteBuffer);
   }

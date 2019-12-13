@@ -187,8 +187,10 @@ class ShadowApply {
     DescriptorProtos.FieldDescriptorProto.Builder newFieldDescriptorProtoBuilder =
         fieldDescriptor.toProto().toBuilder();
     UnknownFieldSet unknownFieldSet = buildUnknownFieldSet(optionChanges);
+
     DescriptorProtos.FieldOptions fieldOptions =
         DescriptorProtos.FieldOptions.newBuilder().setUnknownFields(unknownFieldSet).build();
+
     return newFieldDescriptorProtoBuilder.setOptions(fieldOptions).build();
   }
 

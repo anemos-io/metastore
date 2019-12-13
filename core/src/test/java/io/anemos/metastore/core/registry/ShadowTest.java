@@ -44,7 +44,8 @@ public class ShadowTest {
         baseAddMessageOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
     Descriptors.Descriptor actualDescriptor =
         shadow.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
-    Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
+    Assert.assertArrayEquals(
+        expectedDescriptor.toProto().toByteArray(), actualDescriptor.toProto().toByteArray());
   }
 
   @Test
@@ -65,7 +66,8 @@ public class ShadowTest {
         baseAddFieldOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
     Descriptors.Descriptor actualDescriptor =
         shadow.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
-    Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
+    Assert.assertArrayEquals(
+        expectedDescriptor.toProto().toByteArray(), actualDescriptor.toProto().toByteArray());
   }
 
   @Test
@@ -86,7 +88,9 @@ public class ShadowTest {
     Descriptors.FileDescriptor expectedDescriptor =
         baseAddFileOption.getFileDescriptorByFileName(fileName);
     Descriptors.FileDescriptor actualDescriptor = shadow.getFileDescriptorByFileName(fileName);
-    Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
+
+    Assert.assertArrayEquals(
+        expectedDescriptor.toProto().toByteArray(), actualDescriptor.toProto().toByteArray());
   }
 
   @Test
@@ -107,6 +111,7 @@ public class ShadowTest {
     Descriptors.FileDescriptor expectedDescriptor =
         baseMultipleOptions.getFileDescriptorByFileName(fileName);
     Descriptors.FileDescriptor actualDescriptor = shadow.getFileDescriptorByFileName(fileName);
-    Assert.assertEquals(expectedDescriptor.toProto(), actualDescriptor.toProto());
+    Assert.assertArrayEquals(
+        expectedDescriptor.toProto().toByteArray(), actualDescriptor.toProto().toByteArray());
   }
 }
