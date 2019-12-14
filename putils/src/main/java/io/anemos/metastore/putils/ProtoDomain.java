@@ -412,7 +412,48 @@ public class ProtoDomain implements Serializable {
   }
 
   public Collection<Descriptors.Descriptor> findDescriptorsByOption(String optionName) {
-    return null;
+    Descriptors.FieldDescriptor fieldDescriptor = optionsCatalog.getMessageOptionByName(optionName);
+    return descriptorMap.values().stream()
+        .filter(
+            descriptor -> {
+              DescriptorProtos.MessageOptions options = descriptor.getOptions();
+              return options.getAllFields().keySet().contains(fieldDescriptor);
+            })
+        .collect(Collectors.toList());
+  }
+
+  public Collection<Descriptors.FileDescriptor> findFileDescriptorsByOption(String optionName) {
+    Descriptors.FieldDescriptor fieldDescriptor = optionsCatalog.getFileOptionByName(optionName);
+    return fileDescriptorMap.values().stream()
+        .filter(
+            descriptor -> {
+              DescriptorProtos.FileOptions options = descriptor.getOptions();
+              return options.getAllFields().keySet().contains(fieldDescriptor);
+            })
+        .collect(Collectors.toList());
+  }
+
+  public Collection<Descriptors.EnumDescriptor> findEnumDescriptorsByOption(String optionName) {
+    Descriptors.FieldDescriptor fieldDescriptor = optionsCatalog.getEnumOptionByName(optionName);
+    return enumMap.values().stream()
+        .filter(
+            descriptor -> {
+              DescriptorProtos.EnumOptions options = descriptor.getOptions();
+              return options.getAllFields().keySet().contains(fieldDescriptor);
+            })
+        .collect(Collectors.toList());
+  }
+
+  public Collection<Descriptors.ServiceDescriptor> findServiceDescriptorsByOption(
+      String optionName) {
+    Descriptors.FieldDescriptor fieldDescriptor = optionsCatalog.getServiceOptionByName(optionName);
+    return serviceMap.values().stream()
+        .filter(
+            descriptor -> {
+              DescriptorProtos.ServiceOptions options = descriptor.getOptions();
+              return options.getAllFields().keySet().contains(fieldDescriptor);
+            })
+        .collect(Collectors.toList());
   }
 
   public static class Builder {
@@ -551,32 +592,68 @@ public class ProtoDomain implements Serializable {
           });
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getFileOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getFileOptionMap() {
       return Collections.unmodifiableMap(fileOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getMessageOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getMessageOptionMap() {
       return Collections.unmodifiableMap(messageOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getFieldOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getFieldOptionMap() {
       return Collections.unmodifiableMap(fieldOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getServiceOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getServiceOptionMap() {
       return Collections.unmodifiableMap(serviceOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getMethodOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getMethodOptionMap() {
       return Collections.unmodifiableMap(methodOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getEnumOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getEnumOptionMap() {
       return Collections.unmodifiableMap(enumOptionMap);
     }
 
-    public Map<Integer, Descriptors.FieldDescriptor> getEnumValueOptionMap() {
+    Map<Integer, Descriptors.FieldDescriptor> getEnumValueOptionMap() {
       return Collections.unmodifiableMap(enumValueOptionMap);
+    }
+
+    public Descriptors.FieldDescriptor getFileOptionByName(String fullName) {
+      return findByName(fileOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getMessageOptionByName(String fullName) {
+      return findByName(messageOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getFieldOptionByName(String fullName) {
+      return findByName(fieldOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getEnumOptionByName(String fullName) {
+      return findByName(enumOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getEnumValueOptionByName(String fullName) {
+      return findByName(enumValueOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getServiceOptionByName(String fullName) {
+      return findByName(serviceOptionMap, fullName);
+    }
+
+    public Descriptors.FieldDescriptor getMethodOptionByName(String fullName) {
+      return findByName(methodOptionMap, fullName);
+    }
+
+    private Descriptors.FieldDescriptor findByName(
+        Map<Integer, Descriptors.FieldDescriptor> map, String fullName) {
+      return map.values().stream()
+          .filter(fd -> fd.getFullName().equals(fullName))
+          .findFirst()
+          .get();
     }
   }
 }

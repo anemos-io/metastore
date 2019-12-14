@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Add use of Proto extension registry to parse options
+- Add getters on ProtoDomain to get options out of the catalog
+- Add find methods to search for Message, File and Service 
+  descriptor by option name
 
 ### Fixed
 - Unified unknown option parsing, making it more robust

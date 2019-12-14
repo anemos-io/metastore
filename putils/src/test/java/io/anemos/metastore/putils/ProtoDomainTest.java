@@ -1,6 +1,8 @@
 package io.anemos.metastore.putils;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,8 +48,107 @@ public class ProtoDomainTest {
   }
 
   @Test
-  public void testGetDescriptorByOptionName() throws IOException {
+  public void getFileOptionByName() throws IOException {
     ProtoDomain domain = TestSets.baseAddFileOption();
-    domain.findDescriptorsByOption("x.y");
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getFileOptionByName("test.v1.file_option_1");
+    Assert.assertEquals("test.v1.file_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getMessageOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getMessageOptionByName("test.v1.message_option_1");
+    Assert.assertEquals("test.v1.message_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getFieldOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getFieldOptionByName("test.v1.field_option_1");
+    Assert.assertEquals("test.v1.field_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getEnumOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getEnumOptionByName("test.v1.enum_option_1");
+    Assert.assertEquals("test.v1.enum_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getEnumValueOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getEnumValueOptionByName("test.v1.enum_value_option_1");
+    Assert.assertEquals("test.v1.enum_value_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getServiceOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getServiceOptionByName("test.v1.service_option_1");
+    Assert.assertEquals("test.v1.service_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void getMethodOptionByName() throws IOException {
+    ProtoDomain domain = TestSets.baseAddFileOption();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getMethodOptionByName("test.v1.method_option_1");
+    Assert.assertEquals("test.v1.method_option_1", fd.getFullName());
+  }
+
+  @Test
+  public void findFileDescriptorsByOption() throws IOException {
+    ProtoDomain domain = TestSets.baseMultipleOptions();
+    Collection<Descriptors.FileDescriptor> options =
+        domain.findFileDescriptorsByOption("test.v1.file_option");
+    Assert.assertEquals(1, options.size());
+  }
+
+  @Test
+  public void findDescriptorsByOption() throws IOException {
+    ProtoDomain domain = TestSets.baseMultipleOptions();
+    Collection<Descriptors.Descriptor> options =
+        domain.findDescriptorsByOption("test.v1.message_option");
+    Assert.assertEquals(1, options.size());
+  }
+
+  @Test
+  public void findEnumDescriptorsByOption() throws IOException {
+    ProtoDomain domain = TestSets.baseMultipleOptions();
+    Collection<Descriptors.EnumDescriptor> options =
+        domain.findEnumDescriptorsByOption("test.v1.enum_option");
+    // TODO Add more sets with enums
+    Assert.assertEquals(0, options.size());
+  }
+
+  @Test
+  public void findServiceDescriptorsByOption() throws IOException {
+    ProtoDomain domain = TestSets.baseMultipleOptions();
+    Collection<Descriptors.ServiceDescriptor> options =
+        domain.findServiceDescriptorsByOption("test.v1.service_option");
+    // TODO Add more sets with services
+    Assert.assertEquals(0, options.size());
+  }
+
+  @Test
+  public void useOptionOnDescriptor() throws IOException {
+    ProtoDomain domain = TestSets.baseMultipleOptions();
+    Descriptors.FieldDescriptor fd =
+        domain.getOptions().getMessageOptionByName("test.v1.message_option");
+
+    Collection<Descriptors.Descriptor> options =
+        domain.findDescriptorsByOption("test.v1.message_option");
+    Assert.assertEquals(1, options.size());
+
+    Descriptors.Descriptor descriptor = options.stream().findFirst().get();
+    Message field = (Message) descriptor.getOptions().getField(fd);
+    Assert.assertEquals("test.v1.TestOption", field.getDescriptorForType().getFullName());
   }
 }
