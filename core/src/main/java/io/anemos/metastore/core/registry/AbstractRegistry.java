@@ -13,6 +13,7 @@ import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryP;
+import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -90,10 +91,10 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public abstract ProtoDomain ref();
 
-  public abstract void update(ProtoDomain ref, ProtoDomain in, Report report);
+  public abstract void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment);
 
-  void syncGitRepo(String message) {
-    metaGit.sync(protoContainer, message);
+  void syncGitRepo(Comment comment) {
+    metaGit.sync(protoContainer, comment);
   }
 
   void initGitRepo() {

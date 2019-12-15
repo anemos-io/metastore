@@ -9,6 +9,7 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.GitHostConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
@@ -17,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.TransportConfigCallback;
@@ -50,7 +52,7 @@ class MetaGit {
     gitRepo.pull().setTransportConfigCallback(transportConfigCallback).call();
   }
 
-  void sync(ProtoDomain protoContainer, String message) {
+  void sync(ProtoDomain protoContainer, Comment comment) {
     if (config.git == null) {
       return;
     }
@@ -66,7 +68,14 @@ class MetaGit {
       gitRepo.add().addFilepattern(".").call();
       Status status = gitRepo.status().call();
       if (status.hasUncommittedChanges()) {
-        gitRepo.commit().setMessage(message).call();
+        CommitCommand commit = gitRepo.commit();
+        if (comment.getDescription().length() > 0) {
+          commit.setMessage(comment.getDescription());
+        }
+        if (comment.getEmail().length() > 0 || comment.getName().length() > 0) {
+          commit.setAuthor(comment.getName(), comment.getEmail());
+        }
+        commit.call();
         push();
         LOG.info("shadowCache apply");
       } else {

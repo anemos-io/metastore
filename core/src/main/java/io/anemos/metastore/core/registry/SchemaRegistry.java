@@ -5,6 +5,7 @@ import io.anemos.metastore.config.GitGlobalConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
@@ -26,7 +27,7 @@ class SchemaRegistry extends AbstractRegistry {
       write();
     }
     initGitRepo();
-    syncGitRepo("Initialising repository");
+    syncGitRepo(Comment.newBuilder().setDescription("(Re)Sync repo").build());
   }
 
   @Override
@@ -45,10 +46,10 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
     protoContainer = in;
     update();
-    syncGitRepo("Change detected");
+    syncGitRepo(comment);
     notifyEventListeners(report);
   }
 

@@ -7,6 +7,7 @@ import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
@@ -31,7 +32,7 @@ class ShadowRegistry extends AbstractRegistry {
     }
     updateShadowCache();
     initGitRepo();
-    syncGitRepo("Initialising repository");
+    syncGitRepo(Comment.newBuilder().setDescription("(Re)Sync repo").build());
   }
 
   private void updateShadowCache() {
@@ -65,7 +66,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.scope != null) {
@@ -84,7 +85,7 @@ class ShadowRegistry extends AbstractRegistry {
   public void update() {
     write();
     updateShadowCache();
-    syncGitRepo("Updated.");
+    syncGitRepo(Comment.newBuilder().setDescription("Updated").build());
   }
 
   private void write() {

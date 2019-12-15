@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - Add getters on ProtoDomain to get options out of the catalog
 - Add find methods to search for Message, File and Service 
   descriptor by option name
+- Allow to set a comment and author via the metastep. This will
+  be reflected in the git commit if configured
 
 ### Fixed
 - Unified unknown option parsing, making it more robust
