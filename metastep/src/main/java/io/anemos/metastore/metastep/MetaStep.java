@@ -44,29 +44,36 @@ public class MetaStep {
 
     Subparser submitParser = subparsers.addParser("publish").help("publish help");
     submitParser.setDefault("sub-command", "publish");
-    submitParser.addArgument("-p", "--package_prefix").required(false);
-    submitParser.addArgument("-d", "--descriptor_set").required(false);
-    submitParser.addArgument("-f", "--profile").required(false);
-    submitParser.addArgument("-w", "--workspace").required(false);
-    submitParser.addArgument("-s", "--server").required(true);
-    submitParser.addArgument("-r", "--registry").required(false);
-    submitParser.addArgument("-t", "--tls").required(false);
-    submitParser.addArgument("-e", "--tls_env").required(false);
-    submitParser.addArgument("-c", "--source").required(false);
-    submitParser.addArgument("-i", "--include").nargs("*").required(false);
+    submitParser.addArgument("--package_prefix").required(false);
+    submitParser.addArgument("--package_name").required(false);
+    submitParser.addArgument("--file_name").required(false);
+    submitParser.addArgument("--descriptor_set").required(false);
+    submitParser.addArgument("--profile").required(false);
+    submitParser.addArgument("--workspace").required(false);
+    submitParser.addArgument("--server").required(true);
+    submitParser.addArgument("--registry").required(false);
+    submitParser.addArgument("--tls").required(false);
+    submitParser.addArgument("--tls_env").required(false);
+    submitParser.addArgument("--source").required(false);
+    submitParser.addArgument("--comment").required(false);
+    submitParser.addArgument("--user").required(false);
+    submitParser.addArgument("--email").required(false);
+    submitParser.addArgument("--include").nargs("*").required(false);
 
     Subparser validateParser = subparsers.addParser("validate").help("validate help");
     validateParser.setDefault("sub-command", "validate");
-    validateParser.addArgument("-p", "--package_prefix").required(false);
-    validateParser.addArgument("-d", "--descriptor_set").required(false);
-    validateParser.addArgument("-f", "--profile").required(false);
-    validateParser.addArgument("-w", "--workspace").required(false);
-    validateParser.addArgument("-s", "--server").required(true);
-    validateParser.addArgument("-r", "--registry").required(false);
-    validateParser.addArgument("-t", "--tls").required(false);
-    validateParser.addArgument("-e", "--tls_env").required(false);
-    validateParser.addArgument("-c", "--source").required(false);
-    validateParser.addArgument("-i", "--include").nargs("*").required(false);
+    validateParser.addArgument("--package_prefix").required(false);
+    validateParser.addArgument("--package_name").required(false);
+    validateParser.addArgument("--file_name").required(false);
+    validateParser.addArgument("--descriptor_set").required(false);
+    validateParser.addArgument("--profile").required(false);
+    validateParser.addArgument("--workspace").required(false);
+    validateParser.addArgument("--server").required(true);
+    validateParser.addArgument("--registry").required(false);
+    validateParser.addArgument("--tls").required(false);
+    validateParser.addArgument("--tls_env").required(false);
+    validateParser.addArgument("--source").required(false);
+    validateParser.addArgument("--include").nargs("*").required(false);
     res = parser.parseArgs(args);
 
     descriptorFile = File.createTempFile("descriptor", ".pb");
@@ -263,14 +270,32 @@ public class MetaStep {
 
     Map<String, Object> attributes = res.getAttrs();
 
-    if (attributes.containsKey("package_prefix") && attributes.get("package_prefix") != null) {
+    if (attributes.get("package_prefix") != null) {
       schemaRequestBuilder.setPackagePrefix((String) attributes.get("package_prefix"));
     }
-    if (attributes.containsKey("registry") && attributes.get("registry") != null) {
+    if (attributes.get("package_name") != null) {
+      schemaRequestBuilder.setPackageName((String) attributes.get("package_name"));
+    }
+    if (attributes.get("file_name") != null) {
+      schemaRequestBuilder.setFileName((String) attributes.get("file_name"));
+    }
+    if (attributes.get("registry") != null) {
       schemaRequestBuilder.setRegistryName((String) attributes.get("registry"));
     }
-    if (attributes.containsKey("profile") && attributes.get("profile") != null) {
+    if (attributes.get("profile") != null) {
       schemaRequestBuilder.setValidationProfile((String) attributes.get("profile"));
+    }
+    if (attributes.get("comment") != null) {
+      RegistryP.SubmitSchemaRequest.Comment.Builder comment =
+          RegistryP.SubmitSchemaRequest.Comment.newBuilder()
+              .setDescription((String) attributes.get("comment"));
+      if (attributes.get("email") != null) {
+        comment.setEmail((String) attributes.get("email"));
+      }
+      if (attributes.get("user") != null) {
+        comment.setName((String) attributes.get("user"));
+      }
+      schemaRequestBuilder.setComment(comment.build());
     }
     return schemaRequestBuilder.build();
   }

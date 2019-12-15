@@ -23,7 +23,7 @@ service Registry {
 
 message SubmitSchemaRequest {
 
-    message SubmitMessage {
+    message Comment {
         string name = 1;
         string email = 2;
         string description = 3;
@@ -46,7 +46,7 @@ message SubmitSchemaRequest {
     }
 
     string validation_profile = 6;
-    SubmitMessage message = 7;
+    Comment comment = 7;
 }
 
 message SubmitSchemaResponse {
