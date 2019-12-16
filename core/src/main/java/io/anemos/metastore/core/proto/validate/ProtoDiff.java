@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -73,7 +75,7 @@ public class ProtoDiff {
 
     if (fdRef != null && fdNew != null) {
       diffFileDescriptor(fdRef, fdNew);
-      diffFileOptions(fdRef, fdNew);
+      diffOptionsFromFile(fdRef, fdNew);
     }
   }
 
@@ -143,16 +145,8 @@ public class ProtoDiff {
     diffFiles(fdRef, fdNew);
   }
 
-  // TODO implement diff services
-  private void diffServices(
-      List<Descriptors.ServiceDescriptor> s_ref, List<Descriptors.ServiceDescriptor> s_new) {}
-
-  // TODO implement diff enum types
-  private void diffEnumTypes(
-      List<Descriptors.EnumDescriptor> e_ref, List<Descriptors.EnumDescriptor> e_new) {}
-
-  private Map<String, Descriptors.Descriptor> toMap4Descriptor(List<Descriptors.Descriptor> in) {
-    Map<String, Descriptors.Descriptor> out = new HashMap<>();
+  private <T extends Descriptors.GenericDescriptor> Map<String, T> toMap4Descriptor(List<T> in) {
+    Map<String, T> out = new HashMap<>();
     in.forEach(
         descriptor -> {
           out.put(descriptor.getName(), descriptor);
@@ -203,40 +197,45 @@ public class ProtoDiff {
             });
   }
 
-  private void diffMessageTypes(
-      List<Descriptors.Descriptor> mt_ref, List<Descriptors.Descriptor> mt_new) {
-    Map<String, Descriptors.Descriptor> m_ref = toMap4Descriptor(mt_ref);
-    Map<String, Descriptors.Descriptor> m_new = toMap4Descriptor(mt_new);
+  private <T extends Descriptors.GenericDescriptor> void diffGenericDescriptor(
+      List<T> mt_ref,
+      List<T> mt_new,
+      Consumer<T> removal,
+      Consumer<T> addition,
+      BiConsumer<T, T> diff) {
+    Map<String, T> m_ref = toMap4Descriptor(mt_ref);
+    Map<String, T> m_new = toMap4Descriptor(mt_new);
 
     Set<String> onlyRef = onlyInLeft(m_ref, m_new);
-    onlyRef.forEach(
-        k -> {
-          Descriptors.Descriptor fd = m_ref.get(k);
-          results.setPatch(
-              fd,
-              ChangeInfo.newBuilder()
-                  .setChangeType(ChangeType.REMOVAL)
-                  .setFromName(fd.getFullName())
-                  .build());
-        });
+    onlyRef.forEach(k -> removal.accept(m_ref.get(k)));
 
     Set<String> onlyNew = onlyInLeft(m_new, m_ref);
-    onlyNew.forEach(
-        k -> {
-          Descriptors.Descriptor fd = m_new.get(k);
-          results.setPatch(
-              fd,
-              ChangeInfo.newBuilder()
-                  .setChangeType(ChangeType.ADDITION)
-                  .setFromName(fd.getFullName())
-                  .build());
-        });
+    onlyNew.forEach(k -> addition.accept(m_new.get(k)));
 
     Set<String> common = onlyInCommon(m_new, m_ref);
-    common.forEach(
-        k -> {
-          diffMessageType(m_ref.get(k), m_new.get(k));
-        });
+    common.forEach(k -> diff.accept(m_ref.get(k), m_new.get(k)));
+  }
+
+  private void diffMessageTypes(
+      List<Descriptors.Descriptor> mt_ref, List<Descriptors.Descriptor> mt_new) {
+    diffGenericDescriptor(
+        mt_ref,
+        mt_new,
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.REMOVAL)
+                    .setFromName(d.getFullName())
+                    .build()),
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.ADDITION)
+                    .setFromName(d.getFullName())
+                    .build()),
+        (dRef, dNew) -> diffMessageType(dRef, dNew));
   }
 
   private void diffFiles(
@@ -277,9 +276,23 @@ public class ProtoDiff {
         });
   }
 
-  private void diffMessageType(Descriptors.Descriptor d_ref, Descriptors.Descriptor d_new) {
-    diffMessageOptions(d_ref, d_new);
-    diffFields(d_ref, d_new);
+  private void diffMessageType(
+      Descriptors.Descriptor descriptorRef, Descriptors.Descriptor descriptorNew) {
+    DescriptorProtos.MessageOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.MessageOptions optionsNew = descriptorNew.getOptions();
+    diffExtensionOptions(
+        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
+    diffFields(descriptorRef, descriptorNew);
   }
 
   private void diffFields(Descriptors.Descriptor d_ref, Descriptors.Descriptor d_new) {
@@ -336,7 +349,7 @@ public class ProtoDiff {
 
   private FieldChangeInfo diffField(
       Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
-    diffFieldOptions(f_ref, f_new);
+    diffOptionsFromField(f_ref, f_new);
     FieldChangeInfo.Builder builder = FieldChangeInfo.newBuilder();
 
     if (!f_ref.getName().equals(f_new.getName())) {
@@ -359,6 +372,88 @@ public class ProtoDiff {
       return builder.build();
     }
     return null;
+  }
+
+  private void diffServices(
+      List<Descriptors.ServiceDescriptor> s_ref, List<Descriptors.ServiceDescriptor> s_new) {
+    diffGenericDescriptor(
+        s_ref,
+        s_new,
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.REMOVAL)
+                    .setFromName(d.getFullName())
+                    .build()),
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.ADDITION)
+                    .setToName(d.getFullName())
+                    .build()),
+        (dRef, dNew) -> diffServiceDescriptor(dRef, dNew));
+  }
+
+  private void diffServiceDescriptor(
+      Descriptors.ServiceDescriptor descriptorRef, Descriptors.ServiceDescriptor descriptorNew) {
+    DescriptorProtos.ServiceOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.ServiceOptions optionsNew = descriptorNew.getOptions();
+    diffExtensionOptions(
+        OptionChangeInfo.OptionType.SERVICE_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.SERVICE_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
+    // diffMethods(descriptorRef, descriptorNew);
+  }
+
+  private void diffEnumTypes(
+      List<Descriptors.EnumDescriptor> e_ref, List<Descriptors.EnumDescriptor> e_new) {
+    diffGenericDescriptor(
+        e_ref,
+        e_new,
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.REMOVAL)
+                    .setFromName(d.getFullName())
+                    .build()),
+        d ->
+            results.setPatch(
+                d,
+                ChangeInfo.newBuilder()
+                    .setChangeType(ChangeType.ADDITION)
+                    .setFromName(d.getFullName())
+                    .build()),
+        (dRef, dNew) -> diffEnumDescriptor(dRef, dNew));
+  }
+
+  private void diffEnumDescriptor(
+      Descriptors.EnumDescriptor descriptorRef, Descriptors.EnumDescriptor descriptorNew) {
+    DescriptorProtos.EnumOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.EnumOptions optionsNew = descriptorNew.getOptions();
+    diffExtensionOptions(
+        OptionChangeInfo.OptionType.ENUM_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.ENUM_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
+    // diffEnumValues(descriptorRef, descriptorNew);
   }
 
   private boolean isDeprecated(Descriptors.FieldDescriptor fieldDescriptor) {
@@ -435,7 +530,7 @@ public class ProtoDiff {
         });
   }
 
-  private void diffOptions(
+  private void diffExtensionOptions(
       OptionChangeInfo.OptionType changeType,
       Descriptors.GenericDescriptor descriptorRef,
       Map<Descriptors.FieldDescriptor, Object> optionFieldMapRef,
@@ -446,7 +541,7 @@ public class ProtoDiff {
         optionFieldMapRef.entrySet().stream()
             .collect(
                 Collectors.toMap(
-                    k -> k.getKey().getNumber(), // k.getKey().toString(),
+                    k -> k.getKey().getNumber(),
                     v ->
                         DynamicMessage.newBuilder(v.getKey().getContainingType())
                             .setField(v.getKey(), v.getValue())
@@ -455,7 +550,7 @@ public class ProtoDiff {
         optionFieldMapNew.entrySet().stream()
             .collect(
                 Collectors.toMap(
-                    k -> k.getKey().getNumber(), // k.getKey().toString(),
+                    k -> k.getKey().getNumber(),
                     v ->
                         DynamicMessage.newBuilder(v.getKey().getContainingType())
                             .setField(v.getKey(), v.getValue())
@@ -507,15 +602,13 @@ public class ProtoDiff {
             results.addOptionChange(descriptorNew, builder.build());
           }
         });
-
-    System.out.println();
   }
 
-  private void diffFileOptions(
+  private void diffOptionsFromFile(
       Descriptors.FileDescriptor descriptorRef, Descriptors.FileDescriptor descriptorNew) {
     DescriptorProtos.FileOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.FileOptions optionsNew = descriptorNew.getOptions();
-    diffOptions(
+    diffExtensionOptions(
         OptionChangeInfo.OptionType.FILE_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
@@ -529,29 +622,11 @@ public class ProtoDiff {
         optionsNew.getUnknownFields());
   }
 
-  private void diffMessageOptions(
-      Descriptors.Descriptor descriptorRef, Descriptors.Descriptor descriptorNew) {
-    DescriptorProtos.MessageOptions optionsRef = descriptorRef.getOptions();
-    DescriptorProtos.MessageOptions optionsNew = descriptorNew.getOptions();
-    diffOptions(
-        OptionChangeInfo.OptionType.MESSAGE_OPTION,
-        descriptorRef,
-        optionsRef.getAllFields(),
-        descriptorNew,
-        optionsNew.getAllFields());
-    diffUnknownOptions(
-        OptionChangeInfo.OptionType.MESSAGE_OPTION,
-        descriptorRef,
-        optionsRef.getUnknownFields(),
-        descriptorNew,
-        optionsNew.getUnknownFields());
-  }
-
-  private void diffFieldOptions(
+  private void diffOptionsFromField(
       Descriptors.FieldDescriptor descriptorRef, Descriptors.FieldDescriptor descriptorNew) {
     DescriptorProtos.FieldOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.FieldOptions optionsNew = descriptorNew.getOptions();
-    diffOptions(
+    diffExtensionOptions(
         OptionChangeInfo.OptionType.FIELD_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
@@ -582,48 +657,6 @@ public class ProtoDiff {
     try {
       CodedOutputStream stream = CodedOutputStream.newInstance(byteBuffer);
       field.writeTo(stream);
-      //
-      //    try {
-      //      switch (field.get.getType()) {
-      //        case DOUBLE:
-      //          break;
-      //        case FLOAT:
-      //          break;
-      //        case INT64:
-      //          break;
-      //        case UINT64:
-      //          break;
-      //        case INT32:
-      //          break;
-      //        case FIXED64:
-      //          break;
-      //        case FIXED32:
-      //          break;
-      //        case BOOL:
-      //          break;
-      //        case STRING:
-      //          break;
-      //        case GROUP:
-      //          break;
-      //        case MESSAGE:
-      //          stream.writeBytes(fieldDescriptor.getNumber(), ((Message) value).toByteString());
-      //          break;
-      //        case BYTES:
-      //          break;
-      //        case UINT32:
-      //          break;
-      //        case ENUM:
-      //          break;
-      //        case SFIXED32:
-      //          break;
-      //        case SFIXED64:
-      //          break;
-      //        case SINT32:
-      //          break;
-      //        case SINT64:
-      //          break;
-      //      }
-      //
     } catch (IOException e) {
       throw new RuntimeException("failed to serialize unknown field with number ", e);
     }

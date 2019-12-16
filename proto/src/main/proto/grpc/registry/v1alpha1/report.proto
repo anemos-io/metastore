@@ -94,6 +94,10 @@ message OptionChangeInfo {
         FILE_OPTION = 1;
         MESSAGE_OPTION = 2;
         FIELD_OPTION = 3;
+        ENUM_OPTION = 4;
+        ENUM_VALUE_OPTION = 5;
+        SERVICE_OPTION = 6;
+        METHOD_OPTION = 7;
     }
 
     enum OptionChangeType {

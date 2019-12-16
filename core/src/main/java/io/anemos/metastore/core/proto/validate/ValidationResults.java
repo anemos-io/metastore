@@ -2,6 +2,8 @@ package io.anemos.metastore.core.proto.validate;
 
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.v1alpha1.*;
+import sun.nio.ch.sctp.ResultContainer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +56,16 @@ public class ValidationResults {
     return fileResult;
   }
 
+  private EnumResultContainer getOrCreateFile(String fileName) {
+    FileResultContainer fileResult = fileMap.get(fileName);
+    if (fileResult == null) {
+      fileResult = new FileResultContainer();
+      fileResult.fullName = fileName;
+      fileMap.put(fileName, fileResult);
+    }
+    return fileResult;
+  }
+
   void addResult(Descriptors.FieldDescriptor fd, RuleInfo ruleInfo) {
     MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
     messageResult.add(fd, ruleInfo);
@@ -94,6 +106,15 @@ public class ValidationResults {
     fileResult.setPatch(patch);
   }
 
+  void setPatch(Descriptors.EnumDescriptor fd, ChangeInfo patch) {
+    throw new RuntimeException("Unimplemented patch");
+  }
+
+  void setPatch(Descriptors.ServiceDescriptor fd, ChangeInfo patch) {
+    ServiceResultContainer serviceResult = getOrCreateService(fd.getFullName());
+    serviceResult.setPatch(patch);
+  }
+
   void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChangeInfo info) {
     if (descriptor instanceof Descriptors.FileDescriptor) {
       FileResultContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
@@ -106,6 +127,9 @@ public class ValidationResults {
       MessageResultContainer messageResult =
           getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
       messageResult.addOptionChange(fieldDescriptor, info);
+    } else {
+      // TODO
+      throw new RuntimeException("Unimplemented option");
     }
   }
 
