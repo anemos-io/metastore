@@ -5,6 +5,7 @@ import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
@@ -24,8 +25,7 @@ public class OptionDiffTest {
     MessageResult messageResult = diffMessage(base, baseAddMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_ADDED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.ADDITION, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
@@ -40,8 +40,7 @@ public class OptionDiffTest {
     MessageResult messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_REMOVED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.REMOVAL, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadOld();
@@ -56,8 +55,7 @@ public class OptionDiffTest {
     MessageResult messageResult = diffMessage(baseAddMessageOption, baseChangeMessageOption);
     OptionChangeInfo optionChangeInfo = messageResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.MESSAGE_OPTION, optionChangeInfo.getType());
 
     ByteString payloadOld = optionChangeInfo.getPayloadOld();
@@ -76,8 +74,7 @@ public class OptionDiffTest {
     OptionChangeInfo optionChangeInfo =
         messageResult.getFieldResults(0).getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_ADDED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.ADDITION, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
@@ -93,8 +90,7 @@ public class OptionDiffTest {
     OptionChangeInfo optionChangeInfo =
         messageResult.getFieldResults(0).getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_REMOVED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.REMOVAL, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
@@ -110,8 +106,7 @@ public class OptionDiffTest {
     OptionChangeInfo optionChangeInfo =
         messageResult.getFieldResults(0).getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
 
     ByteString payloadOld = optionChangeInfo.getPayloadOld();
@@ -129,8 +124,7 @@ public class OptionDiffTest {
     FileResult fileResult = diffFile(base, baseAddFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_ADDED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.ADDITION, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
@@ -145,8 +139,7 @@ public class OptionDiffTest {
     FileResult fileResult = diffFile(base, baseRemoveFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_REMOVED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.REMOVAL, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();
@@ -161,8 +154,7 @@ public class OptionDiffTest {
     FileResult fileResult = diffFile(base, baseChangeFileOption);
     OptionChangeInfo optionChangeInfo = fileResult.getOptionChangeList().get(0);
 
-    Assert.assertEquals(
-        OptionChangeInfo.OptionChangeType.OPTION_PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
+    Assert.assertEquals(ChangeType.PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FILE_OPTION, optionChangeInfo.getType());
 
     ByteString payload = optionChangeInfo.getPayloadNew();

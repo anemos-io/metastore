@@ -1,6 +1,5 @@
 package io.anemos.metastore.core.proto.validation;
 
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_STRING;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_UNSET;
 
@@ -24,7 +23,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_CHANGED, change.getChangeType());
+    Assert.assertEquals(ChangeType.CHANGED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_UNSET, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -42,7 +41,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_REMOVED, change.getChangeType());
+    Assert.assertEquals(ChangeType.REMOVAL, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_STRING, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -60,7 +59,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_RESERVED, change.getChangeType());
+    Assert.assertEquals(ChangeType.RESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_STRING, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -78,7 +77,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_RESERVED, change.getChangeType());
+    Assert.assertEquals(ChangeType.RESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_STRING, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -96,7 +95,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_CHANGED, change.getChangeType());
+    Assert.assertEquals(ChangeType.CHANGED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_UNSET, change.getFromType());
     Assert.assertEquals(true, change.getFromDeprecated());
@@ -114,7 +113,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_ADDED, change.getChangeType());
+    Assert.assertEquals(ChangeType.ADDITION, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_UNSET, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -132,7 +131,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_UNRESERVED, change.getChangeType());
+    Assert.assertEquals(ChangeType.UNRESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_UNSET, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());
@@ -150,7 +149,7 @@ public class DiffTest {
 
     FieldChangeInfo change = fieldResults.getChange();
 
-    Assert.assertEquals(FIELD_UNRESERVED, change.getChangeType());
+    Assert.assertEquals(ChangeType.UNRESERVED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
     Assert.assertEquals(FIELD_TYPE_UNSET, change.getFromType());
     Assert.assertEquals(false, change.getFromDeprecated());

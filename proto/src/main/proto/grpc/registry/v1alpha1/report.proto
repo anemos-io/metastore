@@ -12,9 +12,11 @@ enum ChangeType {
     CHANGED = 1;
     ADDITION = 2;
     REMOVAL = 3;
-
-    DEPRECATED = 4;
-    UNDEPRECATED = 5;
+    RESERVED = 4;
+    UNRESERVED = 5;
+    DEPRECATED = 6;
+    UNDEPRECATED = 7;
+    PAYLOAD_CHANGED = 8;
 }
 
 enum TypeChange {
@@ -94,15 +96,13 @@ message OptionChangeInfo {
         FILE_OPTION = 1;
         MESSAGE_OPTION = 2;
         FIELD_OPTION = 3;
+        ENUM_OPTION = 4;
+        ENUM_VALUE_OPTION = 5;
+        SERVICE_OPTION = 6;
+        METHOD_OPTION = 7;
     }
 
-    enum OptionChangeType {
-        OPTION_UNCHANGED = 0;
-        OPTION_ADDED = 1;
-        OPTION_REMOVED = 2;
-        OPTION_PAYLOAD_CHANGED = 3;
-    }
-    OptionChangeType change_type = 1;
+    ChangeType change_type = 1;
     OptionType type = 2;
 
     bytes payload_old = 5;
@@ -133,16 +133,8 @@ message FieldChangeInfo {
         FIELD_TYPE_SINT32 = 17;
         FIELD_TYPE_SINT64 = 18;
     };
-    enum FieldChangeType {
-        FIELD_UNCHANGED = 0;
-        FIELD_CHANGED = 1;
-        FIELD_ADDED = 2;
-        FIELD_REMOVED = 3;
-        FIELD_RESERVED = 4;
-        FIELD_UNRESERVED = 5;
-    }
 
-    FieldChangeType change_type = 1;
+    ChangeType change_type = 1;
 
     string from_name = 2;
     FieldType from_type = 3;
@@ -153,7 +145,28 @@ message FieldChangeInfo {
     FieldType to_type = 7;
     bool to_deprecated = 8;
     bool to_reserved = 9;
+}
 
+message EnumValueChangeInfo {
+    ChangeType change_type = 1;
+
+    string from_name = 2;
+    bool from_deprecated = 4;
+    bool from_reserved = 5;
+
+    string to_name = 6;
+    bool to_deprecated = 8;
+    bool to_reserved = 9;
+}
+
+message MethodChangeInfo {
+    ChangeType change_type = 1;
+
+    string from_name = 2;
+    bool from_deprecated = 4;
+
+    string to_name = 6;
+    bool to_deprecated = 8;
 }
 
 
@@ -175,7 +188,7 @@ message MethodResult {
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    MethodChangeInfo change = 4;
 
     //ResultCount result_count = 5;
 }
@@ -188,7 +201,20 @@ message EnumResult {
 
     ChangeInfo change = 4;
 
+    repeated EnumValueResult value_results = 5;
+
+
     //ResultCount result_count = 6;
+}
+
+message EnumValueResult {
+    string name = 2;
+
+    repeated RuleInfo info = 3;
+
+    EnumValueChangeInfo change = 4;
+
+    //ResultCount result_count = 5;
 }
 
 
@@ -204,13 +230,7 @@ message RuleInfo {
 }
 
 message ImportChangeInfo {
-    enum ImportChangeType {
-        IMPORT_UNCHANGED = 0;
-        IMPORT_ADDED = 1;
-        IMPORT_REMOVED = 2;
-    }
-
-    ImportChangeType change_type = 1;
+    ChangeType change_type = 1;
     string name = 2;
 }
 

@@ -10,7 +10,7 @@ import io.anemos.metastore.core.proto.ProtocUtil;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.FieldChangeInfo;
+import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
@@ -155,7 +155,7 @@ public class ShadowE2ETest {
         schemaRegistyStub.verifySchema(submitDefaultAddField.build());
     Assert.assertFalse(verifyDefaultResponse2.getReport().getResultCount().getDiffErrors() > 0);
     Assert.assertEquals(
-        FieldChangeInfo.FieldChangeType.FIELD_ADDED,
+        ChangeType.ADDITION,
         verifyDefaultResponse2
             .getReport()
             .getMessageResultsMap()

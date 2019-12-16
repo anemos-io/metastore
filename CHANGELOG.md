@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## unreleased
+
+### Added
+- Diffing on Enum and EnumValues
+
+### Changed
+- Braking change: Unified the chagetype into one enum
+
 ## 0.7.5
 
 ### Added

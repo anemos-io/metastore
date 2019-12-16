@@ -178,6 +178,10 @@ public class ProtoDomain implements Serializable {
     return new Builder(this.fileDescriptorMap);
   }
 
+  public static Builder builder() {
+    return new Builder(new HashMap<>());
+  }
+
   private void crosswire() {
     HashMap<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
     fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
@@ -530,6 +534,11 @@ public class ProtoDomain implements Serializable {
 
     public Builder merge(Collection<DescriptorProtos.FileDescriptorProto> updateProtos) {
       updateProtos.forEach(proto -> fileDescriptorMap.put(proto.getName(), proto));
+      return this;
+    }
+
+    public Builder add(DescriptorProtos.FileDescriptorProto proto) {
+      fileDescriptorMap.put(proto.getName(), proto);
       return this;
     }
 

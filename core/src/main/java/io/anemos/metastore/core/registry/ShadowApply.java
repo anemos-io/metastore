@@ -157,13 +157,13 @@ class ShadowApply {
     importChanges.forEach(
         changeInfo -> {
           switch (changeInfo.getChangeType()) {
-            case IMPORT_ADDED:
+            case ADDITION:
               dependencyList.add(changeInfo.getName());
               break;
-            case IMPORT_REMOVED:
+            case REMOVAL:
               dependencyList.remove(changeInfo.getName());
               break;
-            case IMPORT_UNCHANGED:
+            case UNCHANGED:
             case UNRECOGNIZED:
           }
         });
@@ -198,14 +198,14 @@ class ShadowApply {
     UnknownFieldSet.Builder unknownFieldSetBuilder = UnknownFieldSet.newBuilder();
     for (OptionChangeInfo optionChange : optionChanges) {
       switch (optionChange.getChangeType()) {
-        case OPTION_ADDED:
+        case ADDITION:
           unknownFieldSetBuilder =
               mergeUnknownField(unknownFieldSetBuilder, optionChange.getPayloadNew());
           break;
-        case OPTION_REMOVED:
+        case REMOVAL:
           unknownFieldSetBuilder.clearField(optionChange.getOptionNumber());
           break;
-        case OPTION_PAYLOAD_CHANGED:
+        case PAYLOAD_CHANGED:
           unknownFieldSetBuilder.clearField(optionChange.getOptionNumber());
           unknownFieldSetBuilder =
               mergeUnknownField(unknownFieldSetBuilder, optionChange.getPayloadNew());

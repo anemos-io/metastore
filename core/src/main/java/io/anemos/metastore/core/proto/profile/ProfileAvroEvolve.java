@@ -1,6 +1,5 @@
 package io.anemos.metastore.core.proto.profile;
 
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldChangeType.*;
 import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_UNSET;
 
 import io.anemos.metastore.v1alpha1.*;
@@ -17,17 +16,17 @@ public class ProfileAvroEvolve implements ValidationProfile {
     int error = 0;
     for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
       for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
-        if (fieldResult.getChange().getChangeType() == FIELD_REMOVED) {
+        if (fieldResult.getChange().getChangeType() == ChangeType.REMOVAL) {
           error++;
           resultCountBuilder.putErrorInfo(
               "CAVR-0001",
               String.format("Removal of fields is not allowed for profile '%s'.", profileName));
-        } else if (fieldResult.getChange().getChangeType() == FIELD_RESERVED) {
+        } else if (fieldResult.getChange().getChangeType() == ChangeType.RESERVED) {
           error++;
           resultCountBuilder.putErrorInfo(
               "CAVR-0002",
               String.format("Reservation of fields is not allowed for profile '%s'.", profileName));
-        } else if (fieldResult.getChange().getChangeType() == FIELD_CHANGED) {
+        } else if (fieldResult.getChange().getChangeType() == ChangeType.CHANGED) {
           if (isDeprecationOnly(fieldResult.getChange())) {
             // this is allowed
             continue;

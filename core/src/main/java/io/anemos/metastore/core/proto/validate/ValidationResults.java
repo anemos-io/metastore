@@ -10,6 +10,7 @@ import java.util.Map;
 public class ValidationResults {
   private Map<String, FileResultContainer> fileMap = new HashMap<>();
   private Map<String, MessageResultContainer> messageMap = new HashMap<>();
+  private Map<String, EnumResultContainer> enumMap = new HashMap<>();
   private Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
 
   public List<RuleInfo> getInfo(String messageName, String fieldName) {
@@ -54,6 +55,16 @@ public class ValidationResults {
     return fileResult;
   }
 
+  private EnumResultContainer getOrCreateEnum(String fileName) {
+    EnumResultContainer enumResult = enumMap.get(fileName);
+    if (enumResult == null) {
+      enumResult = new EnumResultContainer();
+      enumResult.fullName = fileName;
+      enumMap.put(fileName, enumResult);
+    }
+    return enumResult;
+  }
+
   void addResult(Descriptors.FieldDescriptor fd, RuleInfo ruleInfo) {
     MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
     messageResult.add(fd, ruleInfo);
@@ -80,18 +91,34 @@ public class ValidationResults {
   }
 
   void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
-    MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
-    messageResult.addPatch(fd, patch);
+    MessageResultContainer resultContainer =
+        getOrCreateMessage(fd.getContainingType().getFullName());
+    resultContainer.addPatch(fd, patch);
+  }
+
+  void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChangeInfo patch) {
+    EnumResultContainer resultContainer = getOrCreateEnum(fd.getType().getFullName());
+    resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.Descriptor fd, ChangeInfo patch) {
-    MessageResultContainer messageResult = getOrCreateMessage(fd.getFullName());
-    messageResult.setPatch(patch);
+    MessageResultContainer resultContainer = getOrCreateMessage(fd.getFullName());
+    resultContainer.setPatch(patch);
   }
 
   void setPatch(Descriptors.FileDescriptor fd, ChangeInfo patch) {
-    FileResultContainer fileResult = getOrCreateFile(fd.getFullName());
-    fileResult.setPatch(patch);
+    FileResultContainer resultContainer = getOrCreateFile(fd.getFullName());
+    resultContainer.setPatch(patch);
+  }
+
+  void setPatch(Descriptors.EnumDescriptor fd, ChangeInfo patch) {
+    EnumResultContainer resultContainer = getOrCreateEnum(fd.getFullName());
+    resultContainer.setPatch(patch);
+  }
+
+  void setPatch(Descriptors.ServiceDescriptor fd, ChangeInfo patch) {
+    ServiceResultContainer serviceResult = getOrCreateService(fd.getFullName());
+    serviceResult.setPatch(patch);
   }
 
   void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChangeInfo info) {
@@ -106,6 +133,9 @@ public class ValidationResults {
       MessageResultContainer messageResult =
           getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
       messageResult.addOptionChange(fieldDescriptor, info);
+    } else {
+      // TODO
+      throw new RuntimeException("Unimplemented option");
     }
   }
 
@@ -116,30 +146,20 @@ public class ValidationResults {
 
   public Report getReport() {
     Report.Builder builder = Report.newBuilder();
-    fileMap
-        .values()
-        .forEach(
-            file -> {
-              builder.putFileResults(file.fullName, file.getResult());
-            });
+    fileMap.values().forEach(file -> builder.putFileResults(file.fullName, file.getResult()));
     messageMap
         .values()
-        .forEach(
-            message -> {
-              builder.putMessageResults(message.fullName, message.getResult());
-            });
+        .forEach(message -> builder.putMessageResults(message.fullName, message.getResult()));
     serviceMap
         .values()
-        .forEach(
-            service -> {
-              builder.putServiceResults(service.fullName, service.getResult());
-            });
+        .forEach(service -> builder.putServiceResults(service.fullName, service.getResult()));
+    enumMap.values().forEach(e -> builder.putEnumResults(e.fullName, e.getResult()));
 
     return builder.build();
   }
 
-  class FieldResultContainer {
-    List<RuleInfo> info = new ArrayList();
+  static class FieldResultContainer {
+    List<RuleInfo> info = new ArrayList<>();
     List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
     FieldChangeInfo patch;
     String name;
@@ -162,16 +182,16 @@ public class ValidationResults {
       return builder.build();
     }
 
-    public void addPatch(FieldChangeInfo patch) {
+    void addPatch(FieldChangeInfo patch) {
       this.patch = patch;
     }
 
-    public void addOptionChange(OptionChangeInfo optionChangeInfo) {
+    void addOptionChange(OptionChangeInfo optionChangeInfo) {
       this.optionChangeInfos.add(optionChangeInfo);
     }
   }
 
-  class MessageResultContainer {
+  static class MessageResultContainer {
     String fullName;
 
     List<RuleInfo> info = new ArrayList<>();
@@ -184,7 +204,7 @@ public class ValidationResults {
       fieldResultContainer.add(ruleInfo);
     }
 
-    public void addPatch(Descriptors.FieldDescriptor field, FieldChangeInfo patch) {
+    void addPatch(Descriptors.FieldDescriptor field, FieldChangeInfo patch) {
       FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
       fieldResultContainer.addPatch(patch);
     }
@@ -212,20 +232,19 @@ public class ValidationResults {
       return messageInfo.build();
     }
 
-    public void addResult(RuleInfo ruleInfo) {
+    void addResult(RuleInfo ruleInfo) {
       info.add(ruleInfo);
     }
 
-    public void setPatch(ChangeInfo patch) {
+    void setPatch(ChangeInfo patch) {
       this.patch = patch;
     }
 
-    public void addOptionChange(OptionChangeInfo info) {
+    void addOptionChange(OptionChangeInfo info) {
       optionChangeInfos.add(info);
     }
 
-    public void addOptionChange(
-        Descriptors.FieldDescriptor field, OptionChangeInfo optionChangeInfo) {
+    void addOptionChange(Descriptors.FieldDescriptor field, OptionChangeInfo optionChangeInfo) {
       FieldResultContainer fieldResultContainer = getOrCreateFieldContainer(field);
       fieldResultContainer.addOptionChange(optionChangeInfo);
     }
@@ -240,7 +259,7 @@ public class ValidationResults {
     List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
     List<ImportChangeInfo> importChangeInfo = new ArrayList<>();
 
-    public void setPatch(ChangeInfo patch) {
+    void setPatch(ChangeInfo patch) {
       this.patch = patch;
     }
 
@@ -258,15 +277,15 @@ public class ValidationResults {
       return builder.build();
     }
 
-    public void addResult(RuleInfo ruleInfo) {
+    void addResult(RuleInfo ruleInfo) {
       info.add(ruleInfo);
     }
 
-    public void addOptionChange(OptionChangeInfo optionChangeInfo) {
+    void addOptionChange(OptionChangeInfo optionChangeInfo) {
       this.optionChangeInfos.add(optionChangeInfo);
     }
 
-    public void addImportChange(ImportChangeInfo changeInfo) {
+    void addImportChange(ImportChangeInfo changeInfo) {
       this.importChangeInfo.add(changeInfo);
     }
   }
@@ -283,7 +302,7 @@ public class ValidationResults {
       methoddResultContainer.add(ruleInfo);
     }
 
-    public void addPatch(Descriptors.MethodDescriptor method, ChangeInfo patch) {
+    public void addPatch(Descriptors.MethodDescriptor method, MethodChangeInfo patch) {
       MethodResultContainer methodResultContainer = getOrCreateMethodContainer(method);
       methodResultContainer.addPatch(patch);
     }
@@ -309,18 +328,18 @@ public class ValidationResults {
       return messageInfo.build();
     }
 
-    public void addResult(RuleInfo ruleInfo) {
+    void addResult(RuleInfo ruleInfo) {
       info.add(ruleInfo);
     }
 
-    public void setPatch(ChangeInfo patch) {
+    void setPatch(ChangeInfo patch) {
       this.patch = patch;
     }
   }
 
-  class MethodResultContainer {
-    List<RuleInfo> info = new ArrayList();
-    ChangeInfo patch;
+  static class MethodResultContainer {
+    List<RuleInfo> info = new ArrayList<>();
+    MethodChangeInfo patch;
     String fullName;
 
     public void add(RuleInfo ruleInfo) {
@@ -335,7 +354,78 @@ public class ValidationResults {
       return builder.build();
     }
 
-    public void addPatch(ChangeInfo patch) {
+    void addPatch(MethodChangeInfo patch) {
+      this.patch = patch;
+    }
+  }
+
+  class EnumResultContainer {
+    String fullName;
+
+    List<RuleInfo> info = new ArrayList<>();
+    Map<String, EnumValueResultContainer> valueMap = new HashMap<>();
+    ChangeInfo patch;
+
+    public void add(Descriptors.EnumValueDescriptor value, RuleInfo ruleInfo) {
+      EnumValueResultContainer methoddResultContainer = getOrCreateValueContainer(value);
+      methoddResultContainer.add(ruleInfo);
+    }
+
+    public void addPatch(Descriptors.EnumValueDescriptor value, EnumValueChangeInfo patch) {
+      EnumValueResultContainer valueResultContainer = getOrCreateValueContainer(value);
+      valueResultContainer.addPatch(patch);
+    }
+
+    private EnumValueResultContainer getOrCreateValueContainer(
+        Descriptors.EnumValueDescriptor value) {
+      EnumValueResultContainer valueResultContainer = valueMap.get(value.getName());
+      if (valueResultContainer == null) {
+        valueResultContainer = new EnumValueResultContainer();
+        valueResultContainer.fullName = value.getName();
+        valueMap.put(value.getName(), valueResultContainer);
+      }
+      return valueResultContainer;
+    }
+
+    EnumResult getResult() {
+      EnumResult.Builder messageInfo = EnumResult.newBuilder();
+      messageInfo.setName(fullName);
+      if (patch != null) {
+        messageInfo.setChange(patch);
+      }
+      valueMap.values().forEach(method -> messageInfo.addValueResults(method.getResult()));
+      messageInfo.addAllInfo(info);
+      return messageInfo.build();
+    }
+
+    void addResult(RuleInfo ruleInfo) {
+      info.add(ruleInfo);
+    }
+
+    void setPatch(ChangeInfo patch) {
+      this.patch = patch;
+    }
+  }
+
+  static class EnumValueResultContainer {
+    List<RuleInfo> info = new ArrayList<>();
+    EnumValueChangeInfo patch;
+    String fullName;
+
+    public void add(RuleInfo ruleInfo) {
+      info.add(ruleInfo);
+    }
+
+    public EnumValueResult getResult() {
+      EnumValueResult.Builder builder =
+          EnumValueResult.newBuilder().setName(fullName).addAllInfo(info);
+      if (patch != null) {
+        builder.setChange(patch);
+      }
+      return builder.build();
+    }
+
+    void addPatch(EnumValueChangeInfo patch) {
       this.patch = patch;
     }
   }
