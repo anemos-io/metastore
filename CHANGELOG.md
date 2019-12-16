@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleases
+## 0.7.5
 
 ### Added
 - Add use of Proto extension registry to parse options
