@@ -77,15 +77,15 @@ class ShadowRegistry extends AbstractRegistry {
       throw new RuntimeException("Shadow registry should have package prefix scopes defined.");
     }
     delta = results.getReport();
-    update();
+    update(comment);
     notifyEventListeners(report);
   }
 
   @Override
-  public void update() {
+  public void update(Comment comment) {
     write();
     updateShadowCache();
-    syncGitRepo(Comment.newBuilder().setDescription("Updated").build());
+    syncGitRepo(comment);
   }
 
   private void write() {

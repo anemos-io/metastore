@@ -48,15 +48,15 @@ class SchemaRegistry extends AbstractRegistry {
   @Override
   public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
     protoContainer = in;
-    update();
+    update(comment);
     syncGitRepo(comment);
     notifyEventListeners(report);
   }
 
   @Override
-  public void update() {
+  public void update(Comment comment) {
     write();
-    registries.notifyShadows(this.name);
+    registries.notifyShadows(this.name, comment);
   }
 
   void write() {

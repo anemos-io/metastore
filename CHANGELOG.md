@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Automatic handle all proto related imports (example:
   timestamp, duration, wrapper, ...)
 
+### Fixed
+- Also propagate comment to shadow registry
+
 ## 0.8.0
 
 ### Added

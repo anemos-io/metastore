@@ -83,7 +83,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public abstract void init();
 
-  public abstract void update();
+  public abstract void update(Comment comment);
 
   public abstract ByteString raw();
 
