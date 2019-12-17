@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## unreleased version
+
+### Changed
+- Make --comment a required field when publishing for 
+  metastep
+
 ## 0.8.0
 
 ### Added

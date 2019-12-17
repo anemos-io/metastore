@@ -55,7 +55,7 @@ public class MetaStep {
     submitParser.addArgument("--tls").required(false);
     submitParser.addArgument("--tls_env").required(false);
     submitParser.addArgument("--source").required(false);
-    submitParser.addArgument("--comment").required(false);
+    submitParser.addArgument("--comment").required(true);
     submitParser.addArgument("--user").required(false);
     submitParser.addArgument("--email").required(false);
     submitParser.addArgument("--include").nargs("*").required(false);
