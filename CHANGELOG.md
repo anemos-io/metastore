@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Make --comment a required field when publishing for 
   metastep
+- Automatic handle all proto related imports (example:
+  timestamp, duration, wrapper, ...)
 
 ## 0.8.0
 
