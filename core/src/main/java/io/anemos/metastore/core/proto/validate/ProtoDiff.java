@@ -13,6 +13,7 @@ import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.EnumValueChangeInfo;
 import io.anemos.metastore.v1alpha1.FieldChangeInfo;
 import io.anemos.metastore.v1alpha1.ImportChangeInfo;
+import io.anemos.metastore.v1alpha1.MethodChangeInfo;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -70,6 +71,16 @@ public class ProtoDiff {
     in.forEach(
         descriptor -> {
           out.put(String.valueOf(descriptor.getNumber()), descriptor);
+        });
+    return out;
+  }
+
+  private static Map<String, Descriptors.MethodDescriptor> toMap4MethodDescriptor(
+      Collection<Descriptors.MethodDescriptor> in) {
+    Map<String, Descriptors.MethodDescriptor> out = new HashMap<>();
+    in.forEach(
+        descriptor -> {
+          out.put(String.valueOf(descriptor.getName()), descriptor);
         });
     return out;
   }
@@ -419,7 +430,83 @@ public class ProtoDiff {
         optionsRef.getUnknownFields(),
         descriptorNew,
         optionsNew.getUnknownFields());
-    // diffMethods(descriptorRef, descriptorNew);
+    diffMethods(descriptorRef, descriptorNew);
+  }
+
+  private void diffMethods(
+      Descriptors.ServiceDescriptor d_ref, Descriptors.ServiceDescriptor d_new) {
+    Map<String, Descriptors.MethodDescriptor> m_ref = toMap4MethodDescriptor(d_ref.getMethods());
+    Map<String, Descriptors.MethodDescriptor> m_new = toMap4MethodDescriptor(d_new.getMethods());
+
+    Set<String> onlyRef = onlyInLeft(m_ref, m_new);
+    onlyRef.forEach(
+        k -> {
+          Descriptors.MethodDescriptor fd = m_ref.get(k);
+
+          MethodChangeInfo.Builder builder =
+              MethodChangeInfo.newBuilder()
+                  .setChangeType(ChangeType.REMOVAL)
+                  .setFromName(fd.getName())
+                  .setFromDeprecated(isDeprecated(fd));
+          //              if (d_new.isReservedNumber(fd.getNumber())) {
+          //
+          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_RESERVED);
+          //                if (d_new.isReservedName(fd.getName())) {
+          //                  builder.setToName(fd.getName());
+          //                }
+          //              }
+          results.setPatch(fd, builder.build());
+        });
+
+    Set<String> onlyNew = onlyInLeft(m_new, m_ref);
+    onlyNew.forEach(
+        k -> {
+          Descriptors.MethodDescriptor fd = m_new.get(k);
+          MethodChangeInfo.Builder builder =
+              MethodChangeInfo.newBuilder()
+                  .setChangeType(ChangeType.ADDITION)
+                  .setToName(fd.getName())
+                  .setToDeprecated(isDeprecated(fd));
+          //              if (d_ref.isReservedNumber(fd.getNumber())) {
+          //
+          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_UNRESERVED);
+          //                if (d_ref.isReservedName(fd.getName())) {
+          //                  builder.setFromName(fd.getName());
+          //                }
+          //              }
+          results.setPatch(fd, builder.build());
+        });
+
+    Set<String> common = onlyInCommon(m_new, m_ref);
+    common.forEach(
+        k -> {
+          MethodChangeInfo fieldDiff = diffMethod(m_ref.get(k), m_new.get(k));
+          if (fieldDiff != null) {
+            results.setPatch(m_new.get(k), fieldDiff);
+          }
+        });
+  }
+
+  private MethodChangeInfo diffMethod(
+      Descriptors.MethodDescriptor f_ref, Descriptors.MethodDescriptor f_new) {
+    diffOptionsFromMethod(f_ref, f_new);
+    MethodChangeInfo.Builder builder = MethodChangeInfo.newBuilder();
+
+    if (!f_ref.getName().equals(f_new.getName())) {
+      builder.setChangeType(ChangeType.CHANGED);
+      builder.setFromName(f_ref.getName());
+      builder.setToName(f_new.getName());
+    }
+    if (isDeprecated(f_ref) != isDeprecated(f_new)) {
+      builder.setChangeType(ChangeType.CHANGED);
+      builder.setFromDeprecated(isDeprecated(f_ref));
+      builder.setToDeprecated(isDeprecated(f_new));
+    }
+
+    if (builder.getChangeType().equals(ChangeType.CHANGED)) {
+      return builder.build();
+    }
+    return null;
   }
 
   private void diffEnumTypes(
@@ -563,6 +650,21 @@ public class ProtoDiff {
         Descriptors.FieldDescriptor f = entry.getKey();
         switch (f.getFullName()) {
           case "google.protobuf.EnumValueOptions.deprecated":
+            return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean isDeprecated(Descriptors.MethodDescriptor fieldDescriptor) {
+    Map<Descriptors.FieldDescriptor, Object> allFields =
+        fieldDescriptor.getOptions().getAllFields();
+    if (allFields.size() > 0) {
+      for (Map.Entry<Descriptors.FieldDescriptor, Object> entry : allFields.entrySet()) {
+        Descriptors.FieldDescriptor f = entry.getKey();
+        switch (f.getFullName()) {
+          case "google.protobuf.MethodOptions.deprecated":
             return true;
         }
       }
@@ -752,6 +854,24 @@ public class ProtoDiff {
         optionsNew.getAllFields());
     diffUnknownOptions(
         OptionChangeInfo.OptionType.ENUM_VALUE_OPTION,
+        descriptorRef,
+        optionsRef.getUnknownFields(),
+        descriptorNew,
+        optionsNew.getUnknownFields());
+  }
+
+  private void diffOptionsFromMethod(
+      Descriptors.MethodDescriptor descriptorRef, Descriptors.MethodDescriptor descriptorNew) {
+    DescriptorProtos.MethodOptions optionsRef = descriptorRef.getOptions();
+    DescriptorProtos.MethodOptions optionsNew = descriptorNew.getOptions();
+    diffExtensionOptions(
+        OptionChangeInfo.OptionType.METHOD_OPTION,
+        descriptorRef,
+        optionsRef.getAllFields(),
+        descriptorNew,
+        optionsNew.getAllFields());
+    diffUnknownOptions(
+        OptionChangeInfo.OptionType.METHOD_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,

@@ -96,6 +96,11 @@ public class ValidationResults {
     resultContainer.addPatch(fd, patch);
   }
 
+  void setPatch(Descriptors.MethodDescriptor fd, MethodChangeInfo patch) {
+    ServiceResultContainer resultContainer = getOrCreateService(fd.getService().getFullName());
+    resultContainer.addPatch(fd, patch);
+  }
+
   void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChangeInfo patch) {
     EnumResultContainer resultContainer = getOrCreateEnum(fd.getType().getFullName());
     resultContainer.addPatch(fd, patch);

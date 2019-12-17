@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## unreleased version
 
+### Added
+- Diffing on Services and Methods
+
 ### Changed
 - Make --comment a required field when publishing for 
   metastep

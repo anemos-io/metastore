@@ -31,7 +31,7 @@ public class ProfileAllowAdd implements ValidationProfile {
         case CHANGED:
         case ADDITION:
         case DEPRECATED:
-        case UNDEPRECATED:
+        case REINSTATED:
         case PAYLOAD_CHANGED:
         case UNRECOGNIZED:
           break;
@@ -76,7 +76,7 @@ public class ProfileAllowAdd implements ValidationProfile {
           case UNCHANGED:
           case ADDITION:
           case DEPRECATED:
-          case UNDEPRECATED:
+          case REINSTATED:
           case PAYLOAD_CHANGED:
           case UNRECOGNIZED:
             break;
@@ -102,7 +102,7 @@ public class ProfileAllowAdd implements ValidationProfile {
         case CHANGED:
         case ADDITION:
         case DEPRECATED:
-        case UNDEPRECATED:
+        case REINSTATED:
         case PAYLOAD_CHANGED:
         case UNRECOGNIZED:
           break;
@@ -148,7 +148,7 @@ public class ProfileAllowAdd implements ValidationProfile {
           case UNCHANGED:
           case ADDITION:
           case DEPRECATED:
-          case UNDEPRECATED:
+          case REINSTATED:
           case PAYLOAD_CHANGED:
           case UNRECOGNIZED:
             break;
