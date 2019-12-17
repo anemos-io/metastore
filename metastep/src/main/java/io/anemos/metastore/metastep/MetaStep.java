@@ -246,6 +246,12 @@ public class MetaStep {
     System.out.println(
         String.format("%d errors, %d warnings and %d infos", errors, warnings, infos));
     if (errors > 0) {
+      resultCount
+          .getErrorInfoList()
+          .forEach(
+              e -> {
+                System.err.println(e.getDescription());
+              });
       System.err.println("Metastep failed.");
       System.exit(1);
     }
