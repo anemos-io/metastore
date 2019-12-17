@@ -33,9 +33,29 @@ message ResultCount {
     int32 diff_warnings = 5;
     int32 diff_infos = 6;
 
-    map<string, string> error_info = 7;
-    map<string, string> warning_info = 8;
-    map<string, string> info_info = 9;
+    repeated ErrorInfo error_info = 7;
+//    map<string, string> error_info = 7;
+//    map<string, string> warning_info = 8;
+//    map<string, string> info_info = 9;
+}
+
+message ErrorInfo {
+    enum ErrorType {
+        ERROR = 0;
+        WARNING = 1;
+        INFO = 2;
+    }
+    ErrorType type = 1;
+    oneof path {
+        string message = 3;
+        string field = 4;
+        string enum = 5;
+        string enum_value = 6;
+        string service = 7;
+        string method = 8;
+    }
+    string code = 9;
+    string description = 10;
 }
 
 message Report {
@@ -45,6 +65,8 @@ message Report {
     map<string, ServiceResult> service_results = 4;
 
     ResultCount result_count = 5;
+
+
 }
 
 message FileResult {
@@ -55,10 +77,8 @@ message FileResult {
 
     ChangeInfo change = 4;
 
-    //ResultCount result_count = 6;
     repeated ImportChangeInfo import_change = 9;
     repeated OptionChangeInfo option_change = 10;
-
 }
 
 message MessageResult {
@@ -72,8 +92,6 @@ message MessageResult {
 
     repeated FieldResult field_results = 5;
 
-    //ResultCount result_count = 6;
-
     repeated OptionChangeInfo option_change = 10;
 }
 
@@ -84,8 +102,6 @@ message FieldResult {
     repeated RuleInfo info = 3;
 
     FieldChangeInfo change = 4;
-
-    //ResultCount result_count = 6;
 
     repeated OptionChangeInfo option_change = 10;
 }
@@ -179,8 +195,6 @@ message ServiceResult {
     ChangeInfo change = 4;
 
     repeated MethodResult method_results = 5;
-
-    //ResultCount result_count = 6;
 }
 
 message MethodResult {
@@ -189,8 +203,6 @@ message MethodResult {
     repeated RuleInfo info = 3;
 
     MethodChangeInfo change = 4;
-
-    //ResultCount result_count = 5;
 }
 
 message EnumResult {
@@ -202,19 +214,15 @@ message EnumResult {
     ChangeInfo change = 4;
 
     repeated EnumValueResult value_results = 5;
-
-
-    //ResultCount result_count = 6;
 }
 
 message EnumValueResult {
+    int32 number = 1;
     string name = 2;
 
     repeated RuleInfo info = 3;
 
     EnumValueChangeInfo change = 4;
-
-    //ResultCount result_count = 5;
 }
 
 
@@ -233,8 +241,3 @@ message ImportChangeInfo {
     ChangeType change_type = 1;
     string name = 2;
 }
-
-
-//message SchemaDiff {
-//    repeated RuleInfo rules = 1;
-//}

@@ -63,6 +63,11 @@ public class ProtoLint {
     lintFiles(fdRef);
   }
 
+  public void lintOnPackage(String packageName) {
+    List<Descriptors.FileDescriptor> fdRef = proto.getFileDescriptorsByPackageName(packageName);
+    lintFiles(fdRef);
+  }
+
   private void lintFiles(List<Descriptors.FileDescriptor> f_ref) {
     f_ref.forEach(v -> lintOnFileName(v.getName()));
   }

@@ -1,13 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## 0.8.0
 
 ### Added
 - Diffing on Enum and EnumValues
 
 ### Changed
 - Braking change: Unified the chagetype into one enum
+- Braking change: Error feedback
+
+### Fixed
+- Submitting on package now works as expected
 
 ## 0.7.5
 

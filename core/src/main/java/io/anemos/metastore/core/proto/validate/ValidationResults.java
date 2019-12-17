@@ -367,8 +367,8 @@ public class ValidationResults {
     ChangeInfo patch;
 
     public void add(Descriptors.EnumValueDescriptor value, RuleInfo ruleInfo) {
-      EnumValueResultContainer methoddResultContainer = getOrCreateValueContainer(value);
-      methoddResultContainer.add(ruleInfo);
+      EnumValueResultContainer methodResultContainer = getOrCreateValueContainer(value);
+      methodResultContainer.add(ruleInfo);
     }
 
     public void addPatch(Descriptors.EnumValueDescriptor value, EnumValueChangeInfo patch) {
@@ -382,6 +382,7 @@ public class ValidationResults {
       if (valueResultContainer == null) {
         valueResultContainer = new EnumValueResultContainer();
         valueResultContainer.fullName = value.getName();
+        valueResultContainer.number = value.getNumber();
         valueMap.put(value.getName(), valueResultContainer);
       }
       return valueResultContainer;
@@ -411,6 +412,7 @@ public class ValidationResults {
     List<RuleInfo> info = new ArrayList<>();
     EnumValueChangeInfo patch;
     String fullName;
+    int number;
 
     public void add(RuleInfo ruleInfo) {
       info.add(ruleInfo);
@@ -418,7 +420,7 @@ public class ValidationResults {
 
     public EnumValueResult getResult() {
       EnumValueResult.Builder builder =
-          EnumValueResult.newBuilder().setName(fullName).addAllInfo(info);
+          EnumValueResult.newBuilder().setName(fullName).setNumber(number).addAllInfo(info);
       if (patch != null) {
         builder.setChange(patch);
       }

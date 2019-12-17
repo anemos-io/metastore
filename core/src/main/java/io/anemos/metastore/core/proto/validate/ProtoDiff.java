@@ -150,6 +150,12 @@ public class ProtoDiff {
     diffFiles(fdRef, fdNew);
   }
 
+  public void diffOnPackage(String packageName) {
+    List<Descriptors.FileDescriptor> fdRef = proto_ref.getFileDescriptorsByPackageName(packageName);
+    List<Descriptors.FileDescriptor> fdNew = proto_new.getFileDescriptorsByPackageName(packageName);
+    diffFiles(fdRef, fdNew);
+  }
+
   private <T extends Descriptors.GenericDescriptor> Map<String, T> toMap4Descriptor(List<T> in) {
     Map<String, T> out = new HashMap<>();
     in.forEach(

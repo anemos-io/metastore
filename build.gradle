@@ -13,7 +13,7 @@ allprojects {
     apply from: "${project.rootDir}/gradle/properties.gradle"
 
     group = "io.anemos"
-    version = "0.8.0-SNAPSHOT"
+    version = "0.8.0"
 
     repositories {
         jcenter()
