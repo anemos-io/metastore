@@ -128,6 +128,9 @@ public class ProtoDiffTest {
     EnumResult result = report.getEnumResultsMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getValueResults(0).getChange().getChangeType());
+    Assert.assertEquals(2, result.getValueResults(0).getNumber());
+    Assert.assertEquals("ENUM_VALUE1_VALUE2", result.getValueResults(0).getName());
+    Assert.assertEquals("", result.getValueResults(0).getChange().getFromName());
     Assert.assertEquals("ENUM_VALUE1_VALUE2", result.getValueResults(0).getChange().getToName());
   }
 
@@ -142,7 +145,10 @@ public class ProtoDiffTest {
     EnumResult result = report.getEnumResultsMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getValueResults(0).getChange().getChangeType());
+    Assert.assertEquals(1, result.getValueResults(0).getNumber());
+    Assert.assertEquals("ENUM_VALUE1_VALUE1", result.getValueResults(0).getName());
     Assert.assertEquals("ENUM_VALUE1_VALUE1", result.getValueResults(0).getChange().getFromName());
+    Assert.assertEquals("", result.getValueResults(0).getChange().getToName());
   }
 
   @Test
@@ -162,6 +168,8 @@ public class ProtoDiffTest {
     EnumResult result = report.getEnumResultsMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getValueResults(0).getChange().getChangeType());
+    Assert.assertEquals(1, result.getValueResults(0).getNumber());
+    Assert.assertEquals("FOO", result.getValueResults(0).getName());
     Assert.assertEquals("ENUM_VALUE1_VALUE1", result.getValueResults(0).getChange().getFromName());
     Assert.assertEquals("FOO", result.getValueResults(0).getChange().getToName());
   }

@@ -349,7 +349,7 @@ public class ProtoDiff {
         k -> {
           FieldChangeInfo fieldDiff = diffField(m_ref.get(k), m_new.get(k));
           if (fieldDiff != null) {
-            results.setPatch(m_ref.get(k), fieldDiff);
+            results.setPatch(m_new.get(k), fieldDiff);
           }
         });
   }
@@ -513,7 +513,7 @@ public class ProtoDiff {
         k -> {
           EnumValueChangeInfo fieldDiff = diffEnumValue(m_ref.get(k), m_new.get(k));
           if (fieldDiff != null) {
-            results.setPatch(m_ref.get(k), fieldDiff);
+            results.setPatch(m_new.get(k), fieldDiff);
           }
         });
   }

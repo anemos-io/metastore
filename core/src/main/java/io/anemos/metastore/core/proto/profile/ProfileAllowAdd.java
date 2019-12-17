@@ -43,7 +43,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(messageResult.getName() + "#" + fieldResult.getNumber())
+                    .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0001")
                     .setDescription(
                         String.format(
@@ -54,7 +54,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(messageResult.getName() + "#" + fieldResult.getNumber())
+                    .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0002")
                     .setDescription(
                         String.format(
@@ -66,7 +66,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(messageResult.getName() + "#" + fieldResult.getNumber())
+                    .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0003")
                     .setDescription(
                         String.format(
@@ -114,7 +114,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(enumResult.getName() + "#" + valueResult.getNumber())
+                    .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0001")
                     .setDescription(
                         String.format(
@@ -126,7 +126,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(enumResult.getName() + "." + valueResult.getNumber())
+                    .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0002")
                     .setDescription(
                         String.format(
@@ -138,7 +138,7 @@ public class ProfileAllowAdd implements ValidationProfile {
             resultCountBuilder.addErrorInfo(
                 ErrorInfo.newBuilder()
                     .setType(ErrorInfo.ErrorType.ERROR)
-                    .setField(enumResult.getName() + "." + valueResult.getNumber())
+                    .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0003")
                     .setDescription(
                         String.format(

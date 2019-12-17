@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
   metastep
 - Automatic handle all proto related imports (example:
   timestamp, duration, wrapper, ...)
+- Reference to errors are provided by name
 
 ### Fixed
 - Also propagate comment to shadow registry
