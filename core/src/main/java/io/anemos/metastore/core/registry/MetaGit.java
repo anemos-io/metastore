@@ -71,6 +71,8 @@ class MetaGit {
         CommitCommand commit = gitRepo.commit();
         if (comment.getDescription().length() > 0) {
           commit.setMessage(comment.getDescription());
+        } else {
+          commit.setMessage("No message provider");
         }
         if (comment.getEmail().length() > 0 || comment.getName().length() > 0) {
           commit.setAuthor(comment.getName(), comment.getEmail());
