@@ -213,7 +213,7 @@ public class ProtoDomain implements Serializable {
     return buildFrom(DescriptorProtos.FileDescriptorSet.parseFrom(buffer));
   }
 
-  public static ProtoDomain empty() throws IOException {
+  public static ProtoDomain empty() {
     return new ProtoDomain();
   }
 
@@ -343,23 +343,16 @@ public class ProtoDomain implements Serializable {
   }
 
   public List<Descriptors.FileDescriptor> getFileDescriptors() {
-    return fileDescriptorMap.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(fileDescriptorMap.values());
   }
 
   public void writeToDirectory(String root) throws IOException {
-    for (Map.Entry<String, Descriptors.FileDescriptor> entry : fileDescriptorMap.entrySet()) {
-      String packageDir = entry.getValue().getPackage().replaceAll("\\.", "/");
-      if (!packageDir.startsWith("google/protobuf")) {
-        String fileName = entry.getValue().getName();
-        if (fileName.contains("/")) {
-          fileName =
-              entry.getValue().getName().substring(entry.getValue().getName().lastIndexOf("/") + 1);
-        }
-        File file = new File(String.format("%s/%s/%s", root, packageDir, fileName));
-        file.getParentFile().mkdirs();
-        try (OutputStream out = new FileOutputStream(file)) {
-          ProtoLanguageFileWriter.write(entry.getValue(), this, out);
-        }
+    for (Descriptors.FileDescriptor fd : fileDescriptorMap.values()) {
+      String fileName = fd.getFullName();
+      File file = new File(String.format("%s/%s", root, fileName));
+      file.getParentFile().mkdirs();
+      try (OutputStream out = new FileOutputStream(file)) {
+        ProtoLanguageFileWriter.write(fd, this, out);
       }
     }
   }
@@ -464,7 +457,7 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.MessageOptions options = descriptor.getOptions();
-              return options.getAllFields().keySet().contains(fieldDescriptor);
+              return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
   }
@@ -475,7 +468,7 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.FileOptions options = descriptor.getOptions();
-              return options.getAllFields().keySet().contains(fieldDescriptor);
+              return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
   }
@@ -486,7 +479,7 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.EnumOptions options = descriptor.getOptions();
-              return options.getAllFields().keySet().contains(fieldDescriptor);
+              return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
   }
@@ -498,7 +491,7 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.ServiceOptions options = descriptor.getOptions();
-              return options.getAllFields().keySet().contains(fieldDescriptor);
+              return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
   }
@@ -547,7 +540,7 @@ public class ProtoDomain implements Serializable {
     public Builder replacePackageBinary(String packageName, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
-      List<String> removing = new ArrayList();
+      List<String> removing = new ArrayList<>();
       fileDescriptorMap.forEach(
           (k, v) -> {
             if (v.getPackage().equals(packageName)) {
@@ -563,7 +556,7 @@ public class ProtoDomain implements Serializable {
         String packagePrefix, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
-      List<String> removing = new ArrayList();
+      List<String> removing = new ArrayList<>();
       fileDescriptorMap.forEach(
           (k, v) -> {
             if (v.getPackage().startsWith(packagePrefix)) {
@@ -593,7 +586,7 @@ public class ProtoDomain implements Serializable {
     }
   }
 
-  public class OptionsCatalog {
+  public static class OptionsCatalog {
     private Map<Integer, Descriptors.FieldDescriptor> fileOptionMap;
     private Map<Integer, Descriptors.FieldDescriptor> messageOptionMap;
     private Map<Integer, Descriptors.FieldDescriptor> fieldOptionMap;

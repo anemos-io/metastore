@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+### Fixed
+- ProtoLanguageFileWriter now uses the real filename instead of
+  inferring it from the package name.
+
 ## 0.8.1
 
 ### Added
