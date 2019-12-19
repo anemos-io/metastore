@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## unreleased version
+## 0.8.1
 
 ### Added
 - Diffing on Services and Methods
