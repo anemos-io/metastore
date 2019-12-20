@@ -1,10 +1,20 @@
 package io.anemos.metastore.putils;
 
+import com.google.protobuf.Any;
+import com.google.protobuf.Api;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Duration;
+import com.google.protobuf.Empty;
 import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.FieldMask;
+import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.SourceContext;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,32 +46,64 @@ class Convert {
     if (outMap.containsKey(name)) {
       return outMap.get(name);
     }
-    Descriptors.FileDescriptor fileDescriptor;
-    if ("google/protobuf/descriptor.proto".equals(name)) {
-      fileDescriptor = DescriptorProtos.getDescriptor();
-    } else {
-      DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
-      List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
-      if (fileDescriptorProto.getDependencyCount() > 0) {
-        fileDescriptorProto
-            .getDependencyList()
-            .forEach(
-                dependencyName ->
-                    dependencies.add(
-                        convertToFileDescriptorMap(
-                            dependencyName, inMap, outMap, extensionRegistry)));
-      }
-      try {
-        fileDescriptor =
-            Descriptors.FileDescriptor.buildFrom(
-                fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
+    Descriptors.FileDescriptor fd;
+    switch (name) {
+      case "google/protobuf/descriptor.proto":
+        fd = DescriptorProtos.FieldOptions.getDescriptor().getFile();
+        break;
+      case "google/protobuf/wrapper.proto":
+        fd = Int32Value.getDescriptor().getFile();
+        break;
+      case "google/protobuf/timestamp.proto":
+        fd = Timestamp.getDescriptor().getFile();
+        break;
+      case "google/protobuf/duration.proto":
+        fd = Duration.getDescriptor().getFile();
+        break;
+      case "google/protobuf/any.proto":
+        fd = Any.getDescriptor().getFile();
+        break;
+      case "google/protobuf/api.proto":
+        fd = Api.getDescriptor().getFile();
+        break;
+      case "google/protobuf/empty.proto":
+        fd = Empty.getDescriptor().getFile();
+        break;
+      case "google/protobuf/field_mask.proto":
+        fd = FieldMask.getDescriptor().getFile();
+        break;
+      case "google/protobuf/source_context.proto":
+        fd = SourceContext.getDescriptor().getFile();
+        break;
+      case "google/protobuf/struct.proto":
+        fd = Struct.getDescriptor().getFile();
+        break;
+      case "google/protobuf/type.proto":
+        fd = Type.getDescriptor().getFile();
+        break;
+      default:
+        DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
+        List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
+        if (fileDescriptorProto.getDependencyCount() > 0) {
+          fileDescriptorProto
+              .getDependencyList()
+              .forEach(
+                  dependencyName ->
+                      dependencies.add(
+                          convertToFileDescriptorMap(
+                              dependencyName, inMap, outMap, extensionRegistry)));
+        }
+        try {
+          fd =
+              Descriptors.FileDescriptor.buildFrom(
+                  fileDescriptorProto, dependencies.toArray(new Descriptors.FileDescriptor[0]));
 
-      } catch (Descriptors.DescriptorValidationException e) {
-        throw new RuntimeException(e);
-      }
+        } catch (Descriptors.DescriptorValidationException e) {
+          throw new RuntimeException(e);
+        }
     }
-    outMap.put(name, fileDescriptor);
-    return fileDescriptor;
+    outMap.put(name, fd);
+    return fd;
   }
 
   static Map<String, Descriptors.FileDescriptor> convertFileDescriptorSet(
