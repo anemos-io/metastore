@@ -530,7 +530,7 @@ public class ProtoDomain implements Serializable {
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> map = toMap(updateBytes);
       if (map.containsKey(file)) {
-        fileDescriptorMap.put(file, map.get(file));
+        add(map.get(file));
       } else {
         fileDescriptorMap.remove(file);
       }
@@ -569,7 +569,7 @@ public class ProtoDomain implements Serializable {
     }
 
     public Builder merge(Collection<DescriptorProtos.FileDescriptorProto> updateProtos) {
-      updateProtos.forEach(proto -> fileDescriptorMap.put(proto.getName(), proto));
+      updateProtos.forEach(proto -> add(proto));
       return this;
     }
 
