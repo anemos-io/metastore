@@ -51,7 +51,7 @@ class Convert {
       case "google/protobuf/descriptor.proto":
         fd = DescriptorProtos.FieldOptions.getDescriptor().getFile();
         break;
-      case "google/protobuf/wrapper.proto":
+      case "google/protobuf/wrappers.proto":
         fd = Int32Value.getDescriptor().getFile();
         break;
       case "google/protobuf/timestamp.proto":
