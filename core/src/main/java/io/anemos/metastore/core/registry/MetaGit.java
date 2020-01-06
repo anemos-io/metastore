@@ -79,12 +79,12 @@ class MetaGit {
         }
         commit.call();
         push();
-        LOG.info("shadowCache apply");
+        LOG.info("Git changes pushed");
       } else {
-        LOG.info("no changes to commit");
+        LOG.info("No changes to commit");
       }
     } catch (Exception e) {
-      throw new RuntimeException("Failed syncing the shadowCache repo", e);
+      throw new RuntimeException("Failed syncing the git repo", e);
     }
   }
 

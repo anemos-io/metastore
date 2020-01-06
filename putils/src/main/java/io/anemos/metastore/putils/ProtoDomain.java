@@ -16,6 +16,7 @@ import com.google.protobuf.SourceContext;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Type;
+import com.google.protobuf.UnknownFieldSet;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -457,6 +458,15 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.MessageOptions options = descriptor.getOptions();
+              UnknownFieldSet.Field unknown =
+                  options.getUnknownFields().getField(fieldDescriptor.getNumber());
+              if (unknown.getLengthDelimitedList().size()
+                      + unknown.getFixed64List().size()
+                      + unknown.getFixed32List().size()
+                      + unknown.getVarintList().size()
+                  > 0) {
+                return true;
+              }
               return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
@@ -468,6 +478,15 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.FileOptions options = descriptor.getOptions();
+              UnknownFieldSet.Field unknown =
+                  options.getUnknownFields().getField(fieldDescriptor.getNumber());
+              if (unknown.getLengthDelimitedList().size()
+                      + unknown.getFixed64List().size()
+                      + unknown.getFixed32List().size()
+                      + unknown.getVarintList().size()
+                  > 0) {
+                return true;
+              }
               return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
@@ -479,6 +498,15 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.EnumOptions options = descriptor.getOptions();
+              UnknownFieldSet.Field unknown =
+                  options.getUnknownFields().getField(fieldDescriptor.getNumber());
+              if (unknown.getLengthDelimitedList().size()
+                      + unknown.getFixed64List().size()
+                      + unknown.getFixed32List().size()
+                      + unknown.getVarintList().size()
+                  > 0) {
+                return true;
+              }
               return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
@@ -491,6 +519,15 @@ public class ProtoDomain implements Serializable {
         .filter(
             descriptor -> {
               DescriptorProtos.ServiceOptions options = descriptor.getOptions();
+              UnknownFieldSet.Field unknown =
+                  options.getUnknownFields().getField(fieldDescriptor.getNumber());
+              if (unknown.getLengthDelimitedList().size()
+                      + unknown.getFixed64List().size()
+                      + unknown.getFixed32List().size()
+                      + unknown.getVarintList().size()
+                  > 0) {
+                return true;
+              }
               return options.getAllFields().containsKey(fieldDescriptor);
             })
         .collect(Collectors.toList());
