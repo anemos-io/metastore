@@ -13,9 +13,10 @@ repositories {
 }
 
 dependencies {
-    compile(project(':proto'))
     compile("org.slf4j:slf4j-api:1.7.28")
     compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
+    compile("com.google.code.findbugs:jsr305:3.0.2")
+    compile("com.google.guava:guava:28.2-jre")
 
     testImplementation("junit:junit:4.12")
 }
