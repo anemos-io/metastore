@@ -286,6 +286,10 @@ public class ProtoDomain implements Serializable {
     crosswire();
   }
 
+  public DescriptorProtos.FileDescriptorSet getFileDescriptorSet() {
+    return fileDescriptorSet;
+  }
+
   public Descriptors.FileDescriptor getFileDescriptor(String name) {
     return fileDescriptorMap.get(name);
   }

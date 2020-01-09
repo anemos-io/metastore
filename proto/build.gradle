@@ -16,8 +16,6 @@ dependencies {
     compile("com.google.protobuf:protobuf-java:${versions.protobuf}")
     compile("io.grpc:grpc-stub:${versions.grpc}")
     compile("io.grpc:grpc-protobuf:${versions.grpc}")
-    runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
-    compile("io.grpc:grpc-services:${versions.grpc}")
 }
 
 protobuf {

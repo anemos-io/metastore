@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - ProtoDomain findBy now works with uninterpreted options.
 
+### Added
+- Get FileDescriptorSet on ProtoDomain
+
+### Changed
+- Moved to minimal dependencies for putils module
+
 ## 0.8.2
 
 ### Fixed
