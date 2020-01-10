@@ -228,7 +228,9 @@ public class ProtoDomain implements Serializable {
 
   private void crosswire() {
     HashMap<String, DescriptorProtos.FileDescriptorProto> map = new HashMap<>();
-    fileDescriptorSet.getFileList().forEach(fdp -> map.put(fdp.getName(), fdp));
+    fileDescriptorSet.getFileList().stream()
+        .filter(fdp -> !fdp.getName().startsWith("google/protobuf"))
+        .forEach(fdp -> map.put(fdp.getName(), fdp));
 
     Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
