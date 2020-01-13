@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.8.4
 
 ### Fixed
 - ProtoDomain findBy now works with uninterpreted options.
