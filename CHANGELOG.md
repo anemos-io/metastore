@@ -1,12 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.5
+
+### Fixed
+- ProtoLanguageFileWriter writes the correct package name
+  in the field.
+- ProtoDomain filters google.proto package so the static 
+  singleton descriptors are used.
+
 ## 0.8.4
 
 ### Fixed
 - ProtoDomain findBy now works with uninterpreted options.
-- ProtoDomain filters google.proto package so the static 
-  singleton descriptors are used.
   
 ### Added
 - Get FileDescriptorSet on ProtoDomain

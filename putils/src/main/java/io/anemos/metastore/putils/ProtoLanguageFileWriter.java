@@ -177,7 +177,7 @@ public class ProtoLanguageFileWriter {
         case ENUM:
           {
             Descriptors.EnumDescriptor enumType = field.getEnumType();
-            if (field.getFile() == fd) {
+            if (enumType.getFile() == fd) {
               writer.print(enumType.getName());
             } else {
               writer.print(enumType.getFullName());
