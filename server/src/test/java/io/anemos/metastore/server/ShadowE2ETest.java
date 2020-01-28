@@ -161,7 +161,7 @@ public class ShadowE2ETest {
             .getPatch()
             .getMessagePatchesMap()
             .get("test.v1.ProtoBeamBasicMessage")
-            .getFieldResults(0)
+            .getFieldPatches(0)
             .getChange()
             .getChangeType());
 

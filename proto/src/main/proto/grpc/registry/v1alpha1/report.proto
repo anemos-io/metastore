@@ -107,12 +107,12 @@ message MessagePatch {
     ChangeInfo change = 4;
 
 
-    repeated FieldResult field_results = 5;
+    repeated FieldPatch field_patches = 5;
 
     repeated OptionChangeInfo option_change = 10;
 }
 
-message FieldResult {
+message FieldPatch {
     int32 number = 1;
     string name = 2;
 
@@ -211,10 +211,10 @@ message ServicePatch {
 
     ChangeInfo change = 4;
 
-    repeated MethodResult method_results = 5;
+    repeated MethodPatch method_patches = 5;
 }
 
-message MethodResult {
+message MethodPatch {
     string name = 2;
 
     repeated LintRuleInfo info = 3;
@@ -230,10 +230,10 @@ message EnumPatch {
 
     ChangeInfo change = 4;
 
-    repeated EnumValueResult value_results = 5;
+    repeated EnumValuePatch value_results = 5;
 }
 
-message EnumValueResult {
+message EnumValuePatch {
     int32 number = 1;
     string name = 2;
 

@@ -72,7 +72,7 @@ public class OptionDiffTest {
 
     MessagePatch messageResult = diffMessage(base, baseAddFieldOption);
     OptionChangeInfo optionChangeInfo =
-        messageResult.getFieldResults(0).getOptionChangeList().get(0);
+        messageResult.getFieldPatches(0).getOptionChangeList().get(0);
 
     Assert.assertEquals(ChangeType.ADDITION, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
@@ -88,7 +88,7 @@ public class OptionDiffTest {
 
     MessagePatch messageResult = diffMessage(base, baseRemoveFieldOption);
     OptionChangeInfo optionChangeInfo =
-        messageResult.getFieldResults(0).getOptionChangeList().get(0);
+        messageResult.getFieldPatches(0).getOptionChangeList().get(0);
 
     Assert.assertEquals(ChangeType.REMOVAL, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());
@@ -104,7 +104,7 @@ public class OptionDiffTest {
 
     MessagePatch messageResult = diffMessage(base, baseChangeFieldOption);
     OptionChangeInfo optionChangeInfo =
-        messageResult.getFieldResults(0).getOptionChangeList().get(0);
+        messageResult.getFieldPatches(0).getOptionChangeList().get(0);
 
     Assert.assertEquals(ChangeType.PAYLOAD_CHANGED, optionChangeInfo.getChangeType());
     Assert.assertEquals(OptionChangeInfo.OptionType.FIELD_OPTION, optionChangeInfo.getType());

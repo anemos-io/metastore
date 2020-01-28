@@ -5,7 +5,7 @@ import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.FieldResult;
+import io.anemos.metastore.v1alpha1.FieldPatch;
 import io.anemos.metastore.v1alpha1.FilePatch;
 import io.anemos.metastore.v1alpha1.ImportChangeInfo;
 import io.anemos.metastore.v1alpha1.MessagePatch;
@@ -70,7 +70,7 @@ class ShadowApply {
           getMessageNameToIndexMap(descriptor.getFile());
       DescriptorProtos.DescriptorProto.Builder newDescriptorProtoBuilder =
           DescriptorProtos.DescriptorProto.newBuilder(descriptor.toProto());
-      applyFieldResults(messageResultEntry.getValue(), descriptor, newDescriptorProtoBuilder);
+      applyFieldPatchs(messageResultEntry.getValue(), descriptor, newDescriptorProtoBuilder);
 
       if (messageResultEntry.getValue().getOptionChangeCount() > 0) {
         applyMessageOptionChanges(
@@ -104,12 +104,12 @@ class ShadowApply {
     return fileDescriptorProtoBuilder;
   }
 
-  private void applyFieldResults(
+  private void applyFieldPatchs(
       MessagePatch messageResult,
       Descriptors.Descriptor messageDescriptor,
       DescriptorProtos.DescriptorProto.Builder newDescriptorProtoBuilder) {
     HashMap<Integer, Integer> fieldNumberToIndexMap = getFieldNumberToIndexMap(messageDescriptor);
-    for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
+    for (FieldPatch fieldResult : messageResult.getFieldPatchesList()) {
       if (fieldResult.getOptionChangeCount() > 0) {
         Descriptors.FieldDescriptor fieldDescriptor =
             messageDescriptor.findFieldByNumber(fieldResult.getNumber());

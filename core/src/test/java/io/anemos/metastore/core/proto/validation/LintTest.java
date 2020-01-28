@@ -115,7 +115,7 @@ public class LintTest {
   }
 
   private List<LintRuleInfo> getInfoForField(MessagePatch mr, int fieldNumber) {
-    for (FieldResult fieldResult : mr.getFieldResultsList()) {
+    for (FieldPatch fieldResult : mr.getFieldPatchesList()) {
       if (fieldResult.getNumber() == fieldNumber) {
         return fieldResult.getInfoList();
       }
@@ -125,7 +125,7 @@ public class LintTest {
   }
 
   private List<LintRuleInfo> getInfoForMethod(ServicePatch mr, String methodName) {
-    for (MethodResult methodResult : mr.getMethodResultsList()) {
+    for (MethodPatch methodResult : mr.getMethodPatchesList()) {
       if (methodResult.getName().equals(methodName)) {
         return methodResult.getInfoList();
       }
