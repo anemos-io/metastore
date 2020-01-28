@@ -7,12 +7,12 @@ public class ProfileAllowAdd implements ValidationProfile {
   public String profileName = "allow:add";
 
   @Override
-  public Report validate(Report report) {
+  public Report validate(Patch patch) {
     ResultCount.Builder resultCountBuilder = ResultCount.newBuilder();
-    Patch.Builder patchBuilder = Patch.newBuilder(report.getPatch());
+    Patch.Builder patchBuilder = Patch.newBuilder(patch);
 
     int error = 0;
-    for (MessageResult messageResult : patchBuilder.getMessageResultsMap().values()) {
+    for (MessagePatch messageResult : patchBuilder.getMessagePatchesMap().values()) {
       switch (messageResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;
@@ -83,7 +83,7 @@ public class ProfileAllowAdd implements ValidationProfile {
         }
       }
     }
-    for (EnumResult enumResult : patchBuilder.getEnumResultsMap().values()) {
+    for (EnumPatch enumResult : patchBuilder.getEnumPatchesMap().values()) {
       switch (enumResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;

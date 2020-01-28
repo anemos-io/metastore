@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 public class ValidationResults {
-  private Map<String, FileResultContainer> fileMap = new HashMap<>();
-  private Map<String, MessageResultContainer> messageMap = new HashMap<>();
-  private Map<String, EnumResultContainer> enumMap = new HashMap<>();
-  private Map<String, ServiceResultContainer> serviceMap = new HashMap<>();
+  private Map<String, FilePatchContainer> fileMap = new HashMap<>();
+  private Map<String, MessagePatchContainer> messageMap = new HashMap<>();
+  private Map<String, EnumPatchContainer> enumMap = new HashMap<>();
+  private Map<String, ServicePatchContainer> serviceMap = new HashMap<>();
 
   public List<LintRuleInfo> getInfo(String messageName, String fieldName) {
     List<LintRuleInfo> rules = new ArrayList<>();
-    MessageResultContainer messageResult = messageMap.get(messageName);
+    MessagePatchContainer messageResult = messageMap.get(messageName);
     if (messageResult != null) {
       FieldResultContainer fieldResultContainer = messageResult.fieldMap.get(fieldName);
       if (fieldResultContainer != null) {
@@ -25,40 +25,40 @@ public class ValidationResults {
     return rules;
   }
 
-  private MessageResultContainer getOrCreateMessage(String messageName) {
-    MessageResultContainer messageResult = messageMap.get(messageName);
+  private MessagePatchContainer getOrCreateMessage(String messageName) {
+    MessagePatchContainer messageResult = messageMap.get(messageName);
     if (messageResult == null) {
-      messageResult = new MessageResultContainer();
+      messageResult = new MessagePatchContainer();
       messageResult.fullName = messageName;
       messageMap.put(messageName, messageResult);
     }
     return messageResult;
   }
 
-  private ServiceResultContainer getOrCreateService(String serviceName) {
-    ServiceResultContainer serviceResult = serviceMap.get(serviceName);
+  private ServicePatchContainer getOrCreateService(String serviceName) {
+    ServicePatchContainer serviceResult = serviceMap.get(serviceName);
     if (serviceResult == null) {
-      serviceResult = new ServiceResultContainer();
+      serviceResult = new ServicePatchContainer();
       serviceResult.fullName = serviceName;
       serviceMap.put(serviceName, serviceResult);
     }
     return serviceResult;
   }
 
-  private FileResultContainer getOrCreateFile(String fileName) {
-    FileResultContainer fileResult = fileMap.get(fileName);
+  private FilePatchContainer getOrCreateFile(String fileName) {
+    FilePatchContainer fileResult = fileMap.get(fileName);
     if (fileResult == null) {
-      fileResult = new FileResultContainer();
+      fileResult = new FilePatchContainer();
       fileResult.fullName = fileName;
       fileMap.put(fileName, fileResult);
     }
     return fileResult;
   }
 
-  private EnumResultContainer getOrCreateEnum(String fileName) {
-    EnumResultContainer enumResult = enumMap.get(fileName);
+  private EnumPatchContainer getOrCreateEnum(String fileName) {
+    EnumPatchContainer enumResult = enumMap.get(fileName);
     if (enumResult == null) {
-      enumResult = new EnumResultContainer();
+      enumResult = new EnumPatchContainer();
       enumResult.fullName = fileName;
       enumMap.put(fileName, enumResult);
     }
@@ -66,76 +66,76 @@ public class ValidationResults {
   }
 
   void addResult(Descriptors.FieldDescriptor fd, LintRuleInfo ruleInfo) {
-    MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
+    MessagePatchContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
     messageResult.add(fd, ruleInfo);
   }
 
   void addResult(Descriptors.MethodDescriptor md, LintRuleInfo ruleInfo) {
-    ServiceResultContainer messageResult = getOrCreateService(md.getService().getFullName());
+    ServicePatchContainer messageResult = getOrCreateService(md.getService().getFullName());
     messageResult.add(md, ruleInfo);
   }
 
   void addResult(Descriptors.Descriptor descriptor, LintRuleInfo ruleInfo) {
-    MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+    MessagePatchContainer messageResult = getOrCreateMessage(descriptor.getFullName());
     messageResult.addResult(ruleInfo);
   }
 
   void addResult(Descriptors.ServiceDescriptor descriptor, LintRuleInfo ruleInfo) {
-    ServiceResultContainer serviceResult = getOrCreateService(descriptor.getFullName());
+    ServicePatchContainer serviceResult = getOrCreateService(descriptor.getFullName());
     serviceResult.addResult(ruleInfo);
   }
 
   void addResult(Descriptors.FileDescriptor descriptor, LintRuleInfo ruleInfo) {
-    FileResultContainer fileResult = getOrCreateFile(descriptor.getFullName());
+    FilePatchContainer fileResult = getOrCreateFile(descriptor.getFullName());
     fileResult.addResult(ruleInfo);
   }
 
   void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
-    MessageResultContainer resultContainer =
+    MessagePatchContainer resultContainer =
         getOrCreateMessage(fd.getContainingType().getFullName());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.MethodDescriptor fd, MethodChangeInfo patch) {
-    ServiceResultContainer resultContainer = getOrCreateService(fd.getService().getFullName());
+    ServicePatchContainer resultContainer = getOrCreateService(fd.getService().getFullName());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChangeInfo patch) {
-    EnumResultContainer resultContainer = getOrCreateEnum(fd.getType().getFullName());
+    EnumPatchContainer resultContainer = getOrCreateEnum(fd.getType().getFullName());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.Descriptor fd, ChangeInfo patch) {
-    MessageResultContainer resultContainer = getOrCreateMessage(fd.getFullName());
+    MessagePatchContainer resultContainer = getOrCreateMessage(fd.getFullName());
     resultContainer.setPatch(patch);
   }
 
   void setPatch(Descriptors.FileDescriptor fd, ChangeInfo patch) {
-    FileResultContainer resultContainer = getOrCreateFile(fd.getFullName());
+    FilePatchContainer resultContainer = getOrCreateFile(fd.getFullName());
     resultContainer.setPatch(patch);
   }
 
   void setPatch(Descriptors.EnumDescriptor fd, ChangeInfo patch) {
-    EnumResultContainer resultContainer = getOrCreateEnum(fd.getFullName());
+    EnumPatchContainer resultContainer = getOrCreateEnum(fd.getFullName());
     resultContainer.setPatch(patch);
   }
 
   void setPatch(Descriptors.ServiceDescriptor fd, ChangeInfo patch) {
-    ServiceResultContainer serviceResult = getOrCreateService(fd.getFullName());
+    ServicePatchContainer serviceResult = getOrCreateService(fd.getFullName());
     serviceResult.setPatch(patch);
   }
 
   void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChangeInfo info) {
     if (descriptor instanceof Descriptors.FileDescriptor) {
-      FileResultContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
+      FilePatchContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
       fileResultContainer.addOptionChange(info);
     } else if (descriptor instanceof Descriptors.Descriptor) {
-      MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+      MessagePatchContainer messageResult = getOrCreateMessage(descriptor.getFullName());
       messageResult.addOptionChange(info);
     } else if (descriptor instanceof Descriptors.FieldDescriptor) {
       Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor) descriptor;
-      MessageResultContainer messageResult =
+      MessagePatchContainer messageResult =
           getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
       messageResult.addOptionChange(fieldDescriptor, info);
     } else {
@@ -145,20 +145,20 @@ public class ValidationResults {
   }
 
   void addImportChange(String fullName, ImportChangeInfo info) {
-    FileResultContainer fileResultContainer = getOrCreateFile(fullName);
+    FilePatchContainer fileResultContainer = getOrCreateFile(fullName);
     fileResultContainer.addImportChange(info);
   }
 
   public Patch getPatch() {
     Patch.Builder patchBuilder = Patch.newBuilder();
-    fileMap.values().forEach(file -> patchBuilder.putFileResults(file.fullName, file.getResult()));
+    fileMap.values().forEach(file -> patchBuilder.putFilePatches(file.fullName, file.getResult()));
     messageMap
         .values()
-        .forEach(message -> patchBuilder.putMessageResults(message.fullName, message.getResult()));
+        .forEach(message -> patchBuilder.putMessagePatches(message.fullName, message.getResult()));
     serviceMap
         .values()
-        .forEach(service -> patchBuilder.putServiceResults(service.fullName, service.getResult()));
-    enumMap.values().forEach(e -> patchBuilder.putEnumResults(e.fullName, e.getResult()));
+        .forEach(service -> patchBuilder.putServicePatches(service.fullName, service.getResult()));
+    enumMap.values().forEach(e -> patchBuilder.putEnumPatches(e.fullName, e.getResult()));
 
     return patchBuilder.build();
   }
@@ -196,7 +196,7 @@ public class ValidationResults {
     }
   }
 
-  static class MessageResultContainer {
+  static class MessagePatchContainer {
     String fullName;
 
     List<LintRuleInfo> info = new ArrayList<>();
@@ -225,8 +225,8 @@ public class ValidationResults {
       return fieldResultContainer;
     }
 
-    MessageResult getResult() {
-      MessageResult.Builder messageInfo = MessageResult.newBuilder();
+    MessagePatch getResult() {
+      MessagePatch.Builder messageInfo = MessagePatch.newBuilder();
       messageInfo.setName(fullName);
       if (patch != null) {
         messageInfo.setChange(patch);
@@ -255,7 +255,7 @@ public class ValidationResults {
     }
   }
 
-  class FileResultContainer {
+  class FilePatchContainer {
     String fullName;
 
     List<LintRuleInfo> info = new ArrayList<>();
@@ -268,10 +268,10 @@ public class ValidationResults {
       this.patch = patch;
     }
 
-    public FileResult getResult() {
+    public FilePatch getResult() {
 
-      FileResult.Builder builder =
-          FileResult.newBuilder()
+      FilePatch.Builder builder =
+          FilePatch.newBuilder()
               .setFileName(fullName)
               .addAllInfo(info)
               .addAllOptionChange(optionChangeInfos)
@@ -295,7 +295,7 @@ public class ValidationResults {
     }
   }
 
-  class ServiceResultContainer {
+  class ServicePatchContainer {
     String fullName;
 
     List<LintRuleInfo> info = new ArrayList<>();
@@ -322,8 +322,8 @@ public class ValidationResults {
       return methodResultContainer;
     }
 
-    ServiceResult getResult() {
-      ServiceResult.Builder messageInfo = ServiceResult.newBuilder();
+    ServicePatch getResult() {
+      ServicePatch.Builder messageInfo = ServicePatch.newBuilder();
       messageInfo.setName(fullName);
       if (patch != null) {
         messageInfo.setChange(patch);
@@ -364,7 +364,7 @@ public class ValidationResults {
     }
   }
 
-  class EnumResultContainer {
+  class EnumPatchContainer {
     String fullName;
 
     List<LintRuleInfo> info = new ArrayList<>();
@@ -393,8 +393,8 @@ public class ValidationResults {
       return valueResultContainer;
     }
 
-    EnumResult getResult() {
-      EnumResult.Builder messageInfo = EnumResult.newBuilder();
+    EnumPatch getResult() {
+      EnumPatch.Builder messageInfo = EnumPatch.newBuilder();
       messageInfo.setName(fullName);
       if (patch != null) {
         messageInfo.setChange(patch);

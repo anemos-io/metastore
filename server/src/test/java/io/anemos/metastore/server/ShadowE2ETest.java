@@ -138,8 +138,8 @@ public class ShadowE2ETest {
         Report.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
-        expectedResults.getPatch().getMessageResultsMap(),
-        actualShadowReport.getMessageResultsMap());
+        expectedResults.getPatch().getMessagePatchesMap(),
+        actualShadowReport.getPatch().getMessagePatchesMap());
 
     // add field to default
     RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
@@ -158,7 +158,8 @@ public class ShadowE2ETest {
         ChangeType.ADDITION,
         verifyDefaultResponse2
             .getReport()
-            .getMessageResultsMap()
+            .getPatch()
+            .getMessagePatchesMap()
             .get("test.v1.ProtoBeamBasicMessage")
             .getFieldResults(0)
             .getChange()
@@ -170,8 +171,8 @@ public class ShadowE2ETest {
         Report.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
-        expectedResults.getPatch().getMessageResultsMap(),
-        actualShadowReport.getMessageResultsMap());
+        expectedResults.getPatch().getMessagePatchesMap(),
+        actualShadowReport.getPatch().getMessagePatchesMap());
 
     actualShadowRepo = ProtocUtil.createDescriptorSet(shadowrepoPath.toAbsolutePath().toString());
     Assert.assertEquals(

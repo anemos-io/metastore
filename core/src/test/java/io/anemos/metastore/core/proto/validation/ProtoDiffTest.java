@@ -5,10 +5,10 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.ChangeType;
-import io.anemos.metastore.v1alpha1.EnumResult;
-import io.anemos.metastore.v1alpha1.MessageResult;
+import io.anemos.metastore.v1alpha1.EnumPatch;
+import io.anemos.metastore.v1alpha1.MessagePatch;
 import io.anemos.metastore.v1alpha1.Patch;
-import io.anemos.metastore.v1alpha1.ServiceResult;
+import io.anemos.metastore.v1alpha1.ServicePatch;
 import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    EnumResult result = patch.getEnumResultsMap().get("package.Enum2");
+    EnumPatch result = patch.getEnumPatchesMap().get("package.Enum2");
     Assert.assertEquals("package.Enum2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
@@ -94,7 +94,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    EnumResult result = patch.getEnumResultsMap().get("package.Enum1");
+    EnumPatch result = patch.getEnumPatchesMap().get("package.Enum1");
     Assert.assertEquals("package.Enum1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
@@ -116,7 +116,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    EnumResult result = patch.getEnumResultsMap().get("package.Enum1");
+    EnumPatch result = patch.getEnumPatchesMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(2, result.getValueResults(0).getNumber());
@@ -133,7 +133,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    EnumResult result = patch.getEnumResultsMap().get("package.Enum1");
+    EnumPatch result = patch.getEnumPatchesMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -156,7 +156,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    EnumResult result = patch.getEnumResultsMap().get("package.Enum1");
+    EnumPatch result = patch.getEnumPatchesMap().get("package.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -176,7 +176,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    MessageResult result = patch.getMessageResultsMap().get("package.Message2");
+    MessagePatch result = patch.getMessagePatchesMap().get("package.Message2");
     Assert.assertEquals("package.Message2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
@@ -188,7 +188,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    MessageResult result = patch.getMessageResultsMap().get("package.Message1");
+    MessagePatch result = patch.getMessagePatchesMap().get("package.Message1");
     Assert.assertEquals("package.Message1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
@@ -211,7 +211,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    MessageResult result = patch.getMessageResultsMap().get("package.Message1");
+    MessagePatch result = patch.getMessagePatchesMap().get("package.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(2, result.getFieldResults(0).getNumber());
@@ -230,7 +230,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    MessageResult result = patch.getMessageResultsMap().get("package.Message1");
+    MessagePatch result = patch.getMessagePatchesMap().get("package.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -254,7 +254,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    MessageResult result = patch.getMessageResultsMap().get("package.Message1");
+    MessagePatch result = patch.getMessagePatchesMap().get("package.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -274,7 +274,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    ServiceResult serviceResult = patch.getServiceResultsMap().get("package.Service2");
+    ServicePatch serviceResult = patch.getServicePatchesMap().get("package.Service2");
     Assert.assertEquals("package.Service2", serviceResult.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, serviceResult.getChange().getChangeType());
   }
@@ -286,7 +286,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    ServiceResult serviceResult = patch.getServiceResultsMap().get("package.Service1");
+    ServicePatch serviceResult = patch.getServicePatchesMap().get("package.Service1");
     Assert.assertEquals("package.Service1", serviceResult.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, serviceResult.getChange().getChangeType());
   }
@@ -309,7 +309,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    ServiceResult result = patch.getServiceResultsMap().get("package.Service1");
+    ServicePatch result = patch.getServicePatchesMap().get("package.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(
         ChangeType.ADDITION, result.getMethodResults(0).getChange().getChangeType());
@@ -326,7 +326,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    ServiceResult result = patch.getServiceResultsMap().get("package.Service1");
+    ServicePatch result = patch.getServicePatchesMap().get("package.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getMethodResults(0).getChange().getChangeType());
     Assert.assertEquals("Method1", result.getMethodResults(0).getName());
@@ -348,7 +348,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    ServiceResult result = patch.getServiceResultsMap().get("package.Service1");
+    ServicePatch result = patch.getServicePatchesMap().get("package.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
 
     Assert.assertEquals(

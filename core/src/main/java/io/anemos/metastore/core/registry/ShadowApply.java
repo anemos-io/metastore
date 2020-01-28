@@ -6,9 +6,9 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.FieldResult;
-import io.anemos.metastore.v1alpha1.FileResult;
+import io.anemos.metastore.v1alpha1.FilePatch;
 import io.anemos.metastore.v1alpha1.ImportChangeInfo;
-import io.anemos.metastore.v1alpha1.MessageResult;
+import io.anemos.metastore.v1alpha1.MessagePatch;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
 import io.anemos.metastore.v1alpha1.Patch;
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ class ShadowApply {
 
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders =
           new HashMap<>();
-      applyMessageResults(patch, fileDescriptorProtoBuilders);
-      applyFileResults(patch, fileDescriptorProtoBuilders);
+      applyMessagePatchs(patch, fileDescriptorProtoBuilders);
+      applyFilePatchs(patch, fileDescriptorProtoBuilders);
       List<DescriptorProtos.FileDescriptorProto> fileDescriptorProtos = new ArrayList<>();
       fileDescriptorProtoBuilders.forEach(
           (name, fd) -> {
@@ -41,10 +41,10 @@ class ShadowApply {
     }
   }
 
-  private void applyFileResults(
+  private void applyFilePatchs(
       Patch patch,
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
-    for (Map.Entry<String, FileResult> fileResultEntry : patch.getFileResultsMap().entrySet()) {
+    for (Map.Entry<String, FilePatch> fileResultEntry : patch.getFilePatchesMap().entrySet()) {
       Descriptors.FileDescriptor fileDescriptor =
           shadow.getFileDescriptorByFileName(fileResultEntry.getKey());
 
@@ -60,11 +60,11 @@ class ShadowApply {
     }
   }
 
-  private void applyMessageResults(
+  private void applyMessagePatchs(
       Patch patch,
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
-    for (Map.Entry<String, MessageResult> messageResultEntry :
-        patch.getMessageResultsMap().entrySet()) {
+    for (Map.Entry<String, MessagePatch> messageResultEntry :
+        patch.getMessagePatchesMap().entrySet()) {
       Descriptors.Descriptor descriptor = shadow.getDescriptorByName(messageResultEntry.getKey());
       HashMap<String, Integer> messageNameToIndexMap =
           getMessageNameToIndexMap(descriptor.getFile());
@@ -105,7 +105,7 @@ class ShadowApply {
   }
 
   private void applyFieldResults(
-      MessageResult messageResult,
+      MessagePatch messageResult,
       Descriptors.Descriptor messageDescriptor,
       DescriptorProtos.DescriptorProto.Builder newDescriptorProtoBuilder) {
     HashMap<Integer, Integer> fieldNumberToIndexMap = getFieldNumberToIndexMap(messageDescriptor);

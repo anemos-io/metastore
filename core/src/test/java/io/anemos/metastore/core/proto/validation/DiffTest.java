@@ -162,30 +162,30 @@ public class DiffTest {
   public void toBaseExtraFileAdded() throws IOException {
     Patch report = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
 
-    Assert.assertEquals(1, report.getFileResultsCount());
+    Assert.assertEquals(1, report.getFilePatchesCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        report.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        report.getFilePatchesOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, report.getMessageResultsCount());
+    Assert.assertEquals(1, report.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        report.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        report.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
   @Test
   public void toBaseExtraFileRemoved() throws IOException {
     Patch report = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
 
-    Assert.assertEquals(1, report.getFileResultsCount());
+    Assert.assertEquals(1, report.getFilePatchesCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        report.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        report.getFilePatchesOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, report.getMessageResultsCount());
+    Assert.assertEquals(1, report.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        report.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        report.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
   private FieldResult diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
@@ -194,7 +194,7 @@ public class DiffTest {
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
     Patch result = results.getPatch();
-    return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
+    return result.getMessagePatchesMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
   }
 
   private Patch diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
