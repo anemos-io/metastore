@@ -9,7 +9,7 @@ import io.anemos.metastore.v1alpha1.ChangeType;
 import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.Patch;
 import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -166,8 +166,7 @@ public class OptionDiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
-    System.out.println(result);
+    Patch result = results.getPatch();
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage");
   }
 
@@ -176,8 +175,7 @@ public class OptionDiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnFileName("test/v1/simple.proto");
 
-    Report result = results.getReport();
-    System.out.println(result);
+    Patch result = results.getPatch();
     return result.getFileResultsMap().get("test/v1/simple.proto");
   }
 }

@@ -7,13 +7,13 @@ import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
-import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
 
 class ShadowRegistry extends AbstractRegistry {
-  private Report delta;
+  private Patch patch;
   private String shadowOf;
 
   public ShadowRegistry(
@@ -42,13 +42,13 @@ class ShadowRegistry extends AbstractRegistry {
     } catch (StatusException e) {
       throw new RuntimeException("Unable to find registry with name " + shadowOf);
     }
-    protoContainer = new ShadowApply().applyDelta(original, this.delta);
+    protoContainer = new ShadowApply().applyPatch(original, this.patch);
     protoContainer.registerOptions();
   }
 
   @Override
   public ByteString raw() {
-    return delta.toByteString();
+    return patch.toByteString();
   }
 
   @Override
@@ -66,7 +66,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
+  public void update(ProtoDomain ref, ProtoDomain in, Patch report, Comment comment) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.scope != null) {
@@ -76,7 +76,7 @@ class ShadowRegistry extends AbstractRegistry {
     } else {
       throw new RuntimeException("Shadow registry should have package prefix scopes defined.");
     }
-    delta = results.getReport();
+    patch = results.getPatch();
     update(comment);
     notifyEventListeners(report);
   }
@@ -96,10 +96,10 @@ class ShadowRegistry extends AbstractRegistry {
     try {
       ByteString buffer = storageProvider.read();
       if (buffer == null) {
-        delta = Report.parseFrom(ByteString.EMPTY);
+        patch = Patch.parseFrom(ByteString.EMPTY);
         return true;
       } else {
-        delta = Report.parseFrom(buffer);
+        patch = Patch.parseFrom(buffer);
         return false;
       }
     } catch (IOException e) {

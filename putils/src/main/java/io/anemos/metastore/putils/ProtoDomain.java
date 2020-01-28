@@ -356,7 +356,7 @@ public class ProtoDomain implements Serializable {
   public void writeToDirectory(String root) throws IOException {
     for (Descriptors.FileDescriptor fd : fileDescriptorMap.values()) {
       String fileName = fd.getFullName();
-      if(!fileName.startsWith("google/protobuf")) {
+      if (!fileName.startsWith("google/protobuf")) {
         File file = new File(String.format("%s/%s", root, fileName));
         file.getParentFile().mkdirs();
         try (OutputStream out = new FileOutputStream(file)) {

@@ -8,12 +8,8 @@ option java_multiple_files = true;
 package grpc.registry.v1alpha1;
 
 message Report {
-    map<string, FileResult> file_results = 1;
-    map<string, MessageResult> message_results = 2;
-    map<string, EnumResult> enum_results = 3;
-    map<string, ServiceResult> service_results = 4;
-
-    ResultCount result_count = 5;
+    Patch patch = 1;
+    ResultCount result_count = 2;
 }
 
 message ResultCount {
@@ -25,6 +21,13 @@ message ResultCount {
     int32 diff_infos = 6;
 
     repeated ErrorInfo error_info = 7;
+}
+
+message Patch {
+    map<string, FileResult> file_results = 1;
+    map<string, MessageResult> message_results = 2;
+    map<string, EnumResult> enum_results = 3;
+    map<string, ServiceResult> service_results = 4;
 }
 
 message ErrorInfo {
@@ -64,7 +67,7 @@ enum TypeChange {
     TYPE_LOOSE_INFO = 2;
 }
 
-message RuleInfo {
+message LintRuleInfo {
     LintRule lint_rule = 1;
     string code = 2;
 }
@@ -87,7 +90,7 @@ message FileResult {
     string file_name = 1;
     repeated string message_result_ref = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     ChangeInfo change = 4;
 
@@ -99,7 +102,7 @@ message MessageResult {
     string package = 1;
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     ChangeInfo change = 4;
 
@@ -113,7 +116,7 @@ message FieldResult {
     int32 number = 1;
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     FieldChangeInfo change = 4;
 
@@ -204,7 +207,7 @@ message ServiceResult {
     string package = 1;
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     ChangeInfo change = 4;
 
@@ -214,7 +217,7 @@ message ServiceResult {
 message MethodResult {
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     MethodChangeInfo change = 4;
 }
@@ -223,7 +226,7 @@ message EnumResult {
     string package = 1;
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     ChangeInfo change = 4;
 
@@ -234,7 +237,7 @@ message EnumValueResult {
     int32 number = 1;
     string name = 2;
 
-    repeated RuleInfo info = 3;
+    repeated LintRuleInfo info = 3;
 
     EnumValueChangeInfo change = 4;
 }

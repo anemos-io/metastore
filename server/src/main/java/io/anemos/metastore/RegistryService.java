@@ -176,7 +176,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         profile = new ProfileAllowAdd();
     }
 
-    return profile.validate(results.getReport());
+    return profile.validate(results.getPatch());
   }
 
   @Override

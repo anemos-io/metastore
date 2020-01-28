@@ -9,10 +9,10 @@ public class ProfileAllowAdd implements ValidationProfile {
   @Override
   public Report validate(Report report) {
     ResultCount.Builder resultCountBuilder = ResultCount.newBuilder();
+    Patch.Builder patchBuilder = Patch.newBuilder(report.getPatch());
 
-    Report.Builder builder = Report.newBuilder(report);
     int error = 0;
-    for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
+    for (MessageResult messageResult : patchBuilder.getMessageResultsMap().values()) {
       switch (messageResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;
@@ -83,7 +83,7 @@ public class ProfileAllowAdd implements ValidationProfile {
         }
       }
     }
-    for (EnumResult enumResult : builder.getEnumResultsMap().values()) {
+    for (EnumResult enumResult : patchBuilder.getEnumResultsMap().values()) {
       switch (enumResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;
@@ -155,7 +155,9 @@ public class ProfileAllowAdd implements ValidationProfile {
         }
       }
     }
-    builder.setResultCount(resultCountBuilder.setDiffErrors(error).build());
-    return builder.build();
+    Report.Builder reportBuilder = Report.newBuilder();
+    reportBuilder.setPatch(patchBuilder);
+    reportBuilder.setResultCount(resultCountBuilder.setDiffErrors(error).build());
+    return reportBuilder.build();
   }
 }

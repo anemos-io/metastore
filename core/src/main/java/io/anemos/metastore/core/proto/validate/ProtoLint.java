@@ -3,7 +3,7 @@ package io.anemos.metastore.core.proto.validate;
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.LintRule;
-import io.anemos.metastore.v1alpha1.RuleInfo;
+import io.anemos.metastore.v1alpha1.LintRuleInfo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class ProtoLint {
     if (!isPascalCase(name)) {
       results.addResult(
           service,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_SERVICE_NAME_SHOULD_BE_PASCAL)
               .setCode(String.format("L%d/00", LintRule.LINT_SERVICE_NAME_SHOULD_BE_PASCAL_VALUE))
               .build());
@@ -77,7 +77,7 @@ public class ProtoLint {
     if (!isPascalCase(name)) {
       results.addResult(
           dp,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL)
               .setCode(String.format("L%d/00", LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL_VALUE))
               .build());
@@ -90,7 +90,7 @@ public class ProtoLint {
     if (!md.getInputType().getFullName().endsWith("Request")) {
       results.addResult(
           md,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST)
               .setCode(String.format("L%d/00", LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST_VALUE))
               .build());
@@ -98,7 +98,7 @@ public class ProtoLint {
     if (!md.getOutputType().getFullName().endsWith("Response")) {
       results.addResult(
           md,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE)
               .setCode(String.format("L%d/00", LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE_VALUE))
               .build());
@@ -111,7 +111,7 @@ public class ProtoLint {
     if (suffix != null) {
       results.addResult(
           fd,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE)
               .setCode(
                   String.format("L%d/%s", LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE_VALUE, suffix))
@@ -186,7 +186,7 @@ public class ProtoLint {
     if (!dirName.equals(protoPackageName)) {
       results.addResult(
           fileDescriptor,
-          RuleInfo.newBuilder()
+          LintRuleInfo.newBuilder()
               .setLintRule(LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT)
               .setCode(String.format("L%d/00", LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT_VALUE))
               .build());
@@ -209,7 +209,7 @@ public class ProtoLint {
       if (!dependencyVersion.equals(protoVersion)) {
         results.addResult(
             fileDescriptor,
-            RuleInfo.newBuilder()
+            LintRuleInfo.newBuilder()
                 .setLintRule(LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT)
                 .setCode(String.format("L%d/00", LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT_VALUE))
                 .build());
@@ -248,7 +248,7 @@ public class ProtoLint {
       if (!dependencyUsed) {
         results.addResult(
             fileDescriptor,
-            RuleInfo.newBuilder()
+            LintRuleInfo.newBuilder()
                 .setLintRule(LintRule.LINT_IMPORT_NO_ALIGNMENT)
                 .setCode(String.format("L%d/00", LintRule.LINT_IMPORT_NO_ALIGNMENT_VALUE))
                 .build());

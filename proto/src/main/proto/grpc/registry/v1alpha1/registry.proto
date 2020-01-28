@@ -23,10 +23,22 @@ service Registry {
 
 message SubmitSchemaRequest {
 
+    // Information of this schema changes.
     message Comment {
         string name = 1;
         string email = 2;
         string description = 3;
+    }
+
+    message ScopedFileGroup {
+        repeated string file_name = 1;
+    }
+
+    // How a scoped submit will be merged into the existing registry.
+    enum MergeStrategy {
+        MERGE = 0;
+        REPLACE = 1;
+        CLEAR = 2;
     }
 
     // Represents the schema registry names. If a schema registry doesn't support multiple
@@ -43,7 +55,10 @@ message SubmitSchemaRequest {
         string package_name = 3;
         string package_prefix = 4;
         string file_name = 5;
+        ScopedFileGroup file_group = 8;
     }
+
+    MergeStrategy merge_strategy = 9;
 
     string validation_profile = 6;
     Comment comment = 7;

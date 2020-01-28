@@ -160,7 +160,7 @@ public class DiffTest {
 
   @Test
   public void toBaseExtraFileAdded() throws IOException {
-    Report report = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
+    Patch report = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
 
     Assert.assertEquals(1, report.getFileResultsCount());
     Assert.assertEquals(
@@ -175,7 +175,7 @@ public class DiffTest {
 
   @Test
   public void toBaseExtraFileRemoved() throws IOException {
-    Report report = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
+    Patch report = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
 
     Assert.assertEquals(1, report.getFileResultsCount());
     Assert.assertEquals(
@@ -193,16 +193,15 @@ public class DiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
-    System.out.println(result);
+    Patch result = results.getPatch();
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
   }
 
-  private Report diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
+  private Patch diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnPackagePrefix("test.v1");
 
-    return results.getReport();
+    return results.getPatch();
   }
 }
