@@ -25,8 +25,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegistryService extends RegistryGrpc.RegistryImplBase {
+  private static final Logger LOG = LoggerFactory.getLogger(RegistryService.class);
 
   private MetaStore metaStore;
 
@@ -46,6 +49,24 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       RegistryP.SubmitSchemaRequest request,
       StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver) {
     schema(request, responseObserver, false);
+  }
+
+  private String validatePackage(String packageName) throws StatusException {
+    if (packageName.contains("/")) {
+      throw new StatusException(
+          Status.fromCode(Status.Code.INVALID_ARGUMENT)
+              .withDescription("Package name contains invalid /"));
+    }
+    if (packageName.endsWith(".")) {
+      throw new StatusException(
+          Status.fromCode(Status.Code.INVALID_ARGUMENT)
+              .withDescription("Package name should not end with ."));
+    }
+    return packageName;
+  }
+
+  private String validateFileName(String fileName) throws StatusException {
+    return fileName;
   }
 
   public void schema(
@@ -68,27 +89,35 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         case PACKAGE_NAME:
           in =
               builder
-                  .replacePackageBinary(request.getFileName(), request.getFileDescriptorProtoList())
+                  .replacePackageBinary(
+                      validatePackage(request.getPackageName()),
+                      request.getFileDescriptorProtoList())
                   .build();
           break;
         case PACKAGE_PREFIX:
           in =
               builder
                   .replacePackagePrefixBinary(
-                      request.getFileName(), request.getFileDescriptorProtoList())
+                      validatePackage(request.getPackagePrefix()),
+                      request.getFileDescriptorProtoList())
                   .build();
           break;
         case FILE_NAME:
           in =
               builder
-                  .replaceFileBinary(request.getFileName(), request.getFileDescriptorProtoList())
+                  .replaceFileBinary(
+                      validateFileName(request.getFileName()), request.getFileDescriptorProtoList())
                   .build();
           break;
         case ENTITYSCOPE_NOT_SET:
         default:
           in = builder.mergeBinary(request.getFileDescriptorProtoList()).build();
       }
+    } catch (StatusException e) {
+      responseObserver.onError(e);
+      return;
     } catch (IOException | RuntimeException e) {
+      LOG.error("Invalid FileDescriptor Set", e);
       responseObserver.onError(
           Status.fromCode(Status.Code.INVALID_ARGUMENT)
               .withDescription("Invalid FileDescriptor Set.")

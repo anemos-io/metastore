@@ -52,6 +52,28 @@ class MetaGit {
     gitRepo.pull().setTransportConfigCallback(transportConfigCallback).call();
   }
 
+  private void clean(ProtoDomain domain) throws GitAPIException {
+    clean(domain, new File(config.git.path));
+  }
+
+  private void clean(ProtoDomain domain, File dir) throws GitAPIException {
+    File repo = new File(config.git.path);
+    File[] files = dir.listFiles();
+    for (File file : files) {
+      if (file.isDirectory()) {
+        clean(domain, file);
+      } else if (file.isFile() && file.getName().toLowerCase().endsWith(".proto")) {
+        String filePattern = file.getAbsolutePath().replace(repo.getAbsolutePath(), "");
+        if (filePattern.startsWith("/")) {
+          filePattern = filePattern.substring(1);
+        }
+        if (domain.getFileDescriptorByFileName(filePattern) == null) {
+          gitRepo.rm().addFilepattern(filePattern).call();
+        }
+      }
+    }
+  }
+
   void sync(ProtoDomain protoContainer, Comment comment) {
     if (config.git == null) {
       return;
@@ -66,6 +88,7 @@ class MetaGit {
       pull();
       protoContainer.writeToDirectory(new File(config.git.path).toPath().toString());
       gitRepo.add().addFilepattern(".").call();
+      clean(protoContainer);
       Status status = gitRepo.status().call();
       if (status.hasUncommittedChanges()) {
         CommitCommand commit = gitRepo.commit();

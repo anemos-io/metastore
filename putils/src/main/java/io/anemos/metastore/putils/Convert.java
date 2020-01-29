@@ -34,12 +34,15 @@ class Convert {
       Map<String, DescriptorProtos.FileDescriptorProto> inMap) {
     Map<String, Descriptors.FileDescriptor> outMap = new HashMap<>();
     ExtensionRegistry registry = ExtensionRegistry.newInstance();
-    inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+    inMap
+        .keySet()
+        .forEach(fileName -> convertToFileDescriptorMap(fileName, null, inMap, outMap, registry));
     return outMap;
   }
 
   private static Descriptors.FileDescriptor convertToFileDescriptorMap(
       String name,
+      String parent,
       Map<String, DescriptorProtos.FileDescriptorProto> inMap,
       Map<String, Descriptors.FileDescriptor> outMap,
       ExtensionRegistry extensionRegistry) {
@@ -83,6 +86,14 @@ class Convert {
         break;
       default:
         DescriptorProtos.FileDescriptorProto fileDescriptorProto = inMap.get(name);
+        if (fileDescriptorProto == null) {
+          if (parent == null) {
+            throw new IllegalArgumentException(
+                String.format("Couldn't find file \"%1\" in file descriptor set", name));
+          }
+          throw new IllegalArgumentException(
+              String.format("Couldn't find file \"%1\", imported by \"%2\"", name, parent));
+        }
         List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
         if (fileDescriptorProto.getDependencyCount() > 0) {
           fileDescriptorProto
@@ -91,7 +102,7 @@ class Convert {
                   dependencyName ->
                       dependencies.add(
                           convertToFileDescriptorMap(
-                              dependencyName, inMap, outMap, extensionRegistry)));
+                              dependencyName, name, inMap, outMap, extensionRegistry)));
         }
         try {
           fd =
@@ -132,7 +143,9 @@ class Convert {
     fileDescriptorMap.forEach((name, fd) -> inMap.put(name, fd.toProto()));
 
     ExtensionRegistry registry = ExtensionRegistry.newInstance();
-    inMap.forEach((k, v) -> convertToFileDescriptorMap(k, inMap, outMap, registry));
+    inMap
+        .keySet()
+        .forEach(fileName -> convertToFileDescriptorMap(fileName, null, inMap, outMap, registry));
 
     outMap.forEach(
         (k, fileDescriptor) ->

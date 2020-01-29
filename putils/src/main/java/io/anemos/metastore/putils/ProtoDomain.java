@@ -356,7 +356,7 @@ public class ProtoDomain implements Serializable {
   public void writeToDirectory(String root) throws IOException {
     for (Descriptors.FileDescriptor fd : fileDescriptorMap.values()) {
       String fileName = fd.getFullName();
-      if(!fileName.startsWith("google/protobuf")) {
+      if (!fileName.startsWith("google/protobuf")) {
         File file = new File(String.format("%s/%s", root, fileName));
         file.getParentFile().mkdirs();
         try (OutputStream out = new FileOutputStream(file)) {
@@ -586,6 +586,7 @@ public class ProtoDomain implements Serializable {
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
       List<String> removing = new ArrayList<>();
+      // clear the package
       fileDescriptorMap.forEach(
           (k, v) -> {
             if (v.getPackage().equals(packageName)) {
@@ -593,8 +594,24 @@ public class ProtoDomain implements Serializable {
             }
           });
       removing.forEach(f -> fileDescriptorMap.remove(f));
-      fileDescriptorMap.putAll(updated);
+      // only add with package prefix
+      updated.forEach(
+          (fileName, fdp) -> {
+            if (fdp.getPackage().equals(packageName)) {
+              fileDescriptorMap.put(fileName, fdp);
+            }
+          });
       return this;
+    }
+
+    private boolean isInPackagePrefix(
+        DescriptorProtos.FileDescriptorProto fdp, String packagePrefix) {
+      if (fdp.getPackage().equals(packagePrefix)) {
+        return true;
+      } else if (fdp.getPackage().startsWith(packagePrefix + ".")) {
+        return true;
+      }
+      return false;
     }
 
     public Builder replacePackagePrefixBinary(
@@ -602,14 +619,21 @@ public class ProtoDomain implements Serializable {
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
       List<String> removing = new ArrayList<>();
+      // clear the package prefix
       fileDescriptorMap.forEach(
-          (k, v) -> {
-            if (v.getPackage().startsWith(packagePrefix)) {
-              removing.add(k);
+          (fileName, fdp) -> {
+            if (isInPackagePrefix(fdp, packagePrefix)) {
+              removing.add(fileName);
             }
           });
       removing.forEach(f -> fileDescriptorMap.remove(f));
-      fileDescriptorMap.putAll(updated);
+      // only add in package
+      updated.forEach(
+          (fileName, fdp) -> {
+            if (isInPackagePrefix(fdp, packagePrefix)) {
+              fileDescriptorMap.put(fileName, fdp);
+            }
+          });
       return this;
     }
 

@@ -276,12 +276,39 @@ public class ProtoLanguageFileWriter {
       StringBuilder stringBuilder = new StringBuilder();
       if (fd.getType() == Descriptors.FieldDescriptor.Type.STRING) {
         stringBuilder.append("\"");
-        stringBuilder.append(value);
+
+        stringBuilder.append(simpleEscape(value));
         stringBuilder.append("\"");
       } else {
         stringBuilder.append(value);
       }
       return stringBuilder.toString();
+    }
+
+    private String simpleEscape(Object value) {
+      if (value == null) {
+        return null;
+      }
+      StringBuilder escapedValue = new StringBuilder();
+      for (char c : ((String) value).toCharArray()) {
+        switch (c) {
+          case '\t':
+            escapedValue.append("\\t");
+            break;
+          case '\n':
+            escapedValue.append("\\n");
+            break;
+          case '\\':
+            escapedValue.append("\\\\");
+            break;
+          case '"':
+            escapedValue.append("\\\"");
+            break;
+          default:
+            escapedValue.append(c);
+        }
+      }
+      return escapedValue.toString();
     }
 
     private void writeValue(Descriptors.FieldDescriptor fd, Object value) {

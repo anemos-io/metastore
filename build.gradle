@@ -5,15 +5,15 @@ plugins {
 ext.versions = [
     "protobuf": "3.10.0",
     "grpc": "1.25.0",
-    "gcp": '1.101.0',
-    'opencensus': "0.24.0"
+    "gcp": "1.101.0",
+    "opencensus": "0.24.0"
 ]
 
 allprojects {
     apply from: "${project.rootDir}/gradle/properties.gradle"
 
     group = "io.anemos"
-    version = "0.8.5"
+    version = "0.8.6"
 
     repositories {
         jcenter()

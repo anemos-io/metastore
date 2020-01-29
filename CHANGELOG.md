@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.6
+
+## Added
+- Added logging when an exception happens when sending a
+  descriptor.
+- Added input validation for package name and prefix.
+  
+## Fixed
+- Delete files in the git repo when they are removed from
+  the store.
+- Fixed incorrect handling of scope.
+- Escaping for string values in options.
+
 ## 0.8.5
 
 ### Fixed
