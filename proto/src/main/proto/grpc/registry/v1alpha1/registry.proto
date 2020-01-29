@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "grpc/registry/v1alpha1/report.proto";
+import "grpc/registry/v1alpha1/patch.proto";
 import "google/protobuf/timestamp.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
@@ -9,9 +9,11 @@ option java_outer_classname = "RegistryP";
 package grpc.registry.v1alpha1;
 
 service Registry {
-    rpc SubmitSchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
-    rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
+    rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
+    rpc SubmitSchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
+    rpc VerifyPatch (PatchSchemaRequest) returns (PatchSchemaResponse);
+    rpc PatchSchema (PatchSchemaRequest) returns (PatchSchemaResponse);
 
     rpc CreateResourceBinding (CreateResourceBindingRequest) returns (CreateResourceBindingResponse);
     rpc UpdateResourceBinding (UpdateResourceBindingRequest) returns (UpdateResourceBindingResponse);
@@ -69,6 +71,32 @@ message SubmitSchemaResponse {
     Report report = 2;
     int32 error_code = 3;
 }
+
+message PatchSchemaRequest {
+
+    // Information of this schema changes.
+    message Comment {
+        string name = 1;
+        string email = 2;
+        string description = 3;
+    }
+
+    // Represents the schema registry names. If a schema registry doesn't support multiple
+    // registries this field is ignored. The default value represents the default registry.
+    string registry_name = 1;
+
+    Patch patch = 2;
+
+    string validation_profile = 3;
+    Comment comment = 4;
+}
+
+message PatchSchemaResponse {
+    string schema_profile = 1;
+    Report report = 2;
+    int32 error_code = 3;
+}
+
 
 message GetSchemaRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
