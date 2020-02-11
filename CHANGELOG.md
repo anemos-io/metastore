@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.7
+
+## Fixed
+- GitLab magic now supports basic substitution.
+
 ## 0.8.6
 
 ## Added

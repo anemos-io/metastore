@@ -150,7 +150,7 @@ public class MetaStep {
     printVersion();
 
     if (args.length > 0 && args[0].equals("sh")) {
-      GitLabMagic gitLabMagic = new GitLabMagic();
+      GitLabMagic gitLabMagic = new GitLabMagic(System.in);
 
       if (gitLabMagic.gitLabEmptyCall) {
         System.out.println("Empty call ignored.");
