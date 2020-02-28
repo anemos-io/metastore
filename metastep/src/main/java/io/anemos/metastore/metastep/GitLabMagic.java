@@ -45,30 +45,28 @@ class GitLabMagic {
           List<String> args = new ArrayList<>();
           StringBuilder builder = new StringBuilder();
           for (String token : tokens[tokens.length - 2].split(" ")) {
-            if(builder.length() > 0) {
+            if (builder.length() > 0) {
               builder.append(" ");
-              if(token.endsWith("\"")) {
-                builder.append(token, 0, token.length()-1);
+              if (token.endsWith("\"")) {
+                builder.append(token, 0, token.length() - 1);
                 args.add(builder.toString());
                 builder = new StringBuilder();
-              }
-              else {
+              } else {
                 builder.append(token);
               }
-            }
-            else {
-            if (token.startsWith("$")) {
-              args.add(export.get(token.substring(1)));
-            } else if(token.startsWith("\"")) {
-              if(token.endsWith("\"")) {
-                args.add(token.substring(1,token.length()-1));
-              }
-              else {
-                builder.append(token.substring(1));
-              }
             } else {
-              args.add(token);
-            }}
+              if (token.startsWith("$")) {
+                args.add(export.get(token.substring(1)));
+              } else if (token.startsWith("\"")) {
+                if (token.endsWith("\"")) {
+                  args.add(token.substring(1, token.length() - 1));
+                } else {
+                  builder.append(token.substring(1));
+                }
+              } else {
+                args.add(token);
+              }
+            }
           }
           gitLabArgs = args.toArray(new String[0]);
         }

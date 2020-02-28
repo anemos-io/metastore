@@ -371,15 +371,34 @@ public class ProtoLanguageFileWriter {
       v.getAllFields()
           .forEach(
               (fieldDescriptor, value) -> {
-                indent(indent + 1);
-                writer.print(fieldDescriptor.getName());
-                writer.print(": ");
-                if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
-                  writeMessageValue((Message) value, indent + 1);
+                if (value instanceof List) {
+                  if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                    // Map handling
+                    for (Object message : ((List) value)) {
+                      indent(indent + 1);
+                      writer.print(fieldDescriptor.getName());
+                      writer.print(": ");
+                      writeMessageValue((Message) message, indent + 1);
+                      writer.println();
+                    }
+                  } else {
+                    indent(indent + 1);
+                    writer.print(fieldDescriptor.getName());
+                    writer.print(": ");
+                    writeValue(fieldDescriptor, value);
+                    writer.println();
+                  }
                 } else {
-                  writeValue(fieldDescriptor, value);
+                  indent(indent + 1);
+                  writer.print(fieldDescriptor.getName());
+                  writer.print(": ");
+                  if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                    writeMessageValue((Message) value, indent + 1);
+                  } else {
+                    writeValue(fieldDescriptor, value);
+                  }
+                  writer.println();
                 }
-                writer.println();
               });
       indent(indent);
       writer.print("}");

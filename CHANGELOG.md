@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ## Fixed
 - GitLab magic now supports basic substitution.
+- Fixed options with maps.
 
 ## 0.8.6
 

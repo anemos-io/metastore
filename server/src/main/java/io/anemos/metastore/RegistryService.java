@@ -20,6 +20,9 @@ import io.anemos.metastore.v1alpha1.ResultCount;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.opencensus.stats.Measure;
+import io.opencensus.stats.Stats;
+import io.opencensus.stats.StatsRecorder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,9 +34,15 @@ import org.slf4j.LoggerFactory;
 public class RegistryService extends RegistryGrpc.RegistryImplBase {
   private static final Logger LOG = LoggerFactory.getLogger(RegistryService.class);
 
+  private static final Measure.MeasureLong GET_FDS =
+      Measure.MeasureLong.create(
+          "get_schema_file_descriptors_count", "The number of file descriptors returned", "1");
+  private static final StatsRecorder STATS_RECORDER = Stats.getStatsRecorder();
+
   private MetaStore metaStore;
 
   public RegistryService(MetaStore metaStore) {
+
     this.metaStore = metaStore;
   }
 
@@ -223,6 +232,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       switch (request.getEntityScopeCase()) {
         case PACKAGE_PREFIX:
           fdl = pContainer.getFileDescriptorsByPackagePrefix(request.getPackagePrefix());
+
           break;
         case PACKAGE_NAME:
           fdl = pContainer.getFileDescriptorsByPackageName(request.getPackageName());
@@ -304,7 +314,10 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         schemaResponseBuilder.addAllFileDescriptorProto(
             fdl.stream().map(fd -> fd.toProto().toByteString()).collect(Collectors.toList()));
       }
-
+      STATS_RECORDER
+          .newMeasureMap()
+          .put(GET_FDS, schemaResponseBuilder.getFileDescriptorProtoCount())
+          .record();
       responseObserver.onNext(schemaResponseBuilder.build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
