@@ -89,10 +89,10 @@ class Convert {
         if (fileDescriptorProto == null) {
           if (parent == null) {
             throw new IllegalArgumentException(
-                String.format("Couldn't find file \"%1\" in file descriptor set", name));
+                String.format("Couldn't find file \"%1s\" in file descriptor set", name));
           }
           throw new IllegalArgumentException(
-              String.format("Couldn't find file \"%1\", imported by \"%2\"", name, parent));
+              String.format("Couldn't find file \"%1s\", imported by \"%2s\"", name, parent));
         }
         List<Descriptors.FileDescriptor> dependencies = new ArrayList<>();
         if (fileDescriptorProto.getDependencyCount() > 0) {

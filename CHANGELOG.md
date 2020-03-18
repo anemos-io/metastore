@@ -1,10 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.9
+
+### Fixed
+- Stripped down the metastep base image, only proto includes 
+  are included.
+
 ## 0.8.8
 
 ### Added
-- Add tree share
+- Add tree shaker utility
 
 ## 0.8.7
 
