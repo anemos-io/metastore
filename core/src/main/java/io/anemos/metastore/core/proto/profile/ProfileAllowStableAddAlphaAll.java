@@ -4,7 +4,7 @@ import io.anemos.metastore.v1alpha1.Report;
 
 public class ProfileAllowStableAddAlphaAll extends ProfileAllowAddBase {
   public ProfileAllowStableAddAlphaAll() {
-    super("allow:add");
+    super("allow:stable:add:alpha:all");
   }
 
   @Override
