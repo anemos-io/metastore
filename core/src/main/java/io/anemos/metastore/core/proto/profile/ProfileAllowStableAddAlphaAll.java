@@ -1,6 +1,6 @@
 package io.anemos.metastore.core.proto.profile;
 
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.*;
 
 public class ProfileAllowStableAddAlphaAll extends ProfileAllowAddBase {
   public ProfileAllowStableAddAlphaAll() {
@@ -9,13 +9,21 @@ public class ProfileAllowStableAddAlphaAll extends ProfileAllowAddBase {
 
   @Override
   public Report validate(Report report) {
-    final long v1alphaCount =
-        report.getFileResultsMap().keySet().stream().filter(f -> f.contains("v1alpha")).count();
+    final String v1alpha = "v1alpha";
+    Report.Builder builder = Report.newBuilder(report);
 
-    if (v1alphaCount > 0) {
-      return report;
-    } else {
-      return super.validate(report);
+    for (MessageResult messageResult : report.getMessageResultsMap().values()) {
+      if (messageResult.getName().contains(v1alpha)) {
+        builder.removeMessageResults(messageResult.getName());
+      }
     }
+
+    for (EnumResult enumResult : report.getEnumResultsMap().values()) {
+      if (enumResult.getName().contains(v1alpha)) {
+        builder.removeEnumResults(enumResult.getName());
+      }
+    }
+
+    return super.validate(builder.build());
   }
 }
