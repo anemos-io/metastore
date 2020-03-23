@@ -37,6 +37,7 @@ public class MetaStoreServer {
         serverBuilder
             .addService(new MetaStoreService(metaStore))
             .addService(new RegistryService(metaStore))
+            .addService(new BindService(metaStore))
             .addService(ProtoReflectionService.newInstance())
             .build();
   }

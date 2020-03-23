@@ -1,7 +1,5 @@
 package io.anemos.metastore;
 
-import static io.anemos.metastore.v1alpha1.RegistryP.GetResourceBindingeRequest.SchemaContext;
-
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.profile.*;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -9,6 +7,7 @@ import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.registry.AbstractRegistry;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.BindP;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
@@ -21,7 +20,6 @@ import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -265,7 +263,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
           }
           break;
         case LINKED_RESOURCE:
-          RegistryP.ResourceBinding resourceBinding =
+          BindP.ResourceBinding resourceBinding =
               registry.getResourceBinding(request.getLinkedResource());
           switch (resourceBinding.getTypeCase()) {
             case MESSAGE_NAME:
@@ -318,134 +316,6 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
           .put(GET_FDS, schemaResponseBuilder.getFileDescriptorProtoCount())
           .record();
       responseObserver.onNext(schemaResponseBuilder.build());
-      responseObserver.onCompleted();
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-    }
-  }
-
-  @Override
-  public void createResourceBinding(
-      RegistryP.CreateResourceBindingRequest request,
-      StreamObserver<RegistryP.CreateResourceBindingResponse> responseObserver) {
-    try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      RegistryP.ResourceBinding resourceBinding = request.getBinding();
-      registry.updateResourceBinding(resourceBinding, true);
-      responseObserver.onNext(RegistryP.CreateResourceBindingResponse.newBuilder().build());
-      responseObserver.onCompleted();
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-    }
-  }
-
-  @Override
-  public void updateResourceBinding(
-      RegistryP.UpdateResourceBindingRequest request,
-      StreamObserver<RegistryP.UpdateResourceBindingResponse> responseObserver) {
-    try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      RegistryP.ResourceBinding resourceBinding = request.getBinding();
-      registry.updateResourceBinding(resourceBinding, false);
-      responseObserver.onNext(RegistryP.UpdateResourceBindingResponse.newBuilder().build());
-      responseObserver.onCompleted();
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-    }
-  }
-
-  @Override
-  public void getResourceBinding(
-      RegistryP.GetResourceBindingeRequest request,
-      StreamObserver<RegistryP.GetResourceBindingResponse> responseObserver) {
-    try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      RegistryP.ResourceBinding resourceBinding =
-          registry.getResourceBinding(request.getLinkedResource());
-
-      RegistryP.GetResourceBindingResponse.Builder response =
-          RegistryP.GetResourceBindingResponse.newBuilder().setBinding(resourceBinding);
-
-      ProtoDomain pContainer = registry.get();
-      if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_FULL_DOMAIN) {
-        response.addAllFileDescriptorProto(
-            pContainer.getFileDescriptors().stream()
-                .map(fd -> fd.toProto().toByteString())
-                .collect(Collectors.toList()));
-      } else if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_IN_SCOPE) {
-        Collection<Descriptors.FileDescriptor> fds = new ArrayList<>();
-        switch (resourceBinding.getTypeCase().getNumber()) {
-          case RegistryP.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
-            Descriptors.Descriptor descriptor =
-                pContainer.getDescriptorByName(resourceBinding.getMessageName());
-            fds = pContainer.getDependantFileDescriptors(descriptor.getFile());
-            break;
-          case RegistryP.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
-            Descriptors.ServiceDescriptor service =
-                pContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
-            fds = pContainer.getDependantFileDescriptors(service.getFile());
-            break;
-          default:
-            throw Status.fromCode(Status.Code.INTERNAL)
-                .withDescription("Linked resource isn't linked to a descriptor")
-                .asRuntimeException();
-        }
-        response.addAllFileDescriptorProto(
-            fds.stream().map(fd -> fd.toProto().toByteString()).collect(Collectors.toList()));
-      } else if (request.getSchemaContext() == SchemaContext.SCHEMA_CONTEXT_IN_FILE) {
-        switch (resourceBinding.getTypeCase().getNumber()) {
-          case RegistryP.ResourceBinding.MESSAGE_NAME_FIELD_NUMBER:
-            Descriptors.Descriptor descriptor =
-                pContainer.getDescriptorByName(resourceBinding.getMessageName());
-            response.addFileDescriptorProto(descriptor.getFile().toProto().toByteString());
-            break;
-          case RegistryP.ResourceBinding.SERVICE_NAME_FIELD_NUMBER:
-            Descriptors.ServiceDescriptor service =
-                pContainer.getServiceDescriptorByName(resourceBinding.getServiceName());
-            response.addFileDescriptorProto(service.getFile().toProto().toByteString());
-            break;
-          default:
-            throw Status.fromCode(Status.Code.INTERNAL)
-                .withDescription("Linked resource isn't linked to a descriptor")
-                .asRuntimeException();
-        }
-      }
-      responseObserver.onNext(response.build());
-      responseObserver.onCompleted();
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-    }
-  }
-
-  @Override
-  public void deleteResourceBinding(
-      RegistryP.DeleteResourceBindingRequest request,
-      StreamObserver<RegistryP.DeleteResourceBindingResponse> responseObserver) {
-    try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      registry.deleteResourceBinding(request.getLinkedResource());
-      responseObserver.onNext(RegistryP.DeleteResourceBindingResponse.newBuilder().build());
-      responseObserver.onCompleted();
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-    }
-  }
-
-  @Override
-  public void listResourceBindings(
-      RegistryP.ListResourceBindingsRequest request,
-      StreamObserver<RegistryP.ListResourceBindingsResponse> responseObserver) {
-    try {
-      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
-      RegistryP.ListResourceBindingsResponse.Builder builder =
-          RegistryP.ListResourceBindingsResponse.newBuilder();
-      registry
-          .listResourceBindings(request.getPageToken())
-          .forEach(
-              binding -> {
-                builder.addBindings(binding);
-              });
-      responseObserver.onNext(builder.build());
       responseObserver.onCompleted();
     } catch (StatusException e) {
       responseObserver.onError(e);

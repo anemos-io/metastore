@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_package = "io.anemos.metastore.v1alpha1";
+option java_outer_classname = "BindP";
+
+package grpc.registry.v1alpha1;
+
+service Bind {
+    rpc CreateResourceBinding (CreateResourceBindingRequest) returns (CreateResourceBindingResponse);
+    rpc UpdateResourceBinding (UpdateResourceBindingRequest) returns (UpdateResourceBindingResponse);
+    rpc DeleteResourceBinding (DeleteResourceBindingRequest) returns (DeleteResourceBindingResponse);
+    rpc GetResourceBinding (GetResourceBindingeRequest) returns (GetResourceBindingResponse);
+    rpc ListResourceBindings (ListResourceBindingsRequest) returns (ListResourceBindingsResponse);
+    rpc UseResource (UseResourceRequest) returns (UseResourceResponse);
+}
+
+message ResourceBinding {
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * (http/https)://hostname/<service_name>/
+    string linked_resource = 1;
+    oneof type {
+        string message_name = 2;
+        string service_name = 3;
+    }
+}
+message CreateResourceBindingRequest {
+    string registry_name = 1;
+    ResourceBinding binding = 2;
+}
+
+message CreateResourceBindingResponse {
+}
+
+message UpdateResourceBindingRequest {
+    string registry_name = 1;
+    ResourceBinding binding = 2;
+}
+
+message UpdateResourceBindingResponse {
+}
+
+message DeleteResourceBindingRequest {
+    string registry_name = 1;
+    //
+    // * googlecloud://bigquery.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * googlecloud://pubsub.googleapis.com/projects/projectId/datasets/datasetId/tables/tableId
+    // * (http/https)://hostname/<service_name>
+    string linked_resource = 2;
+}
+
+message DeleteResourceBindingResponse {
+}
+
+
+message GetResourceBindingeRequest {
+    enum SchemaContext {
+        SCHEMA_CONTEXT_NONE = 0;
+        SCHEMA_CONTEXT_IN_FILE = 1;
+        SCHEMA_CONTEXT_IN_SCOPE = 2;
+        SCHEMA_CONTEXT_FULL_DOMAIN = 3;
+    }
+
+    string registry_name = 1;
+    string linked_resource = 2;
+    SchemaContext schema_context = 3;
+}
+
+message GetResourceBindingResponse {
+    string file_name = 1;
+    string package_name = 2;
+    ResourceBinding binding = 3;
+    // These are proto2 type google.protobuf.FileDescriptorProto, but
+    // we avoid taking a dependency on descriptor.proto, which uses
+    // proto2 only features, by making them opaque
+    // bytes instead
+    repeated bytes file_descriptor_proto = 4;
+}
+
+message ListResourceBindingsRequest {
+    string registry_name = 1;
+    // Maximum number of subscription names to return.
+    int32 page_size = 2;
+
+    // The value returned by the last `ListResourceBindingsRequest`; indicates
+    // that this is a continuation of a prior `ListResourceBindingsRequest` call, and
+    // that the system should return the next page of data.
+    string page_token = 3;
+}
+
+message ListResourceBindingsResponse {
+    repeated ResourceBinding bindings = 1;
+    string next_page_token = 2;
+}
+
+message UseResourceRequest {
+    enum Purpose {
+        PURPOSE_UNSET = 0;
+        PURPOSE_PRODUCER = 1;
+        PURPOSE_CONSUMER = 2;
+        PURPOSE_API_SERVER = 3;
+        PURPOSE_API_CLIENT = 4;
+    }
+
+    message Metrics {
+        int64 data_bytes = 1;
+        int64 data_messages = 2;
+        int64 data_errors = 3;
+    }
+
+    message Usage {
+        string usage_name = 1;
+        oneof entity_scope {
+            string linked_resource = 2;
+            string package_name = 3;
+            string package_prefix = 4;
+            string message_name = 5;
+            string service_name = 6;
+            string enum_name = 7;
+            string file_name = 8;
+        }
+        Purpose purpose = 9;
+        google.protobuf.Timestamp since = 10;
+        Metrics metrics = 11;
+    }
+
+    string registry_name = 2;
+    string name = 3;
+    string instance = 4;
+    map<string, string> labels = 5;
+
+    // These are proto2 type google.protobuf.FileDescriptorProto, but
+    // we avoid taking a dependency on descriptor.proto, which uses
+    // proto2 only features, by making them opaque
+    // bytes instead
+    repeated bytes file_descriptor_proto = 6;
+
+    repeated Usage usage = 7;
+}
+
+message UseResourceResponse {
+}
