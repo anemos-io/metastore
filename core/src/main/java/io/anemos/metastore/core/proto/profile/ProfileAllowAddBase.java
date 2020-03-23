@@ -1,17 +1,26 @@
 package io.anemos.metastore.core.proto.profile;
 
 import io.anemos.metastore.v1alpha1.*;
+import java.util.regex.Pattern;
 
 public abstract class ProfileAllowAddBase implements ValidationProfile {
 
   public final String profileName;
 
-  public ProfileAllowAddBase(String profileName) {
+  private boolean skipValidationForAlpha;
+  Pattern alphaPattern = Pattern.compile(".*\\.v\\d*alpha\\d*$");
+
+  public ProfileAllowAddBase(String profileName, boolean skipValidationForAlpha) {
     this.profileName = profileName;
+    this.skipValidationForAlpha = skipValidationForAlpha;
   }
 
   public String getProfileName() {
     return profileName;
+  }
+
+  private boolean skipValidationForAlpha(String packageName) {
+    return skipValidationForAlpha == true && alphaPattern.matcher(packageName).matches();
   }
 
   @Override
@@ -21,6 +30,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
     Report.Builder builder = Report.newBuilder(report);
     int error = 0;
     for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
+      if (skipValidationForAlpha(messageResult.getPackage())) {
+        continue;
+      }
       switch (messageResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;
@@ -31,7 +43,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
                   .setCode("CAVR-0001")
                   .setDescription(
                       String.format(
-                          "Removal of fields is not allowed for profile '%s'.", profileName)));
+                          "Removal of messages is not allowed for profile '%s'.", profileName)));
           break;
         case RESERVED:
         case UNRESERVED:
@@ -92,6 +104,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
       }
     }
     for (EnumResult enumResult : builder.getEnumResultsMap().values()) {
+      if (skipValidationForAlpha(enumResult.getPackage())) {
+        continue;
+      }
       switch (enumResult.getChange().getChangeType()) {
         case REMOVAL:
           error++;

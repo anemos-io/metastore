@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.10
+
+### Fixed
+- Added package name to the report of top level descriptors
+
+### Added
+- Relaxed profile for alpha contracts
+
 ## 0.8.9
 
 ### Fixed

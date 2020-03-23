@@ -76,7 +76,7 @@ class ShadowRegistry extends AbstractRegistry {
     } else {
       throw new RuntimeException("Shadow registry should have package prefix scopes defined.");
     }
-    delta = results.getReport();
+    delta = results.createProto();
     update(comment);
     notifyEventListeners(report);
   }

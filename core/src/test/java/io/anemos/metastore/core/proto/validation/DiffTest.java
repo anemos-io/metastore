@@ -193,7 +193,7 @@ public class DiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
   }
@@ -203,6 +203,6 @@ public class DiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnPackagePrefix("test.v1");
 
-    return results.getReport();
+    return results.createProto();
   }
 }

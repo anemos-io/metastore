@@ -33,7 +33,7 @@ public class ShadowTest {
     ProtoDiff diff = new ProtoDiff(base, baseAddMessageOption, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
 
     //    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
@@ -57,7 +57,7 @@ public class ShadowTest {
     ProtoDiff diff = new ProtoDiff(base, baseAddFieldOption, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
 
     ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
@@ -80,7 +80,7 @@ public class ShadowTest {
     ProtoDiff diff = new ProtoDiff(base, baseAddFileOption, results);
     diff.diffOnFileName(fileName);
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
 
     ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
@@ -103,7 +103,7 @@ public class ShadowTest {
     ProtoDiff diff = new ProtoDiff(base, baseMultipleOptions, results);
     diff.diffOnFileName(fileName);
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
 
     ProtoDomain shadow = new ShadowApply().applyDelta(base, result);

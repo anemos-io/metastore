@@ -138,7 +138,7 @@ public class ShadowE2ETest {
         Report.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
-        expectedResults.getReport().getMessageResultsMap(),
+        expectedResults.createProto().getMessageResultsMap(),
         actualShadowReport.getMessageResultsMap());
 
     // add field to default
@@ -170,7 +170,7 @@ public class ShadowE2ETest {
         Report.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
-        expectedResults.getReport().getMessageResultsMap(),
+        expectedResults.createProto().getMessageResultsMap(),
         actualShadowReport.getMessageResultsMap());
 
     actualShadowRepo = ProtocUtil.createDescriptorSet(shadowrepoPath.toAbsolutePath().toString());

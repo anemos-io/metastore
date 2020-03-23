@@ -166,7 +166,7 @@ public class OptionDiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage");
   }
@@ -176,7 +176,7 @@ public class OptionDiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnFileName("test/v1/simple.proto");
 
-    Report result = results.getReport();
+    Report result = results.createProto();
     System.out.println(result);
     return result.getFileResultsMap().get("test/v1/simple.proto");
   }

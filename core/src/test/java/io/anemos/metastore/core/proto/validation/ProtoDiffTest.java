@@ -14,10 +14,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ProtoDiffTest {
-  static final DescriptorProtos.FileDescriptorProto FILE =
+  public static final DescriptorProtos.FileDescriptorProto FILE_V1 =
       DescriptorProtos.FileDescriptorProto.newBuilder()
-          .setName("package/file1.proto")
-          .setPackage("package")
+          .setName("package/v1/file1.proto")
+          .setPackage("package.v1")
           .addMessageType(
               DescriptorProtos.DescriptorProto.newBuilder()
                   .setName("Message1")
@@ -36,8 +36,50 @@ public class ProtoDiffTest {
                   .addMethod(
                       DescriptorProtos.MethodDescriptorProto.newBuilder()
                           .setName("Method1")
-                          .setInputType("package.Request")
-                          .setOutputType("package.Response")
+                          .setInputType("package.v1.Request")
+                          .setOutputType("package.v1.Response")
+                          .build())
+                  .build())
+          .addEnumType(
+              DescriptorProtos.EnumDescriptorProto.newBuilder()
+                  .setName("Enum1")
+                  .addValue(
+                      DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                          .setNumber(0)
+                          .setName("ENUM_VALUE1_UNSET")
+                          .build())
+                  .addValue(
+                      DescriptorProtos.EnumValueDescriptorProto.newBuilder()
+                          .setNumber(1)
+                          .setName("ENUM_VALUE1_VALUE1")
+                          .build())
+                  .build())
+          .build();
+
+  public static final DescriptorProtos.FileDescriptorProto FILE_V1ALPHA =
+      DescriptorProtos.FileDescriptorProto.newBuilder()
+          .setName("package/v1alpha/file1.proto")
+          .setPackage("package.v1alpha")
+          .addMessageType(
+              DescriptorProtos.DescriptorProto.newBuilder()
+                  .setName("Message1")
+                  .addField(
+                      DescriptorProtos.FieldDescriptorProto.newBuilder()
+                          .setNumber(1)
+                          .setName("first_field")
+                          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32)
+                          .build())
+                  .build())
+          .addMessageType(DescriptorProtos.DescriptorProto.newBuilder().setName("Request"))
+          .addMessageType(DescriptorProtos.DescriptorProto.newBuilder().setName("Response"))
+          .addService(
+              DescriptorProtos.ServiceDescriptorProto.newBuilder()
+                  .setName("Service1")
+                  .addMethod(
+                      DescriptorProtos.MethodDescriptorProto.newBuilder()
+                          .setName("Method1")
+                          .setInputType("package.v1alpha.Request")
+                          .setOutputType("package.v1alpha.Response")
                           .build())
                   .build())
           .addEnumType(
@@ -58,17 +100,17 @@ public class ProtoDiffTest {
 
   @Test
   public void noDiff() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
-    ProtoDomain dNew = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
+    ProtoDomain dNew = ProtoDomain.builder().add(FILE_V1).build();
     Report report = diff(dRef, dNew);
-    System.out.println(report);
   }
 
   @Test
   public void addEnum() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .addEnumType(
                 DescriptorProtos.EnumDescriptorProto.newBuilder()
                     .setName("Enum2")
@@ -82,31 +124,33 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.Enum2");
-    Assert.assertEquals("package.Enum2", result.getChange().getToName());
+    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum2");
+    Assert.assertEquals("package.v1.Enum2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
 
   @Test
   public void removeEnum() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
-    DescriptorProtos.FileDescriptorProto fd = FILE.toBuilder().clearEnumType().build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
+    DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().clearEnumType().build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.Enum1");
-    Assert.assertEquals("package.Enum1", result.getChange().getFromName());
+    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
+    Assert.assertEquals("package.v1.Enum1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
 
   @Test
   public void addEnumValue() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setEnumType(
                 0,
-                FILE.getEnumType(0)
+                FILE_V1
+                    .getEnumType(0)
                     .toBuilder()
                     .addValue(
                         DescriptorProtos.EnumValueDescriptorProto.newBuilder()
@@ -116,7 +160,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.Enum1");
+    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(2, result.getValueResults(0).getNumber());
@@ -127,13 +171,16 @@ public class ProtoDiffTest {
 
   @Test
   public void removeEnumValue() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder().setEnumType(0, FILE.getEnumType(0).toBuilder().removeValue(1)).build();
+        FILE_V1
+            .toBuilder()
+            .setEnumType(0, FILE_V1.getEnumType(0).toBuilder().removeValue(1))
+            .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.Enum1");
+    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -144,19 +191,21 @@ public class ProtoDiffTest {
 
   @Test
   public void renameEnumValue() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setEnumType(
                 0,
-                FILE.getEnumType(0)
+                FILE_V1
+                    .getEnumType(0)
                     .toBuilder()
-                    .setValue(1, FILE.getEnumType(0).getValue(1).toBuilder().setName("FOO")))
+                    .setValue(1, FILE_V1.getEnumType(0).getValue(1).toBuilder().setName("FOO")))
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.Enum1");
+    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -167,40 +216,43 @@ public class ProtoDiffTest {
 
   @Test
   public void addMessage() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .addMessageType(
                 DescriptorProtos.DescriptorProto.newBuilder().setName("Message2").build())
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.Message2");
-    Assert.assertEquals("package.Message2", result.getChange().getToName());
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message2");
+    Assert.assertEquals("package.v1.Message2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
 
   @Test
   public void removeMessage() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
-    DescriptorProtos.FileDescriptorProto fd = FILE.toBuilder().removeMessageType(0).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
+    DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().removeMessageType(0).build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.Message1");
-    Assert.assertEquals("package.Message1", result.getChange().getFromName());
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Assert.assertEquals("package.v1.Message1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
 
   @Test
   public void addField() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setMessageType(
                 0,
-                FILE.getMessageType(0)
+                FILE_V1
+                    .getMessageType(0)
                     .toBuilder()
                     .addField(
                         DescriptorProtos.FieldDescriptorProto.newBuilder()
@@ -211,7 +263,7 @@ public class ProtoDiffTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.Message1");
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(2, result.getFieldResults(0).getNumber());
@@ -222,15 +274,16 @@ public class ProtoDiffTest {
 
   @Test
   public void removeField() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
-            .setMessageType(0, FILE.getMessageType(0).toBuilder().removeField(0))
+        FILE_V1
+            .toBuilder()
+            .setMessageType(0, FILE_V1.getMessageType(0).toBuilder().removeField(0))
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.Message1");
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -241,20 +294,23 @@ public class ProtoDiffTest {
 
   @Test
   public void renameField() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setMessageType(
                 0,
-                FILE.getMessageType(0)
+                FILE_V1
+                    .getMessageType(0)
                     .toBuilder()
                     .setField(
-                        0, FILE.getMessageType(0).getField(0).toBuilder().setName("changed_field")))
+                        0,
+                        FILE_V1.getMessageType(0).getField(0).toBuilder().setName("changed_field")))
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.Message1");
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -265,51 +321,54 @@ public class ProtoDiffTest {
 
   @Test
   public void addService() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .addService(
                 DescriptorProtos.ServiceDescriptorProto.newBuilder().setName("Service2").build())
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    ServiceResult serviceResult = report.getServiceResultsMap().get("package.Service2");
-    Assert.assertEquals("package.Service2", serviceResult.getChange().getToName());
+    ServiceResult serviceResult = report.getServiceResultsMap().get("package.v1.Service2");
+    Assert.assertEquals("package.v1.Service2", serviceResult.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, serviceResult.getChange().getChangeType());
   }
 
   @Test
   public void removeService() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
-    DescriptorProtos.FileDescriptorProto fd = FILE.toBuilder().clearService().build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
+    DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().clearService().build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    ServiceResult serviceResult = report.getServiceResultsMap().get("package.Service1");
-    Assert.assertEquals("package.Service1", serviceResult.getChange().getFromName());
+    ServiceResult serviceResult = report.getServiceResultsMap().get("package.v1.Service1");
+    Assert.assertEquals("package.v1.Service1", serviceResult.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, serviceResult.getChange().getChangeType());
   }
 
   @Test
   public void addMethod() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setService(
                 0,
-                FILE.getService(0)
+                FILE_V1
+                    .getService(0)
                     .toBuilder()
                     .addMethod(
                         DescriptorProtos.MethodDescriptorProto.newBuilder()
                             .setName("Method2")
-                            .setInputType("package.Request")
-                            .setOutputType("package.Response")))
+                            .setInputType("package.v1.Request")
+                            .setOutputType("package.v1.Response")))
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.Service1");
+    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(
         ChangeType.ADDITION, result.getMethodResults(0).getChange().getChangeType());
@@ -320,13 +379,16 @@ public class ProtoDiffTest {
 
   @Test
   public void removeMethod() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder().setService(0, FILE.getService(0).toBuilder().removeMethod(0)).build();
+        FILE_V1
+            .toBuilder()
+            .setService(0, FILE_V1.getService(0).toBuilder().removeMethod(0))
+            .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.Service1");
+    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getMethodResults(0).getChange().getChangeType());
     Assert.assertEquals("Method1", result.getMethodResults(0).getName());
@@ -336,19 +398,22 @@ public class ProtoDiffTest {
 
   @Test
   public void renameMethod() throws Exception {
-    ProtoDomain dRef = ProtoDomain.builder().add(FILE).build();
+    ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
-        FILE.toBuilder()
+        FILE_V1
+            .toBuilder()
             .setService(
                 0,
-                FILE.getService(0)
+                FILE_V1
+                    .getService(0)
                     .toBuilder()
-                    .setMethod(0, FILE.getService(0).getMethod(0).toBuilder().setName("MethodX")))
+                    .setMethod(
+                        0, FILE_V1.getService(0).getMethod(0).toBuilder().setName("MethodX")))
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.Service1");
+    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
 
     Assert.assertEquals(
@@ -366,7 +431,7 @@ public class ProtoDiffTest {
   private Report diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
-    diff.diffOnFileName("package/file1.proto");
-    return results.getReport();
+    diff.diffOnFileName("package/v1/file1.proto");
+    return results.createProto();
   }
 }

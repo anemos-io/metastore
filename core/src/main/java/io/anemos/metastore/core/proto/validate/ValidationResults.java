@@ -25,20 +25,25 @@ public class ValidationResults {
     return rules;
   }
 
-  private MessageResultContainer getOrCreateMessage(String messageName) {
+  private MessageResultContainer getOrCreateMessage(Descriptors.Descriptor descriptor) {
+    String messageName = descriptor.getFullName();
     MessageResultContainer messageResult = messageMap.get(messageName);
     if (messageResult == null) {
       messageResult = new MessageResultContainer();
+      messageResult.packageName = descriptor.getFile().getPackage();
       messageResult.fullName = messageName;
       messageMap.put(messageName, messageResult);
     }
     return messageResult;
   }
 
-  private ServiceResultContainer getOrCreateService(String serviceName) {
+  private ServiceResultContainer getOrCreateService(
+      Descriptors.ServiceDescriptor serviceDescriptor) {
+    String serviceName = serviceDescriptor.getFullName();
     ServiceResultContainer serviceResult = serviceMap.get(serviceName);
     if (serviceResult == null) {
       serviceResult = new ServiceResultContainer();
+      serviceResult.packageName = serviceDescriptor.getFile().getPackage();
       serviceResult.fullName = serviceName;
       serviceMap.put(serviceName, serviceResult);
     }
@@ -55,10 +60,12 @@ public class ValidationResults {
     return fileResult;
   }
 
-  private EnumResultContainer getOrCreateEnum(String fileName) {
+  private EnumResultContainer getOrCreateEnum(Descriptors.EnumDescriptor enumDescriptor) {
+    String fileName = enumDescriptor.getFullName();
     EnumResultContainer enumResult = enumMap.get(fileName);
     if (enumResult == null) {
       enumResult = new EnumResultContainer();
+      enumResult.packageName = enumDescriptor.getFile().getPackage();
       enumResult.fullName = fileName;
       enumMap.put(fileName, enumResult);
     }
@@ -66,22 +73,22 @@ public class ValidationResults {
   }
 
   void addResult(Descriptors.FieldDescriptor fd, RuleInfo ruleInfo) {
-    MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType().getFullName());
+    MessageResultContainer messageResult = getOrCreateMessage(fd.getContainingType());
     messageResult.add(fd, ruleInfo);
   }
 
   void addResult(Descriptors.MethodDescriptor md, RuleInfo ruleInfo) {
-    ServiceResultContainer messageResult = getOrCreateService(md.getService().getFullName());
+    ServiceResultContainer messageResult = getOrCreateService(md.getService());
     messageResult.add(md, ruleInfo);
   }
 
   void addResult(Descriptors.Descriptor descriptor, RuleInfo ruleInfo) {
-    MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+    MessageResultContainer messageResult = getOrCreateMessage(descriptor);
     messageResult.addResult(ruleInfo);
   }
 
   void addResult(Descriptors.ServiceDescriptor descriptor, RuleInfo ruleInfo) {
-    ServiceResultContainer serviceResult = getOrCreateService(descriptor.getFullName());
+    ServiceResultContainer serviceResult = getOrCreateService(descriptor);
     serviceResult.addResult(ruleInfo);
   }
 
@@ -91,23 +98,22 @@ public class ValidationResults {
   }
 
   void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
-    MessageResultContainer resultContainer =
-        getOrCreateMessage(fd.getContainingType().getFullName());
+    MessageResultContainer resultContainer = getOrCreateMessage(fd.getContainingType());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.MethodDescriptor fd, MethodChangeInfo patch) {
-    ServiceResultContainer resultContainer = getOrCreateService(fd.getService().getFullName());
+    ServiceResultContainer resultContainer = getOrCreateService(fd.getService());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChangeInfo patch) {
-    EnumResultContainer resultContainer = getOrCreateEnum(fd.getType().getFullName());
+    EnumResultContainer resultContainer = getOrCreateEnum(fd.getType());
     resultContainer.addPatch(fd, patch);
   }
 
   void setPatch(Descriptors.Descriptor fd, ChangeInfo patch) {
-    MessageResultContainer resultContainer = getOrCreateMessage(fd.getFullName());
+    MessageResultContainer resultContainer = getOrCreateMessage(fd);
     resultContainer.setPatch(patch);
   }
 
@@ -117,12 +123,12 @@ public class ValidationResults {
   }
 
   void setPatch(Descriptors.EnumDescriptor fd, ChangeInfo patch) {
-    EnumResultContainer resultContainer = getOrCreateEnum(fd.getFullName());
+    EnumResultContainer resultContainer = getOrCreateEnum(fd);
     resultContainer.setPatch(patch);
   }
 
   void setPatch(Descriptors.ServiceDescriptor fd, ChangeInfo patch) {
-    ServiceResultContainer serviceResult = getOrCreateService(fd.getFullName());
+    ServiceResultContainer serviceResult = getOrCreateService(fd);
     serviceResult.setPatch(patch);
   }
 
@@ -131,12 +137,13 @@ public class ValidationResults {
       FileResultContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
       fileResultContainer.addOptionChange(info);
     } else if (descriptor instanceof Descriptors.Descriptor) {
-      MessageResultContainer messageResult = getOrCreateMessage(descriptor.getFullName());
+      MessageResultContainer messageResult =
+          getOrCreateMessage((Descriptors.Descriptor) descriptor);
       messageResult.addOptionChange(info);
     } else if (descriptor instanceof Descriptors.FieldDescriptor) {
       Descriptors.FieldDescriptor fieldDescriptor = (Descriptors.FieldDescriptor) descriptor;
       MessageResultContainer messageResult =
-          getOrCreateMessage(fieldDescriptor.getContainingType().getFullName());
+          getOrCreateMessage(fieldDescriptor.getContainingType());
       messageResult.addOptionChange(fieldDescriptor, info);
     } else {
       // TODO
@@ -149,16 +156,16 @@ public class ValidationResults {
     fileResultContainer.addImportChange(info);
   }
 
-  public Report getReport() {
+  public Report createProto() {
     Report.Builder builder = Report.newBuilder();
-    fileMap.values().forEach(file -> builder.putFileResults(file.fullName, file.getResult()));
+    fileMap.values().forEach(file -> builder.putFileResults(file.fullName, file.createProto()));
     messageMap
         .values()
-        .forEach(message -> builder.putMessageResults(message.fullName, message.getResult()));
+        .forEach(message -> builder.putMessageResults(message.fullName, message.createProto()));
     serviceMap
         .values()
-        .forEach(service -> builder.putServiceResults(service.fullName, service.getResult()));
-    enumMap.values().forEach(e -> builder.putEnumResults(e.fullName, e.getResult()));
+        .forEach(service -> builder.putServiceResults(service.fullName, service.createProto()));
+    enumMap.values().forEach(e -> builder.putEnumResults(e.fullName, e.createProto()));
 
     return builder.build();
   }
@@ -174,7 +181,7 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    public FieldResult getResult() {
+    public FieldResult createProto() {
       FieldResult.Builder builder =
           FieldResult.newBuilder()
               .setName(name)
@@ -197,6 +204,7 @@ public class ValidationResults {
   }
 
   static class MessageResultContainer {
+    String packageName;
     String fullName;
 
     List<RuleInfo> info = new ArrayList<>();
@@ -225,13 +233,14 @@ public class ValidationResults {
       return fieldResultContainer;
     }
 
-    MessageResult getResult() {
+    MessageResult createProto() {
       MessageResult.Builder messageInfo = MessageResult.newBuilder();
       messageInfo.setName(fullName);
+      messageInfo.setPackage(packageName);
       if (patch != null) {
         messageInfo.setChange(patch);
       }
-      fieldMap.values().forEach(field -> messageInfo.addFieldResults(field.getResult()));
+      fieldMap.values().forEach(field -> messageInfo.addFieldResults(field.createProto()));
       messageInfo.addAllInfo(info);
       messageInfo.addAllOptionChange(optionChangeInfos);
       return messageInfo.build();
@@ -268,7 +277,7 @@ public class ValidationResults {
       this.patch = patch;
     }
 
-    public FileResult getResult() {
+    public FileResult createProto() {
 
       FileResult.Builder builder =
           FileResult.newBuilder()
@@ -296,6 +305,7 @@ public class ValidationResults {
   }
 
   class ServiceResultContainer {
+    String packageName;
     String fullName;
 
     List<RuleInfo> info = new ArrayList<>();
@@ -322,15 +332,16 @@ public class ValidationResults {
       return methodResultContainer;
     }
 
-    ServiceResult getResult() {
-      ServiceResult.Builder messageInfo = ServiceResult.newBuilder();
-      messageInfo.setName(fullName);
+    ServiceResult createProto() {
+      ServiceResult.Builder serviceInfo = ServiceResult.newBuilder();
+      serviceInfo.setPackage(packageName);
+      serviceInfo.setName(fullName);
       if (patch != null) {
-        messageInfo.setChange(patch);
+        serviceInfo.setChange(patch);
       }
-      methodMap.values().forEach(method -> messageInfo.addMethodResults(method.getResult()));
-      messageInfo.addAllInfo(info);
-      return messageInfo.build();
+      methodMap.values().forEach(method -> serviceInfo.addMethodResults(method.createProto()));
+      serviceInfo.addAllInfo(info);
+      return serviceInfo.build();
     }
 
     void addResult(RuleInfo ruleInfo) {
@@ -351,7 +362,7 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    public MethodResult getResult() {
+    public MethodResult createProto() {
       MethodResult.Builder builder = MethodResult.newBuilder().setName(fullName).addAllInfo(info);
       if (patch != null) {
         builder.setChange(patch);
@@ -365,6 +376,7 @@ public class ValidationResults {
   }
 
   class EnumResultContainer {
+    String packageName;
     String fullName;
 
     List<RuleInfo> info = new ArrayList<>();
@@ -393,13 +405,14 @@ public class ValidationResults {
       return valueResultContainer;
     }
 
-    EnumResult getResult() {
+    EnumResult createProto() {
       EnumResult.Builder messageInfo = EnumResult.newBuilder();
+      messageInfo.setPackage(packageName);
       messageInfo.setName(fullName);
       if (patch != null) {
         messageInfo.setChange(patch);
       }
-      valueMap.values().forEach(method -> messageInfo.addValueResults(method.getResult()));
+      valueMap.values().forEach(method -> messageInfo.addValueResults(method.createProto()));
       messageInfo.addAllInfo(info);
       return messageInfo.build();
     }
@@ -423,7 +436,7 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    public EnumValueResult getResult() {
+    public EnumValueResult createProto() {
       EnumValueResult.Builder builder =
           EnumValueResult.newBuilder().setName(fullName).setNumber(number).addAllInfo(info);
       if (patch != null) {

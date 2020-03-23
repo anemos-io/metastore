@@ -102,7 +102,7 @@ public class LintTest {
     ValidationResults results = new ValidationResults();
     ProtoLint lint = new ProtoLint(pd, results);
     lint.lintOnMessage(message);
-    return results.getReport();
+    return results.createProto();
   }
 
   private Report lintService(Descriptors.Descriptor ref, String name) throws IOException {
@@ -112,7 +112,7 @@ public class LintTest {
     ProtoLint lint = new ProtoLint(pd, results);
     lint.lintOnService(name);
 
-    return results.getReport();
+    return results.createProto();
   }
 
   private List<RuleInfo> getInfoForField(MessageResult mr, int fieldNumber) {
@@ -217,7 +217,7 @@ public class LintTest {
 
     ProtoLint lint = new ProtoLint(pd, results);
     lint.lintOnPackage(ref.getFile());
-    return results.getReport();
+    return results.createProto();
   }
 
   @Test
@@ -244,7 +244,7 @@ public class LintTest {
 
     ProtoLint lint = new ProtoLint(pd, results);
     lint.lintOnVersion(ref);
-    return results.getReport();
+    return results.createProto();
   }
 
   @Test
@@ -270,6 +270,6 @@ public class LintTest {
 
     ProtoLint lint = new ProtoLint(pd, results);
     lint.lintOnImport(ref);
-    return results.getReport();
+    return results.createProto();
   }
 }
