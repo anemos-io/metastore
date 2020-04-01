@@ -143,7 +143,7 @@ files ready it's time to play with the shadow registry.
 ### Shadow update
 
 Now, say you are in another team and want to enhance the contract with some metadata
-but are not allowed to tough the original contracts. No worries, we've configured
+but are not allowed to touch the original contracts. No worries, we've configured
 a shadow registry.
 
 Let's add a field option and submit it to the shadow repository.
