@@ -22,16 +22,16 @@ public class Registries {
   public Registries(MetaStoreConfig config) {
     this.config = config;
 
-    for (RegistryConfig registry : this.config.registries) {
+    for (RegistryConfig registry : this.config.getRegistries()) {
       AbstractRegistry intance;
-      if (registry.shadowOf != null) {
-        intance = new ShadowRegistry(this, config, registry, config.git);
-        shadows.put(registry.name, intance);
+      if (registry.getShadowOf() != null) {
+        intance = new ShadowRegistry(this, registry);
+        shadows.put(registry.getName(), intance);
       } else {
-        intance = new SchemaRegistry(this, config, registry, config.git);
-        defaults.put(registry.name, intance);
+        intance = new SchemaRegistry(this, registry);
+        defaults.put(registry.getName(), intance);
       }
-      registries.put(registry.name, intance);
+      registries.put(registry.getName(), intance);
     }
 
     defaults.values().forEach(registry -> registry.init());
@@ -41,7 +41,7 @@ public class Registries {
         .values()
         .forEach(
             registry -> {
-              String name = registry.registryConfig.shadowOf;
+              String name = registry.registryConfig.getShadowOf();
               if (!shadowSubscribers.containsKey(name)) {
                 shadowSubscribers.put(name, new ArrayList<>());
               }

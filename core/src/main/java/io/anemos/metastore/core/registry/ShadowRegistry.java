@@ -1,11 +1,10 @@
 package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
-import io.anemos.metastore.config.GitGlobalConfig;
-import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
+import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.anemos.metastore.v1alpha1.Report;
@@ -16,19 +15,17 @@ class ShadowRegistry extends AbstractRegistry {
   private Report delta;
   private String shadowOf;
 
-  public ShadowRegistry(
-      Registries registries,
-      MetaStoreConfig config,
-      RegistryConfig registryConfig,
-      GitGlobalConfig global) {
-    super(registries, config, registryConfig, global);
-    this.shadowOf = registryConfig.shadowOf;
+  public ShadowRegistry(Registries registries, RegistryConfig registryConfig) {
+    super(registries, registryConfig);
+    this.shadowOf = registryConfig.getShadowOf();
   }
 
   @Override
   public void init() {
     if (read()) {
       write();
+    } else {
+      writeWriteOnly();
     }
     updateShadowCache();
     initGitRepo();
@@ -69,8 +66,8 @@ class ShadowRegistry extends AbstractRegistry {
   public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
-    if (registryConfig.scope != null) {
-      for (String packagePrefix : registryConfig.scope) {
+    if (registryConfig.getScope() != null) {
+      for (String packagePrefix : registryConfig.getScope()) {
         diff.diffOnPackagePrefix(packagePrefix);
       }
     } else {
@@ -89,12 +86,20 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   private void write() {
-    storageProvider.write(raw());
+    for (StorageProvider storageProvider : storageProviders) {
+      storageProvider.write(raw());
+    }
+  }
+
+  private void writeWriteOnly() {
+    for (int i = 1; i < storageProviders.size(); i++) {
+      storageProviders.get(i).write(raw());
+    }
   }
 
   private boolean read() {
     try {
-      ByteString buffer = storageProvider.read();
+      ByteString buffer = storageProviders.get(0).read();
       if (buffer == null) {
         delta = Report.parseFrom(ByteString.EMPTY);
         return true;

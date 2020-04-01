@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public interface StorageProvider {
 
-  void initForStorage(RegistryInfo registryInfo, Map<String, String> config);
+  void initForStorage(RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly);
 
   /** Read the ProtoDescriptorSet blob from storage. */
   ByteString read();

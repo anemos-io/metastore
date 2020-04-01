@@ -1,30 +1,25 @@
 package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
-import io.anemos.metastore.config.GitGlobalConfig;
-import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
+import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
 class SchemaRegistry extends AbstractRegistry {
-  private final String name;
 
-  public SchemaRegistry(
-      Registries registries,
-      MetaStoreConfig config,
-      RegistryConfig registryConfig,
-      GitGlobalConfig global) {
-    super(registries, config, registryConfig, global);
-    this.name = registryConfig.name;
+  public SchemaRegistry(Registries registries, RegistryConfig registryConfig) {
+    super(registries, registryConfig);
   }
 
   @Override
   public void init() {
     if (read()) {
       write();
+    } else {
+      writeWriteOnly();
     }
     initGitRepo();
     syncGitRepo(Comment.newBuilder().setDescription("(Re)Sync repo").build());
@@ -56,16 +51,24 @@ class SchemaRegistry extends AbstractRegistry {
   @Override
   public void update(Comment comment) {
     write();
-    registries.notifyShadows(this.name, comment);
+    registries.notifyShadows(getName(), comment);
   }
 
-  void write() {
-    storageProvider.write(raw());
+  private void write() {
+    for (StorageProvider storageProvider : storageProviders) {
+      storageProvider.write(raw());
+    }
+  }
+
+  private void writeWriteOnly() {
+    for (int i = 1; i < storageProviders.size(); i++) {
+      storageProviders.get(i).write(raw());
+    }
   }
 
   private boolean read() {
     try {
-      ByteString buffer = storageProvider.read();
+      ByteString buffer = storageProviders.get(0).read();
       if (buffer == null) {
         this.protoContainer = ProtoDomain.empty();
         return true;

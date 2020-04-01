@@ -2,8 +2,6 @@ package io.anemos.metastore.core.registry;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
-import io.anemos.metastore.config.GitGlobalConfig;
-import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.ProviderConfig;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.provider.BindProvider;
@@ -28,56 +26,41 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRegistry.class);
   protected final Registries registries;
-  protected final String name;
   private List<BindProvider> bindProviders;
   protected List<EventingProvider> eventingProviders;
-  MetaStoreConfig config;
+  protected List<StorageProvider> storageProviders;
+
   RegistryConfig registryConfig;
-  final StorageProvider storageProvider;
   ProtoDomain protoContainer;
   private MetaGit metaGit;
 
-  AbstractRegistry(
-      Registries registries,
-      MetaStoreConfig config,
-      RegistryConfig registryConfig,
-      GitGlobalConfig global) {
+  AbstractRegistry(Registries registries, RegistryConfig registryConfig) {
     this.registries = registries;
-    this.name = registryConfig.name;
-    this.config = config;
     this.registryConfig = registryConfig;
-    this.metaGit = new MetaGit(registryConfig, global);
+    this.metaGit = new MetaGit(getName(), registryConfig.getGitConfig());
+    this.storageProviders = new ArrayList<>();
     this.bindProviders = new ArrayList<>();
     this.eventingProviders = new ArrayList<>();
 
-    if (config.storage == null) {
-      LOG.warn("Storage Provider not configured, defaulting to in memory provider");
-      config.storage = new ProviderConfig();
-      config.storage.providerClass = "io.anemos.metastore.provider.InMemoryStorage";
+    boolean writeOnly = false;
+    for (ProviderConfig provider : registryConfig.getStorage()) {
+      StorageProvider bindProvider =
+          loadProvider(StorageProvider.class, provider.getProviderClass());
+      bindProvider.initForStorage(this, provider.getParameter(), writeOnly);
+      storageProviders.add(bindProvider);
     }
-    if (config.storage.parameters == null) {
-      config.storage.parameters = new ProviderConfig.Parameters[] {};
+    writeOnly = false;
+    for (ProviderConfig provider : registryConfig.getBind()) {
+      BindProvider bindProvider = loadProvider(BindProvider.class, provider.getProviderClass());
+      bindProvider.initForBind(this, provider.getParameter(), writeOnly);
+      writeOnly = true;
+      bindProviders.add(bindProvider);
     }
-
-    storageProvider = loadProvider(StorageProvider.class, config.storage.providerClass);
-    storageProvider.initForStorage(this, config.storage.getParameter());
-
-    if (registryConfig.bind != null) {
-      boolean writeOnly = false;
-      for (ProviderConfig provider : registryConfig.bind) {
-        BindProvider bindProvider = loadProvider(BindProvider.class, provider.providerClass);
-        bindProvider.initForBind(this, provider.getParameter(), writeOnly);
-        writeOnly = true;
-        bindProviders.add(bindProvider);
-      }
-    }
-    if (registryConfig.eventing != null) {
-      for (ProviderConfig provider : registryConfig.eventing) {
-        EventingProvider eventingProvider =
-            loadProvider(EventingProvider.class, provider.providerClass);
-        eventingProvider.initForChangeEvent(this, provider.getParameter());
-        eventingProviders.add(eventingProvider);
-      }
+    for (ProviderConfig provider : registryConfig.getEventing()) {
+      EventingProvider eventingProvider =
+          loadProvider(EventingProvider.class, provider.getProviderClass());
+      eventingProvider.initForChangeEvent(this, provider.getParameter());
+      eventingProviders.add(eventingProvider);
     }
   }
 
@@ -189,7 +172,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   @Override
   public String getName() {
-    return name;
+    return registryConfig.getName();
   }
 
   @Override

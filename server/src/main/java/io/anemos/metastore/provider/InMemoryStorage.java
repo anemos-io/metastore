@@ -11,12 +11,14 @@ public class InMemoryStorage implements StorageProvider, BindProvider {
   private BindDatabase bindDatabase;
 
   @Override
-  public void initForBind(RegistryInfo registryInfo, Map<String, String> config, boolean readOnly) {
+  public void initForBind(
+      RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly) {
     bindDatabase = new BindDatabase();
   }
 
   @Override
-  public void initForStorage(RegistryInfo registryInfo, Map<String, String> config) {
+  public void initForStorage(
+      RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly) {
     this.storage = null;
   }
 

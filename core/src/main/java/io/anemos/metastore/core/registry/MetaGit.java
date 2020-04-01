@@ -1,13 +1,12 @@
 package io.anemos.metastore.core.registry;
 
 import com.jcraft.jsch.HostKey;
+import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import io.anemos.metastore.config.GitGlobalConfig;
-import io.anemos.metastore.config.GitHostConfig;
-import io.anemos.metastore.config.RegistryConfig;
+import io.anemos.metastore.core.git.GitConfig;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
 import io.opencensus.common.Scope;
@@ -31,17 +30,17 @@ import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class MetaGit {
+public class MetaGit {
   private static final Logger LOG = LoggerFactory.getLogger(MetaGit.class);
   private static final Tracer TRACER = Tracing.getTracer();
-  private final RegistryConfig config;
-  private final GitGlobalConfig global;
   private Git gitRepo;
+  private String name;
+  private GitConfig config;
   private TransportConfigCallback transportConfigCallback;
 
-  MetaGit(RegistryConfig config, GitGlobalConfig global) {
+  MetaGit(String name, GitConfig config) {
+    this.name = name;
     this.config = config;
-    this.global = global;
   }
 
   private void push() throws GitAPIException {
@@ -53,11 +52,11 @@ class MetaGit {
   }
 
   private void clean(ProtoDomain domain) throws GitAPIException {
-    clean(domain, new File(config.git.path));
+    clean(domain, new File(config.getPath()));
   }
 
   private void clean(ProtoDomain domain, File dir) throws GitAPIException {
-    File repo = new File(config.git.path);
+    File repo = new File(config.getPath());
     File[] files = dir.listFiles();
     for (File file : files) {
       if (file.isDirectory()) {
@@ -75,18 +74,18 @@ class MetaGit {
   }
 
   void sync(ProtoDomain protoContainer, Comment comment) {
-    if (config.git == null) {
+    if (!config.isGitEnabled()) {
       return;
     }
 
     try (Scope ss = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
       if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
-        protoContainer.writeToDirectory(new File(config.git.path).toPath().toString());
+        protoContainer.writeToDirectory(new File(config.getPath()).toPath().toString());
         return;
       }
 
       pull();
-      protoContainer.writeToDirectory(new File(config.git.path).toPath().toString());
+      protoContainer.writeToDirectory(new File(config.getPath()).toPath().toString());
       gitRepo.add().addFilepattern(".").call();
       clean(protoContainer);
       Status status = gitRepo.status().call();
@@ -112,12 +111,9 @@ class MetaGit {
   }
 
   private File sshPrivateKey() throws IOException {
-    String privateKeyBase64 = config.git.privateKey;
-    if (privateKeyBase64 == null) {
-      privateKeyBase64 = global != null ? global.privateKey : null;
-    }
+    String privateKeyBase64 = config.getPrivateKeyBase64();
     if (privateKeyBase64 != null) {
-      File ssh = File.createTempFile(config.name, "ssh");
+      File ssh = File.createTempFile(name, "ssh");
       try (FileOutputStream outputStream = new FileOutputStream(ssh)) {
         outputStream.write(Base64.getDecoder().decode(privateKeyBase64));
       }
@@ -127,7 +123,7 @@ class MetaGit {
   }
 
   public void init() {
-    if (config.git == null) {
+    if (!config.isGitEnabled()) {
       return;
     }
     LOG.info("Git Enabled");
@@ -139,8 +135,8 @@ class MetaGit {
         return;
       }
       try {
-        if (new File(config.git.path).exists()) {
-          FileUtils.forceDelete(new File(config.git.path));
+        if (new File(config.getPath()).exists()) {
+          FileUtils.forceDelete(new File(config.getPath()));
         }
 
         JschConfigSessionFactory sshSessionFactory =
@@ -151,14 +147,10 @@ class MetaGit {
                 defaultJSch.setConfig("HashKnownHosts", "yes");
                 defaultJSch.setConfig("StrictHostKeyChecking", "no");
                 defaultJSch.addIdentity(ssh.getPath());
-                if (global.hosts != null) {
-                  for (GitHostConfig host : global.hosts) {
-                    defaultJSch
-                        .getHostKeyRepository()
-                        .add(
-                            new HostKey(
-                                host.host, HostKey.ECDSA256, Base64.getDecoder().decode(host.key)),
-                            null);
+                if (config.hasHosts()) {
+                  HostKeyRepository hostKeyRepository = defaultJSch.getHostKeyRepository();
+                  for (HostKey hostKey : config.getHostKeys()) {
+                    hostKeyRepository.add(hostKey, null);
                   }
                 }
                 return defaultJSch;
@@ -208,12 +200,12 @@ class MetaGit {
               }
             };
 
-        LOG.info("Git Local: " + config.git.path);
-        LOG.info("Git Remote: " + config.git.remote);
+        LOG.info("Git Local: " + config.getPath());
+        LOG.info("Git Remote: " + config.getRemote());
         this.gitRepo =
             Git.cloneRepository()
-                .setURI(config.git.remote)
-                .setDirectory(new File(config.git.path))
+                .setURI(config.getRemote())
+                .setDirectory(new File(config.getPath()))
                 .setTransportConfigCallback(transportConfigCallback)
                 .call();
       } catch (Exception e) {

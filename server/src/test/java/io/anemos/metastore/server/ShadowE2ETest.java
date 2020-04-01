@@ -2,7 +2,7 @@ package io.anemos.metastore.server;
 
 import io.anemos.metastore.MetaStore;
 import io.anemos.metastore.RegistryService;
-import io.anemos.metastore.config.GitRegistryConfig;
+import io.anemos.metastore.config.GitProviderConfig;
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.ProviderConfig;
 import io.anemos.metastore.config.RegistryConfig;
@@ -88,7 +88,7 @@ public class ShadowE2ETest {
           new RegistryConfig("default"),
           new RegistryConfig("shadow", "default", new String[] {"test"})
         };
-    config.registries[1].git = new GitRegistryConfig(shadowrepoPath.toAbsolutePath().toString());
+    config.registries[1].git = new GitProviderConfig(shadowrepoPath.toAbsolutePath().toString());
 
     MetaStore metaStore = new MetaStore(config);
 

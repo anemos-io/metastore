@@ -46,7 +46,8 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
   }
 
   @Override
-  public void initForStorage(RegistryInfo registryInfo, Map<String, String> config) {
+  public void initForStorage(
+      RegistryInfo registryInfo, Map<String, String> config, boolean writeOnly) {
     init(registryInfo, config, "pb");
   }
 

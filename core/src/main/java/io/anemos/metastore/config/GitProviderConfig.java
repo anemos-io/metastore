@@ -1,13 +1,13 @@
 package io.anemos.metastore.config;
 
-public class GitRegistryConfig {
+public class GitProviderConfig {
   public String path;
   public String remote;
   public String privateKey;
 
-  public GitRegistryConfig() {}
+  public GitProviderConfig() {}
 
-  public GitRegistryConfig(String path) {
+  public GitProviderConfig(String path) {
     this.path = path;
   }
 }
