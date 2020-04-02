@@ -22,16 +22,16 @@ public class Registries {
   public Registries(MetaStoreConfig config) {
     this.config = config;
 
-    for (RegistryConfig registry : this.config.getRegistries()) {
+    for (RegistryConfig registryConfig : this.config.getRegistryConfigs()) {
       AbstractRegistry intance;
-      if (registry.getShadowOf() != null) {
-        intance = new ShadowRegistry(this, registry);
-        shadows.put(registry.getName(), intance);
+      if (registryConfig.getShadowOf() != null) {
+        intance = new ShadowRegistry(this, registryConfig);
+        shadows.put(registryConfig.getName(), intance);
       } else {
-        intance = new SchemaRegistry(this, registry);
-        defaults.put(registry.getName(), intance);
+        intance = new SchemaRegistry(this, registryConfig);
+        defaults.put(registryConfig.getName(), intance);
       }
-      registries.put(registry.getName(), intance);
+      registries.put(registryConfig.getName(), intance);
     }
 
     defaults.values().forEach(registry -> registry.init());

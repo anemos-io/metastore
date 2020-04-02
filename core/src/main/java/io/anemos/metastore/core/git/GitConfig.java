@@ -7,6 +7,7 @@ import io.anemos.metastore.config.GitProviderConfig;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,26 @@ public class GitConfig {
   private String remote;
   private String privateKeyBase64;
   private HostKey[] hostKeys;
+
+  private static final Map<String, Integer> keyTypeMap = new HashMap<>();
+
+  static {
+    keyTypeMap.put("ssh-dss", HostKey.SSHDSS);
+    keyTypeMap.put("ssh-rsa", HostKey.SSHRSA);
+    keyTypeMap.put("ecdsa-sha2-nistp256", HostKey.ECDSA256);
+    keyTypeMap.put("ecdsa-sha2-nistp384", HostKey.ECDSA384);
+    keyTypeMap.put("ecdsa-sha2-nistp521", HostKey.ECDSA521);
+    keyTypeMap.put("SSHDSS", HostKey.SSHDSS);
+    keyTypeMap.put("SSHRSA", HostKey.SSHRSA);
+    keyTypeMap.put("ECDSA256", HostKey.ECDSA256);
+    keyTypeMap.put("ECDSA384", HostKey.ECDSA384);
+    keyTypeMap.put("ECDSA521", HostKey.ECDSA521);
+    keyTypeMap.put("DSS", HostKey.SSHDSS);
+    keyTypeMap.put("RSA", HostKey.SSHRSA);
+    keyTypeMap.put("SHA256", HostKey.ECDSA256);
+    keyTypeMap.put("SHA384", HostKey.ECDSA384);
+    keyTypeMap.put("SHA521", HostKey.ECDSA521);
+  }
 
   public static final String KEY_PATH = "git.path";
   public static final String KEY_REMOTE = "git.remote";
@@ -49,18 +70,27 @@ public class GitConfig {
     if (gitConfig.privateKeyBase64 == null) {
       throw new RuntimeException("git private key needs to be set when git is enabled.");
     }
+
     if (global != null && global.hosts != null) {
       gitConfig.hostKeys = new HostKey[global.hosts.length];
       for (int i = 0; i < global.hosts.length; i++) {
+        int keyType = 0;
+        String keyTypeName = global.hosts[i].type;
+        if (keyTypeName != null) {
+          if (!keyTypeMap.containsKey(keyTypeName)) {
+            throw new IllegalStateException("Unrecognized host key type " + keyTypeName);
+          }
+          keyType = keyTypeMap.get(keyTypeName);
+        }
         try {
           gitConfig.hostKeys[i] =
               new HostKey(
                   global.hosts[i].host,
-                  HostKey.ECDSA256,
+                  keyType,
                   Base64.getDecoder().decode(global.hosts[i].key),
                   null);
         } catch (JSchException e) {
-          throw new RuntimeException(e);
+          throw new IllegalArgumentException("Unable to create host key", e);
         }
       }
     }
@@ -113,8 +143,8 @@ public class GitConfig {
     return hostKeys != null;
   }
 
-  public Iterable<HostKey> getHostKeys() {
-    return Arrays.stream(hostKeys).collect(Collectors.toSet());
+  public List<HostKey> getHostKeys() {
+    return Arrays.stream(hostKeys).collect(Collectors.toList());
   }
 
   public boolean isGitEnabled() {
@@ -131,32 +161,5 @@ public class GitConfig {
 
   public String getPrivateKeyBase64() {
     return privateKeyBase64;
-  }
-
-  public static class Host {
-    private String host;
-    private String key;
-    private String type;
-
-    public Host(String host, String key, String type) {
-      this.host = host;
-      this.key = key;
-      this.type = type;
-    }
-
-    public String getHostName() {
-      return host;
-    }
-
-    public String getKey() {
-      return key;
-    }
-
-    public int getKeyType() {
-      if (type == null) {
-        return HostKey.ECDSA256;
-      }
-      return HostKey.ECDSA256;
-    }
   }
 }

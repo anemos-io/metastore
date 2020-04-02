@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+### Added
+
+- Improved SSH documentation.
+
+### Fixed
+- Support different remote host key types.
+- Auto-detect SSH remote host key if not provided.
+
 ## 0.8.10
 
 ### Fixed

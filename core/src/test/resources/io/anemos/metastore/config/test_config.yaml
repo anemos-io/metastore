@@ -1,15 +1,37 @@
 storage:
-  providerClass: xx
+  providerClass: primary
   parameters:
-    - name: a
-      value: b
-    - name: c
-      value: d
+    - name: kprim1
+      value: vprim1
+    - name: kprim2
+      value: vprim2
 registries:
   - name: default
   - name: shadow
     shadowOf: default
   - name: git
     git:
-      remote: ssh://foo
+      remote: ssh://remote.example.com
       path: /home/foo
+  - name: storage
+    storage:
+    - providerClass: secondaryStorage
+      parameters:
+        - name: ksecstore1
+          value: vsecstore1
+        - name: ksecstore2
+          value: vsecstore2
+  - name: bind
+    bind:
+    - providerClass: secondaryBind
+      parameters:
+        - name: ksecstore1
+          value: vsecstore1
+        - name: ksecstore2
+          value: vsecstore2
+git:
+  privateKey: "cHJpdmF0ZQo="
+  hosts:
+    - host: "[host.example.com]"
+      key: cHVibGljCg==
+      type: ecdsa-sha2-nistp256

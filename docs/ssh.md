@@ -1,5 +1,74 @@
 # SSH
 
+SSH is an optional feature of metastore, but it gives visibility and insights 
+on the proto contracts that are stored normally in binary form.
+Metastore can translate the binary descriptors back to it's textual form and
+store it in a git repo.
+
+## Reference
+
+
+
+### Top level git section
+
+| key | type | description|
+| --- | --- | --- |
+| privateKey | string (base64) | Global private key, the is reused for each repository |
+| hosts | array | List of known remote host, needed for strict host checking |
+| hosts.host | string | Host name of the remote host. |
+| hosts.key | string (base64) | Public Key for the remote host. |
+| host.type | string | Host Key type. See (*1) for supported values. Optional. |
+
+Example:
+
+```yaml
+# ...
+git:
+  privateKey: LS0tLS1CR...LS0tCg==
+  hosts:
+    - host: "[source.developers.google.com]:2022"
+      key: AGvEpqYNMqs...ZsBn434
+      type: ecdsa-sha2-nistp256
+```
+
+
+(*1) list of support host key types:
+
+| Host Key Types | Alias | Short Alias|
+| --- | --- | --- |
+| ssh-dss | SSHDSS | DSS |
+| ssh-rsa | SSHRSA | RSA |
+| ecdsa-sha2-nistp256 | ECDSA256 | SHA256 |
+| ecdsa-sha2-nistp384 | ECDSA384 | SHA384 |
+| ecdsa-sha2-nistp521 | ECDSA521 | SHA521 |
+
+### Registry git section
+
+The registry section gives details of the remote git repo linked to the registry.
+
+| key | type | description|
+| --- | --- | --- |
+| privateKey | string (base64) | Repo's private key, *optional* if defined in a global section |
+| path | string | Local path of where the repo will be checked out, can be in the temp directory as the data should be persisted in a remote system. |
+| remote | string (url) | Remote SSH url. |
+
+Example:
+
+```yaml
+# ...
+registries:
+  - name: default
+    git:
+      remote: ssh://user@example.com@source.developers.google.com:2022/p/example-project/r/example-repo
+      path: /home/user/test/git/default
+# ...
+```
+
+### Provider git section
+
+So providers can have a need for git configuration. The requirement depends
+on the provider, but it has the same syntax as a repository section.
+
 ## Generate your SSH keys
 
 Setup your remote git repository system for remote SSH access. You need at 
@@ -50,7 +119,14 @@ version of the key in `privateKey`, this is a global key that will be used if no
 `privateKey` in the `registries` section is filled in.
 
 For the rest fill in the `hosts` section for each host. You got the information when
-you did the initial clone.
+you did the initial clone. 
+
+Try first without providing a type for the key, as the system will try to guess the
+key type. If that fails provide the key type explicit. You get a hint of the type on
+the message `ECDSA key fingerprint is SHA256:AG...` (see above).  See the reference 
+for a list of supported types.
+
+Here is a full example.  
 
 ```yaml
 storage:
@@ -68,5 +144,5 @@ git:
   hosts:
     - host: "[source.developers.google.com]:2022"
       key: AGvEpqYNMqs...ZsBn434
-      type: SHA256
+      type: ecdsa-sha2-nistp256
 ```

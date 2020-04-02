@@ -22,7 +22,7 @@ dependencies {
     runtime("io.grpc:grpc-netty-shaded:${versions.grpc}")
     compile("org.yaml:snakeyaml:1.21")
     compile("io.grpc:grpc-services:${versions.grpc}")
-    compile("org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r")
+    compile("org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r")
     // Support common types like, color, date, latlng, ...
     compile 'com.google.api.grpc:proto-google-common-protos:1.14.0'
     implementation("com.fasterxml.jackson.core:jackson-core:2.9.8")
