@@ -4,14 +4,12 @@ import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.ChangeType;
-import io.anemos.metastore.v1alpha1.EnumResult;
-import io.anemos.metastore.v1alpha1.MessageResult;
-import io.anemos.metastore.v1alpha1.Report;
-import io.anemos.metastore.v1alpha1.ServiceResult;
+import io.anemos.metastore.v1alpha1.*;
 import java.io.IOException;
+import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
+import test.v1.Wrapper;
 
 public class ProtoDiffTest {
   public static final DescriptorProtos.FileDescriptorProto FILE_V1 =
@@ -96,6 +94,38 @@ public class ProtoDiffTest {
                           .setName("ENUM_VALUE1_VALUE1")
                           .build())
                   .build())
+          .build();
+
+  public static final DescriptorProtos.FileDescriptorProto WRAPPER_V1 =
+      DescriptorProtos.FileDescriptorProto.newBuilder()
+          .setName("package/v1/file1.proto")
+          .setPackage("package.v1")
+          .addMessageType(test.v1.Wrapper.TestSubEntity.getDescriptor().toProto())
+          .addMessageType(
+              DescriptorProtos.DescriptorProto.newBuilder()
+                  .setName("Message1")
+                  .addField(
+                      DescriptorProtos.FieldDescriptorProto.newBuilder()
+                          .setNumber(1)
+                          .setName("string_field")
+                          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING)
+                          .build())
+                  .addField(
+                      DescriptorProtos.FieldDescriptorProto.newBuilder()
+                          .setNumber(2)
+                          .setName("nullable_string_field")
+                          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE)
+                          .setTypeName("google.protobuf.StringValue")
+                          .build())
+                  .addField(
+                      DescriptorProtos.FieldDescriptorProto.newBuilder()
+                          .setNumber(3)
+                          .setName("wrapper_field")
+                          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE)
+                          .setTypeName("TestSubEntity")
+                          .build())
+                  .build())
+          .addAllDependency(Arrays.asList("google/protobuf/wrappers.proto"))
           .build();
 
   @Test
@@ -317,6 +347,105 @@ public class ProtoDiffTest {
     Assert.assertEquals("changed_field", result.getFieldResults(0).getName());
     Assert.assertEquals("first_field", result.getFieldResults(0).getChange().getFromName());
     Assert.assertEquals("changed_field", result.getFieldResults(0).getChange().getToName());
+  }
+
+  @Test
+  public void changeWrapperFieldType() throws Exception {
+    ProtoDomain dRef = ProtoDomain.builder().add(WRAPPER_V1).build();
+    DescriptorProtos.FileDescriptorProto fd =
+        WRAPPER_V1
+            .toBuilder()
+            .setMessageType(
+                1,
+                WRAPPER_V1
+                    .getMessageType(1)
+                    .toBuilder()
+                    .setField(
+                        1,
+                        DescriptorProtos.FieldDescriptorProto.newBuilder()
+                            .setNumber(2)
+                            .setName("nullable_string_field")
+                            .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE)
+                            .setTypeName("google.protobuf.Int64Value")
+                            .build())
+                    .build())
+            .build();
+
+    ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
+    Report report = diff(dRef, dNew);
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
+    Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
+    Assert.assertEquals(
+        "google.protobuf.StringValue", result.getFieldResults(0).getChange().getFromTypeName());
+    Assert.assertEquals(
+        "google.protobuf.Int64Value", result.getFieldResults(0).getChange().getToTypeName());
+  }
+
+  @Test
+  public void changeWrapperFieldTypeToPrimitive() throws Exception {
+    ProtoDomain dRef = ProtoDomain.builder().add(WRAPPER_V1).build();
+    DescriptorProtos.FileDescriptorProto fd =
+        WRAPPER_V1
+            .toBuilder()
+            .setMessageType(
+                1,
+                WRAPPER_V1
+                    .getMessageType(1)
+                    .toBuilder()
+                    .setField(
+                        1,
+                        DescriptorProtos.FieldDescriptorProto.newBuilder()
+                            .setNumber(2)
+                            .setName("nullable_string_field")
+                            .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING)
+                            .build())
+                    .build())
+            .build();
+
+    ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
+    Report report = diff(dRef, dNew);
+    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
+    Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
+    Assert.assertEquals(
+        "google.protobuf.StringValue", result.getFieldResults(0).getChange().getFromTypeName());
+    Assert.assertEquals(
+        FieldChangeInfo.FieldType.FIELD_TYPE_STRING,
+        result.getFieldResults(0).getChange().getToType());
+  }
+
+  @Test
+  public void changeNestedFieldType() throws Exception {
+    ProtoDomain dRef = ProtoDomain.builder().add(WRAPPER_V1).build();
+
+    DescriptorProtos.FileDescriptorProto fd =
+        WRAPPER_V1
+            .toBuilder()
+            .setMessageType(
+                0,
+                Wrapper.TestSubEntity.getDescriptor()
+                    .toProto()
+                    .toBuilder()
+                    .setField(
+                        0,
+                        DescriptorProtos.FieldDescriptorProto.newBuilder()
+                            .setNumber(1)
+                            .setName("nullable_string")
+                            .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE)
+                            .setTypeName("google.protobuf.Int64Value")
+                            .build()))
+            .build();
+
+    ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
+    Report report = diff(dRef, dNew);
+    MessageResult result = report.getMessageResultsMap().get("package.v1.TestSubEntity");
+    Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
+    Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
+    Assert.assertEquals(
+        "google.protobuf.StringValue", result.getFieldResults(0).getChange().getFromTypeName());
+    Assert.assertEquals(
+        "google.protobuf.Int64Value", result.getFieldResults(0).getChange().getToTypeName());
   }
 
   @Test

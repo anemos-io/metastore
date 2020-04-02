@@ -1,0 +1,9 @@
+syntax = "proto3";
+import "google/protobuf/wrappers.proto";
+
+package test.v1;
+
+message TestSubEntity {
+    google.protobuf.StringValue nullable_string = 1;
+    int32 not_nullable_int32 = 2;
+}
