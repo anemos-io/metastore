@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Support different remote host key types.
 - Auto-detect SSH remote host key if not provided.
+- Improved resolution of storage and bind provider.
 
 ## 0.8.10
 

@@ -91,37 +91,53 @@ public class RegistryConfig {
     if (resolved) {
       return this;
     }
-    if (storage == null && globalStorage == null) {
-      throw new RuntimeException("No storage provider set for this registry");
-    }
     if (storage == null) {
       storage = new ArrayList<>();
-      if (globalStorage == null) {
-        LOG.warn("Storage Provider not configured, defaulting to in memory provider");
-        ProviderConfig entry = new ProviderConfig();
-        entry.setProviderClass("io.anemos.metastore.provider.InMemoryStorage");
-        storage.add(entry);
-      }
     }
-    if (globalStorage != null) {
-      storage.add(0, globalStorage);
-    }
-    for (ProviderConfig providerConfig : storage) {
-      providerConfig.resolve(globalGit);
-    }
-
     if (bind == null) {
       bind = new ArrayList<>();
-    }
-    for (ProviderConfig providerConfig : bind) {
-      providerConfig.resolve(globalGit);
     }
     if (eventing == null) {
       eventing = new ArrayList<>();
     }
+
+    // if a global storage provider is set, if will be added as first provider for
+    // binding and storage providers for each registry.
+    if (globalStorage != null) {
+      storage.add(0, globalStorage);
+      bind.add(0, globalStorage);
+    }
+
+    // if no provider is set, we default to in memory
+    if (bind.size() > 0 && storage.size() == 0) {
+      throw new IllegalStateException("Configuring bind providers without storage is not allowed.");
+    }
+
+    if (storage.size() == 0) {
+      LOG.warn("Storage Provider not configured, defaulting to in memory provider");
+      ProviderConfig entry = new ProviderConfig();
+      entry.setProviderClass("io.anemos.metastore.provider.InMemoryStorage");
+      storage.add(entry);
+    }
+    if (bind.size() == 0) {
+      LOG.warn("Bind Provider not configured, defaulting to in memory provider");
+      ProviderConfig entry = new ProviderConfig();
+      entry.setProviderClass("io.anemos.metastore.provider.InMemoryStorage");
+      bind.add(entry);
+    }
+
+    // resolve all the providers
+    for (ProviderConfig providerConfig : storage) {
+      providerConfig.resolve(globalGit);
+    }
+    for (ProviderConfig providerConfig : bind) {
+      providerConfig.resolve(globalGit);
+    }
     for (ProviderConfig providerConfig : eventing) {
       providerConfig.resolve(globalGit);
     }
+
+    // init the git config
     gitConfig = GitConfig.fromConfigFile(git, globalGit);
     resolved = true;
     return this;

@@ -15,9 +15,9 @@ store it in a git repo.
 | --- | --- | --- |
 | privateKey | string (base64) | Global private key, the is reused for each repository |
 | hosts | array | List of known remote host, needed for strict host checking |
-| hosts.host | string | Host name of the remote host. |
-| hosts.key | string (base64) | Public Key for the remote host. |
-| host.type | string | Host Key type. See (*1) for supported values. Optional. |
+| hosts[].host | string | Host name of the remote host. |
+| hosts[].key | string (base64) | Public Key for the remote host. |
+| hosts[].type | string | Host Key type. See (*1) for supported values. Optional. |
 
 Example:
 
@@ -32,7 +32,7 @@ git:
 ```
 
 
-(*1) list of support host key types:
+(*1) list of support host key types, an of the values can be used (full, alias, short...):
 
 | Host Key Types | Alias | Short Alias|
 | --- | --- | --- |
