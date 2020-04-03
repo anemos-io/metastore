@@ -77,18 +77,23 @@ public class ShadowE2ETest {
     Path shadowrepoPath = Files.createTempDirectory("shadowrepo");
 
     MetaStoreConfig config = new MetaStoreConfig();
-    config.storage = new ProviderConfig();
-    config.storage.providerClass = "io.anemos.metastore.provider.LocalFileStorage";
-    config.storage.parameters =
+    config.setStorage(new ProviderConfig());
+
+    ProviderConfig storage = new ProviderConfig();
+    storage.setProviderClass("io.anemos.metastore.provider.LocalFileStorage");
+    storage.setParameters(
         new ProviderConfig.Parameters[] {
           new ProviderConfig.Parameters("path", metastorePath.toAbsolutePath().toString())
-        };
-    config.registries =
+        });
+
+    RegistryConfig[] registries =
         new RegistryConfig[] {
           new RegistryConfig("default"),
           new RegistryConfig("shadow", "default", new String[] {"test"})
         };
-    config.registries[1].git = new GitProviderConfig(shadowrepoPath.toAbsolutePath().toString());
+    registries[1].setGit(new GitProviderConfig(shadowrepoPath.toAbsolutePath().toString()));
+
+    config.setRegistries(registries);
 
     MetaStore metaStore = new MetaStore(config);
 

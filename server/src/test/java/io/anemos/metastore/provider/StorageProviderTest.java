@@ -48,7 +48,7 @@ public class StorageProviderTest {
     Map<String, String> config = new HashMap<>();
 
     StorageProvider provider = new InMemoryStorage();
-    provider.initForStorage(new DummyRegistryInfo(), config);
+    provider.initForStorage(new DummyRegistryInfo(), config, false);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -60,7 +60,7 @@ public class StorageProviderTest {
     config.put("path", tempFolder.getPath());
 
     StorageProvider provider = new LocalFileStorage();
-    provider.initForStorage(new DummyRegistryInfo(), config);
+    provider.initForStorage(new DummyRegistryInfo(), config, false);
     readNewTest(provider);
     writeReadTest(provider);
   }
@@ -76,7 +76,7 @@ public class StorageProviderTest {
     clearGcs(config.get("bucket"), config.get("path"));
 
     StorageProvider provider = new GoogleCloudStorage();
-    provider.initForStorage(new DummyRegistryInfo(), config);
+    provider.initForStorage(new DummyRegistryInfo(), config, false);
     readNewTest(provider);
     writeReadTest(provider);
   }

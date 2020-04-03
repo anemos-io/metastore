@@ -375,17 +375,29 @@ public class ProtoDiff {
       builder.setFromName(f_ref.getName());
       builder.setToName(f_new.getName());
     }
+
     if (!f_ref.getType().equals(f_new.getType())) {
       builder.setChangeType(ChangeType.CHANGED);
       builder.setFromTypeValue(f_ref.getType().toProto().getNumber());
       builder.setToTypeValue(f_new.getType().toProto().getNumber());
+      if (f_ref.getType().equals(Descriptors.FieldDescriptor.Type.MESSAGE)) {
+        builder.setFromTypeName(f_ref.getMessageType().getFullName());
+      }
+      if (f_new.getType().equals(Descriptors.FieldDescriptor.Type.MESSAGE)) {
+        builder.setFromTypeName(f_new.getMessageType().getFullName());
+      }
+    } else if (f_ref.getType().equals(Descriptors.FieldDescriptor.Type.MESSAGE)
+        && !f_ref.getMessageType().getFullName().equals(f_new.getMessageType().getFullName())) {
+      builder.setChangeType(ChangeType.CHANGED);
+      builder.setFromTypeName(f_ref.getMessageType().getFullName());
+      builder.setToTypeName(f_new.getMessageType().getFullName());
     }
+
     if (isDeprecated(f_ref) != isDeprecated(f_new)) {
       builder.setChangeType(ChangeType.CHANGED);
       builder.setFromDeprecated(isDeprecated(f_ref));
       builder.setToDeprecated(isDeprecated(f_new));
     }
-
     if (builder.getChangeType().equals(ChangeType.CHANGED)) {
       return builder.build();
     }

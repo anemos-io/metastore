@@ -170,11 +170,13 @@ message FieldChangeInfo {
     FieldType from_type = 3;
     bool from_deprecated = 4;
     bool from_reserved = 5;
+    string from_type_name = 10;
 
     string to_name = 6;
     FieldType to_type = 7;
     bool to_deprecated = 8;
     bool to_reserved = 9;
+    string to_type_name = 11;
 }
 
 message EnumValueChangeInfo {
