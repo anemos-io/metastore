@@ -15,7 +15,7 @@ import org.junit.Test;
 public class ProfileTest {
 
   @Test
-  public void profileAllowAddRemoveFieldV1() throws Exception {
+  public void profileAllowAdd_RemoveFieldV1() throws Exception {
     ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
         FILE_V1
@@ -27,10 +27,11 @@ public class ProfileTest {
     Report report = diff(dRef, dNew);
     report = new ProfileAllowAdd().validate(report);
     assertEquals(1, report.getMessageResultsCount());
+    assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
   @Test
-  public void profileAllowAddRemoveFieldV1Alpha() throws Exception {
+  public void profileAllowAdd_RemoveFieldV1Alpha() throws Exception {
     ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1ALPHA).build();
     DescriptorProtos.FileDescriptorProto fd =
         FILE_V1ALPHA
@@ -42,10 +43,11 @@ public class ProfileTest {
     Report report = diff(dRef, dNew);
     report = new ProfileAllowAdd().validate(report);
     assertEquals(1, report.getMessageResultsCount());
+    assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
   @Test
-  public void profileAllowStableAddAddAlphaRemoveFieldV1() throws Exception {
+  public void profileAllowStableAddAddAlpha_RemoveFieldV1() throws Exception {
     ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     DescriptorProtos.FileDescriptorProto fd =
         FILE_V1
@@ -56,11 +58,12 @@ public class ProfileTest {
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Report report = diff(dRef, dNew);
     report = new ProfileAllowStableAddAlphaAll().validate(report);
-    assertEquals(0, report.getMessageResultsCount());
+    assertEquals(1, report.getMessageResultsCount());
+    assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
   @Test
-  public void profileAllowStableAddAddAlphaRemoveFieldV1Alpha() throws Exception {
+  public void profileAllowStableAddAddAlpha_RemoveFieldV1Alpha() throws Exception {
     ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1ALPHA).build();
     DescriptorProtos.FileDescriptorProto fd =
         FILE_V1ALPHA
@@ -72,6 +75,7 @@ public class ProfileTest {
     Report report = diff(dRef, dNew);
     report = new ProfileAllowStableAddAlphaAll().validate(report);
     assertEquals(1, report.getMessageResultsCount());
+    assertEquals(0, report.getResultCount().getDiffErrors());
   }
 
   private Report diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
