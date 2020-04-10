@@ -101,7 +101,7 @@ public class GitConfig {
     GitProviderConfig gitProviderConfig = new GitProviderConfig();
     gitProviderConfig.path = config.get(KEY_PATH);
     gitProviderConfig.remote = config.get(KEY_REMOTE);
-    gitProviderConfig.privateKey = config.get(KEY_REMOTE);
+    gitProviderConfig.privateKey = config.get(KEY_PRIVATE_KEY);
 
     GitGlobalConfig gitGlobalConfig = new GitGlobalConfig();
     int count = Integer.parseInt(config.get(KEY_HOSTS_COUNT));

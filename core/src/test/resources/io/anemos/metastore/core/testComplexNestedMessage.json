@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestSingleNested",
+  "fields": [
+    { "name": "testSingleInt",
+      "type" :{
+        "type": "record",
+        "name": "TestSingleInt",
+        "fields": [
+          {"name": "field1", "type": "int"}
+        ]
+      }
+    }
+  ]
+} 

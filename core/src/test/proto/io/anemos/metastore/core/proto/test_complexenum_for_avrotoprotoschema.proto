@@ -11,3 +11,25 @@ message TestComplexEnum {
     }
     TestEnum field1 = 1;
 }
+
+message TestExtEnum {
+    enum TestEnum {
+        UNKNOWN = 0;
+        STARTED = 1;
+        RUNNING = 2;
+    }
+}
+
+message TestComplexExtEnum {
+    TestExtEnum field1 = 1;
+}
+
+enum TestTopEnum {
+    UNKNOWN = 0;
+    STARTED = 1;
+    RUNNING = 2;
+}
+
+message TestComplexTopEnum {
+    TestTopEnum billing = 1;
+}

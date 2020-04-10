@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestSingleTimestamp",
+  "fields": [
+    { "name": "field1",
+      "type" : {
+        "type" : "long",
+        "logicalType" : "timestamp-millis"
+      }
+    }
+  ]
+}

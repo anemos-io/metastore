@@ -15,6 +15,6 @@ public interface StorageProvider {
   /** Read the ProtoDescriptorSet blob from storage. */
   ByteString read();
 
-  /** Write the ProtoDescriptorSet tot storage. */
+  /** Write the ProtoDescriptorSet to storage. */
   void write(ByteString payload);
 }

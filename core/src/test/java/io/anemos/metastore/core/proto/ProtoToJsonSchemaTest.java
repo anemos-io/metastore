@@ -109,11 +109,11 @@ public class ProtoToJsonSchemaTest {
   public void testSingleEnum() {
     final String jsonSingletype =
         ProtoToJsonSchema.convert(
-            ProtoDomain.buildFrom(TestSingleEnum.getDescriptor()),
-            "io.anemos.metastore.core.proto.TestSingleEnum");
+            ProtoDomain.buildFrom(TestComplexEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestComplexEnum");
 
     String valExpected =
-        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"ENUM1\",\"ENUM2\",\"ENUM3\"]}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestComplexEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"UNKNOWN\",\"STARTED\",\"RUNNING\"]}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 
@@ -121,11 +121,11 @@ public class ProtoToJsonSchemaTest {
   public void testSingleExtEnum() {
     final String jsonSingletype =
         ProtoToJsonSchema.convert(
-            ProtoDomain.buildFrom(TestSingleExtEnum.getDescriptor()),
-            "io.anemos.metastore.core.proto.TestSingleExtEnum");
+            ProtoDomain.buildFrom(TestComplexExtEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestComplexExtEnum");
 
     String valExpected =
-        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleExtEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"ENUMVAL1\",\"ENUMVAL2\"]}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestComplexExtEnum\",\"type\":\"object\",\"properties\":{\"field1\":{\"type\":\"string\",\"enum\":[\"UNKNOWN\",\"STARTED\",\"RUNNING\"]}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 
@@ -133,11 +133,11 @@ public class ProtoToJsonSchemaTest {
   public void testSingleTopEnum() {
     final String jsonSingletype =
         ProtoToJsonSchema.convert(
-            ProtoDomain.buildFrom(TestSingleTopEnum.getDescriptor()),
-            "io.anemos.metastore.core.proto.TestSingleTopEnum");
+            ProtoDomain.buildFrom(TestComplexTopEnum.getDescriptor()),
+            "io.anemos.metastore.core.proto.TestComplexTopEnum");
 
     String valExpected =
-        "{\"title\":\"io.anemos.metastore.core.proto.TestSingleTopEnum\",\"type\":\"object\",\"properties\":{\"billing\":{\"type\":\"string\",\"enum\":[\"NONE\",\"CORPORATE\",\"INDIVIDUAL\"]}}}";
+        "{\"title\":\"io.anemos.metastore.core.proto.TestComplexTopEnum\",\"type\":\"object\",\"properties\":{\"billing\":{\"type\":\"string\",\"enum\":[\"UNKNOWN\",\"STARTED\",\"RUNNING\"]}}}";
     Assert.assertEquals(valExpected, jsonSingletype);
   }
 

@@ -1,0 +1,64 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestWrapperTypes",
+  "fields": [
+    {
+      "name": "nullable_string",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "nullable_int32",
+      "type": ["null","int"]
+    },
+    {
+      "name": "nullable_duration",
+      "type": {
+        "name": "Duration",
+        "type": "fixed",
+        "size": 12
+      }
+    },
+    {
+      "name": "nullable_boolean",
+      "type": ["null","boolean"]
+    },
+    {
+      "name": "nullable_bytes",
+      "type": ["null","bytes"]
+    },
+    {
+      "name": "nullable_double",
+      "type": ["null","double"
+      ]
+    },
+    {
+      "name": "nullable_float",
+      "type": [
+        "null",
+        "float"
+      ]
+    },
+    {
+      "name": "nullable_int64",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "nullable_uint32",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "nullable_uint64",
+      "type": [
+        "null",
+        "long"
+      ]
+    }
+  ]
+}

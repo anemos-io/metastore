@@ -1,12 +1,12 @@
 {
   "type": "record",
   "namespace": "io.anemos.metastore.core.proto",
-  "name": "TestComplexEnum",
+  "name": "TestComplexTopEnum",
   "fields": [
     {
-      "name": "field1",
+      "name": "billing",
       "type": {
-        "name": "TestEnum",
+        "name": "TestTopEnum",
         "type": "enum",
         "symbols": [
           "UNKNOWN",
