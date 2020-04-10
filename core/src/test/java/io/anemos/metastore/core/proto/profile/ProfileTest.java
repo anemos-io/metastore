@@ -27,7 +27,7 @@ public class ProfileTest {
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
     Report report = new ProfileAllowAdd().validate(patch);
-    assertEquals(1, report.getPatch().getMessageResultsCount());
+    assertEquals(1, report.getPatch().getMessagePatchesCount());
     assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
@@ -43,7 +43,7 @@ public class ProfileTest {
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
     Report report = new ProfileAllowAdd().validate(patch);
-    assertEquals(1, report.getPatch().getMessageResultsCount());
+    assertEquals(1, report.getPatch().getMessagePatchesCount());
     assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
@@ -59,7 +59,7 @@ public class ProfileTest {
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
     Report report = new ProfileAllowStableAddAlphaAll().validate(patch);
-    assertEquals(1, report.getPatch().getMessageResultsCount());
+    assertEquals(1, report.getPatch().getMessagePatchesCount());
     assertEquals(1, report.getResultCount().getDiffErrors());
   }
 
@@ -75,7 +75,7 @@ public class ProfileTest {
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
     Report report = new ProfileAllowStableAddAlphaAll().validate(patch);
-    assertEquals(1, report.getPatch().getMessageResultsCount());
+    assertEquals(1, report.getPatch().getMessagePatchesCount());
     assertEquals(0, report.getResultCount().getDiffErrors());
   }
 

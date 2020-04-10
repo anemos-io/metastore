@@ -26,7 +26,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleInt");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -38,7 +38,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleBoolean");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -50,7 +50,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleLong");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -62,7 +62,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleFloat");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -74,7 +74,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleDouble");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -86,7 +86,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleBytes");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -98,7 +98,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestSingleString");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -110,7 +110,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexArrayInt");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -122,7 +122,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexEnum");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   @Test
@@ -142,7 +142,7 @@ public class AvroToProtoSchemaTest {
             new AvroToProtoSchema(node).get(),
             result)
         .diffOnMessage("io.anemos.metastore.core.proto.TestComplexMap");
-    Assert.assertEquals(0, result.createProto().getMessageResultsCount());
+    Assert.assertEquals(0, result.createProto().getMessagePatchesCount());
   }
 
   private JsonNode getJsonNode(String jsonName) {

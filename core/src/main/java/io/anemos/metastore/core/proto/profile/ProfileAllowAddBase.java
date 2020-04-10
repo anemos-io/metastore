@@ -30,7 +30,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
     Report.Builder builder = Report.newBuilder();
     builder.setPatch(patch);
     int error = 0;
-    for (MessageResult messageResult : patch.getMessageResultsMap().values()) {
+    for (MessagePatch messageResult : patch.getMessagePatchesMap().values()) {
       if (skipValidationForAlpha(messageResult.getPackage())) {
         continue;
       }
@@ -57,7 +57,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         case UNRECOGNIZED:
           break;
       }
-      for (FieldResult fieldResult : messageResult.getFieldResultsList()) {
+      for (FieldPatch fieldResult : messageResult.getFieldPatchesList()) {
         switch (fieldResult.getChange().getChangeType()) {
           case REMOVAL:
             error++;
@@ -104,7 +104,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         }
       }
     }
-    for (EnumResult enumResult : patch.getEnumResultsMap().values()) {
+    for (EnumPatch enumResult : patch.getEnumPatchesMap().values()) {
       if (skipValidationForAlpha(enumResult.getPackage())) {
         continue;
       }
@@ -131,7 +131,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         case UNRECOGNIZED:
           break;
       }
-      for (EnumValueResult valueResult : enumResult.getValueResultsList()) {
+      for (EnumValuePatch valueResult : enumResult.getValuePatchesList()) {
         switch (valueResult.getChange().getChangeType()) {
           case REMOVAL:
             error++;

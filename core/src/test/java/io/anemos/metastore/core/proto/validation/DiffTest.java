@@ -16,7 +16,7 @@ public class DiffTest {
 
   @Test
   public void onBaseDeprecatedString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.base(), TestSets.baseDeprecateString());
+    FieldPatch fieldResults = diff(TestSets.base(), TestSets.baseDeprecateString());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -34,7 +34,7 @@ public class DiffTest {
 
   @Test
   public void onBaseRemoveString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.base(), TestSets.baseRemoveString());
+    FieldPatch fieldResults = diff(TestSets.base(), TestSets.baseRemoveString());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -52,7 +52,7 @@ public class DiffTest {
 
   @Test
   public void onBaseReserveString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.base(), TestSets.baseReserveString());
+    FieldPatch fieldResults = diff(TestSets.base(), TestSets.baseReserveString());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -70,7 +70,7 @@ public class DiffTest {
 
   @Test
   public void onBaseReserveStringOnlyNumber() throws IOException {
-    FieldResult fieldResults = diff(TestSets.base(), TestSets.baseReserveStringOnlyNumber());
+    FieldPatch fieldResults = diff(TestSets.base(), TestSets.baseReserveStringOnlyNumber());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -88,7 +88,7 @@ public class DiffTest {
 
   @Test
   public void toBaseUndeprecatedString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.baseDeprecateString(), TestSets.base());
+    FieldPatch fieldResults = diff(TestSets.baseDeprecateString(), TestSets.base());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -106,7 +106,7 @@ public class DiffTest {
 
   @Test
   public void toBaseUnremoveString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.baseRemoveString(), TestSets.base());
+    FieldPatch fieldResults = diff(TestSets.baseRemoveString(), TestSets.base());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -124,7 +124,7 @@ public class DiffTest {
 
   @Test
   public void tnBaseUnreserveString() throws IOException {
-    FieldResult fieldResults = diff(TestSets.baseReserveString(), TestSets.base());
+    FieldPatch fieldResults = diff(TestSets.baseReserveString(), TestSets.base());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -142,7 +142,7 @@ public class DiffTest {
 
   @Test
   public void toBaseUnreserveStringOnlyNumber() throws IOException {
-    FieldResult fieldResults = diff(TestSets.baseReserveStringOnlyNumber(), TestSets.base());
+    FieldPatch fieldResults = diff(TestSets.baseReserveStringOnlyNumber(), TestSets.base());
 
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
@@ -162,40 +162,40 @@ public class DiffTest {
   public void toBaseExtraFileAdded() throws IOException {
     Patch patch = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
 
-    Assert.assertEquals(1, patch.getFileResultsCount());
+    Assert.assertEquals(1, patch.getFilePatchesCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        patch.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        patch.getFilePatchesOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, patch.getMessageResultsCount());
+    Assert.assertEquals(1, patch.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        patch.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
   @Test
   public void toBaseExtraFileRemoved() throws IOException {
     Patch patch = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
 
-    Assert.assertEquals(1, patch.getFileResultsCount());
+    Assert.assertEquals(1, patch.getFilePatchesCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        patch.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        patch.getFilePatchesOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, patch.getMessageResultsCount());
+    Assert.assertEquals(1, patch.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        patch.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
-  private FieldResult diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
+  private FieldPatch diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
     Patch result = results.createProto();
     System.out.println(result);
-    return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
+    return result.getMessagePatchesMap().get("test.v1.ProtoBeamBasicMessage").getFieldPatches(0);
   }
 
   private Patch diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
