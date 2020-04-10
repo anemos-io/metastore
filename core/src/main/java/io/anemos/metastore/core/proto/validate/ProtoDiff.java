@@ -8,13 +8,13 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.ChangeInfo;
+import io.anemos.metastore.v1alpha1.Change;
 import io.anemos.metastore.v1alpha1.ChangeType;
-import io.anemos.metastore.v1alpha1.EnumValueChangeInfo;
-import io.anemos.metastore.v1alpha1.FieldChangeInfo;
-import io.anemos.metastore.v1alpha1.ImportChangeInfo;
-import io.anemos.metastore.v1alpha1.MethodChangeInfo;
-import io.anemos.metastore.v1alpha1.OptionChangeInfo;
+import io.anemos.metastore.v1alpha1.EnumValueChange;
+import io.anemos.metastore.v1alpha1.FieldChange;
+import io.anemos.metastore.v1alpha1.ImportChange;
+import io.anemos.metastore.v1alpha1.MethodChange;
+import io.anemos.metastore.v1alpha1.OptionChange;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -116,7 +116,7 @@ public class ProtoDiff {
               .map(Descriptors.FileDescriptor::getFullName)
               .collect(Collectors.toList());
     } else {
-      results.setPatch(fdNew, ChangeInfo.newBuilder().setChangeType(ChangeType.ADDITION).build());
+      results.setPatch(fdNew, Change.newBuilder().setChangeType(ChangeType.ADDITION).build());
       refDescriptors = new ArrayList<>(0);
       refEnumDescriptors = new ArrayList<>(0);
       refServiceDescriptors = new ArrayList<>(0);
@@ -133,7 +133,7 @@ public class ProtoDiff {
               .map(Descriptors.FileDescriptor::getFullName)
               .collect(Collectors.toList());
     } else {
-      results.setPatch(fdRef, ChangeInfo.newBuilder().setChangeType(ChangeType.REMOVAL).build());
+      results.setPatch(fdRef, Change.newBuilder().setChangeType(ChangeType.REMOVAL).build());
       newDescriptors = new ArrayList<>(0);
       newEnumDescriptors = new ArrayList<>(0);
       newServiceDescriptors = new ArrayList<>(0);
@@ -201,10 +201,7 @@ public class ProtoDiff {
             v -> {
               results.addImportChange(
                   fullFileName,
-                  ImportChangeInfo.newBuilder()
-                      .setChangeType(ChangeType.REMOVAL)
-                      .setName(v)
-                      .build());
+                  ImportChange.newBuilder().setChangeType(ChangeType.REMOVAL).setName(v).build());
             });
 
     onlyInLeft(m_new, m_ref)
@@ -212,7 +209,7 @@ public class ProtoDiff {
             v ->
                 results.addImportChange(
                     fullFileName,
-                    ImportChangeInfo.newBuilder()
+                    ImportChange.newBuilder()
                         .setChangeType(ChangeType.ADDITION)
                         .setName(v)
                         .build()));
@@ -245,14 +242,14 @@ public class ProtoDiff {
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.REMOVAL)
                     .setFromName(d.getFullName())
                     .build()),
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.ADDITION)
                     .setToName(d.getFullName())
                     .build()),
@@ -270,7 +267,7 @@ public class ProtoDiff {
           Descriptors.FileDescriptor fd = m_ref.get(k);
           results.setPatch(
               fd,
-              ChangeInfo.newBuilder()
+              Change.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setFromName(fd.getName())
                   .build());
@@ -283,7 +280,7 @@ public class ProtoDiff {
           Descriptors.FileDescriptor fd = m_new.get(k);
           results.setPatch(
               fd,
-              ChangeInfo.newBuilder()
+              Change.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setToName(fd.getName())
                   .build());
@@ -299,13 +296,13 @@ public class ProtoDiff {
     DescriptorProtos.MessageOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.MessageOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        OptionChange.OptionType.MESSAGE_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.MESSAGE_OPTION,
+        OptionChange.OptionType.MESSAGE_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -321,8 +318,8 @@ public class ProtoDiff {
     onlyRef.forEach(
         k -> {
           Descriptors.FieldDescriptor fd = m_ref.get(k);
-          FieldChangeInfo.Builder builder =
-              FieldChangeInfo.newBuilder()
+          FieldChange.Builder builder =
+              FieldChange.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setFromName(fd.getName())
                   .setFromTypeValue(fd.getType().toProto().getNumber())
@@ -340,8 +337,8 @@ public class ProtoDiff {
     onlyNew.forEach(
         k -> {
           Descriptors.FieldDescriptor fd = m_new.get(k);
-          FieldChangeInfo.Builder builder =
-              FieldChangeInfo.newBuilder()
+          FieldChange.Builder builder =
+              FieldChange.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setToName(fd.getName())
                   .setToTypeValue(fd.getType().toProto().getNumber())
@@ -358,17 +355,17 @@ public class ProtoDiff {
     Set<String> common = onlyInCommon(m_new, m_ref);
     common.forEach(
         k -> {
-          FieldChangeInfo fieldDiff = diffField(m_ref.get(k), m_new.get(k));
+          FieldChange fieldDiff = diffField(m_ref.get(k), m_new.get(k));
           if (fieldDiff != null) {
             results.setPatch(m_new.get(k), fieldDiff);
           }
         });
   }
 
-  private FieldChangeInfo diffField(
+  private FieldChange diffField(
       Descriptors.FieldDescriptor f_ref, Descriptors.FieldDescriptor f_new) {
     diffOptionsFromField(f_ref, f_new);
-    FieldChangeInfo.Builder builder = FieldChangeInfo.newBuilder();
+    FieldChange.Builder builder = FieldChange.newBuilder();
 
     if (!f_ref.getName().equals(f_new.getName())) {
       builder.setChangeType(ChangeType.CHANGED);
@@ -412,14 +409,14 @@ public class ProtoDiff {
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.REMOVAL)
                     .setFromName(d.getFullName())
                     .build()),
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.ADDITION)
                     .setToName(d.getFullName())
                     .build()),
@@ -431,13 +428,13 @@ public class ProtoDiff {
     DescriptorProtos.ServiceOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.ServiceOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.SERVICE_OPTION,
+        OptionChange.OptionType.SERVICE_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.SERVICE_OPTION,
+        OptionChange.OptionType.SERVICE_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -455,14 +452,14 @@ public class ProtoDiff {
         k -> {
           Descriptors.MethodDescriptor fd = m_ref.get(k);
 
-          MethodChangeInfo.Builder builder =
-              MethodChangeInfo.newBuilder()
+          MethodChange.Builder builder =
+              MethodChange.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setFromName(fd.getName())
                   .setFromDeprecated(isDeprecated(fd));
           //              if (d_new.isReservedNumber(fd.getNumber())) {
           //
-          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_RESERVED);
+          // builder.setChangeType(EnumValueChange.ValueChangeType.VALUE_RESERVED);
           //                if (d_new.isReservedName(fd.getName())) {
           //                  builder.setToName(fd.getName());
           //                }
@@ -474,14 +471,14 @@ public class ProtoDiff {
     onlyNew.forEach(
         k -> {
           Descriptors.MethodDescriptor fd = m_new.get(k);
-          MethodChangeInfo.Builder builder =
-              MethodChangeInfo.newBuilder()
+          MethodChange.Builder builder =
+              MethodChange.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setToName(fd.getName())
                   .setToDeprecated(isDeprecated(fd));
           //              if (d_ref.isReservedNumber(fd.getNumber())) {
           //
-          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_UNRESERVED);
+          // builder.setChangeType(EnumValueChange.ValueChangeType.VALUE_UNRESERVED);
           //                if (d_ref.isReservedName(fd.getName())) {
           //                  builder.setFromName(fd.getName());
           //                }
@@ -492,17 +489,17 @@ public class ProtoDiff {
     Set<String> common = onlyInCommon(m_new, m_ref);
     common.forEach(
         k -> {
-          MethodChangeInfo fieldDiff = diffMethod(m_ref.get(k), m_new.get(k));
+          MethodChange fieldDiff = diffMethod(m_ref.get(k), m_new.get(k));
           if (fieldDiff != null) {
             results.setPatch(m_new.get(k), fieldDiff);
           }
         });
   }
 
-  private MethodChangeInfo diffMethod(
+  private MethodChange diffMethod(
       Descriptors.MethodDescriptor f_ref, Descriptors.MethodDescriptor f_new) {
     diffOptionsFromMethod(f_ref, f_new);
-    MethodChangeInfo.Builder builder = MethodChangeInfo.newBuilder();
+    MethodChange.Builder builder = MethodChange.newBuilder();
 
     if (!f_ref.getName().equals(f_new.getName())) {
       builder.setChangeType(ChangeType.CHANGED);
@@ -529,14 +526,14 @@ public class ProtoDiff {
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.REMOVAL)
                     .setFromName(d.getFullName())
                     .build()),
         d ->
             results.setPatch(
                 d,
-                ChangeInfo.newBuilder()
+                Change.newBuilder()
                     .setChangeType(ChangeType.ADDITION)
                     .setToName(d.getFullName())
                     .build()),
@@ -548,13 +545,13 @@ public class ProtoDiff {
     DescriptorProtos.EnumOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.EnumOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.ENUM_OPTION,
+        OptionChange.OptionType.ENUM_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.ENUM_OPTION,
+        OptionChange.OptionType.ENUM_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -573,14 +570,14 @@ public class ProtoDiff {
         k -> {
           Descriptors.EnumValueDescriptor fd = m_ref.get(k);
 
-          EnumValueChangeInfo.Builder builder =
-              EnumValueChangeInfo.newBuilder()
+          EnumValueChange.Builder builder =
+              EnumValueChange.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setFromName(fd.getName())
                   .setFromDeprecated(isDeprecated(fd));
           //              if (d_new.isReservedNumber(fd.getNumber())) {
           //
-          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_RESERVED);
+          // builder.setChangeType(EnumValueChange.ValueChangeType.VALUE_RESERVED);
           //                if (d_new.isReservedName(fd.getName())) {
           //                  builder.setToName(fd.getName());
           //                }
@@ -592,14 +589,14 @@ public class ProtoDiff {
     onlyNew.forEach(
         k -> {
           Descriptors.EnumValueDescriptor fd = m_new.get(k);
-          EnumValueChangeInfo.Builder builder =
-              EnumValueChangeInfo.newBuilder()
+          EnumValueChange.Builder builder =
+              EnumValueChange.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setToName(fd.getName())
                   .setToDeprecated(isDeprecated(fd));
           //              if (d_ref.isReservedNumber(fd.getNumber())) {
           //
-          // builder.setChangeType(EnumValueChangeInfo.ValueChangeType.VALUE_UNRESERVED);
+          // builder.setChangeType(EnumValueChange.ValueChangeType.VALUE_UNRESERVED);
           //                if (d_ref.isReservedName(fd.getName())) {
           //                  builder.setFromName(fd.getName());
           //                }
@@ -610,17 +607,17 @@ public class ProtoDiff {
     Set<String> common = onlyInCommon(m_new, m_ref);
     common.forEach(
         k -> {
-          EnumValueChangeInfo fieldDiff = diffEnumValue(m_ref.get(k), m_new.get(k));
+          EnumValueChange fieldDiff = diffEnumValue(m_ref.get(k), m_new.get(k));
           if (fieldDiff != null) {
             results.setPatch(m_new.get(k), fieldDiff);
           }
         });
   }
 
-  private EnumValueChangeInfo diffEnumValue(
+  private EnumValueChange diffEnumValue(
       Descriptors.EnumValueDescriptor f_ref, Descriptors.EnumValueDescriptor f_new) {
     diffOptionsFromEnumValue(f_ref, f_new);
-    EnumValueChangeInfo.Builder builder = EnumValueChangeInfo.newBuilder();
+    EnumValueChange.Builder builder = EnumValueChange.newBuilder();
 
     if (!f_ref.getName().equals(f_new.getName())) {
       builder.setChangeType(ChangeType.CHANGED);
@@ -685,7 +682,7 @@ public class ProtoDiff {
   }
 
   private void diffUnknownOptions(
-      OptionChangeInfo.OptionType changeType,
+      OptionChange.OptionType changeType,
       Descriptors.GenericDescriptor descriptorRef,
       UnknownFieldSet unknownFieldSetRef,
       Descriptors.GenericDescriptor descriptorNew,
@@ -699,8 +696,8 @@ public class ProtoDiff {
         optionNumber -> {
           UnknownFieldSet.Field field = fieldsRef.get(optionNumber);
           ByteString payload = serializeUnknownField(optionNumber, field);
-          OptionChangeInfo.Builder builder =
-              OptionChangeInfo.newBuilder()
+          OptionChange.Builder builder =
+              OptionChange.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setType(changeType)
                   .setOptionNumber(optionNumber)
@@ -713,8 +710,8 @@ public class ProtoDiff {
         optionNumber -> {
           UnknownFieldSet.Field field = fieldsNew.get(optionNumber);
           ByteString payload = serializeUnknownField(optionNumber, field);
-          OptionChangeInfo.Builder builder =
-              OptionChangeInfo.newBuilder()
+          OptionChange.Builder builder =
+              OptionChange.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setType(changeType)
                   .setOptionNumber(optionNumber)
@@ -731,8 +728,8 @@ public class ProtoDiff {
           ByteString payloadOld = serializeUnknownField(optionNumber, fieldOld);
           ByteString payloadNew = serializeUnknownField(optionNumber, fieldNew);
           if (!payloadOld.equals(payloadNew)) {
-            OptionChangeInfo.Builder builder =
-                OptionChangeInfo.newBuilder()
+            OptionChange.Builder builder =
+                OptionChange.newBuilder()
                     .setChangeType(ChangeType.PAYLOAD_CHANGED)
                     .setType(changeType)
                     .setPayloadOld(payloadOld)
@@ -744,7 +741,7 @@ public class ProtoDiff {
   }
 
   private void diffExtensionOptions(
-      OptionChangeInfo.OptionType changeType,
+      OptionChange.OptionType changeType,
       Descriptors.GenericDescriptor descriptorRef,
       Map<Descriptors.FieldDescriptor, Object> optionFieldMapRef,
       Descriptors.GenericDescriptor descriptorNew,
@@ -774,8 +771,8 @@ public class ProtoDiff {
         optionNumber -> {
           Message field = fieldsRef.get(optionNumber);
           ByteString payload = serializePayload(field);
-          OptionChangeInfo.Builder builder =
-              OptionChangeInfo.newBuilder()
+          OptionChange.Builder builder =
+              OptionChange.newBuilder()
                   .setChangeType(ChangeType.REMOVAL)
                   .setType(changeType)
                   .setOptionNumber(optionNumber)
@@ -788,8 +785,8 @@ public class ProtoDiff {
         optionNumber -> {
           Message field = fieldsNew.get(optionNumber);
           ByteString payload = serializePayload(field);
-          OptionChangeInfo.Builder builder =
-              OptionChangeInfo.newBuilder()
+          OptionChange.Builder builder =
+              OptionChange.newBuilder()
                   .setChangeType(ChangeType.ADDITION)
                   .setType(changeType)
                   .setOptionNumber(optionNumber)
@@ -805,8 +802,8 @@ public class ProtoDiff {
           ByteString payloadRef = serializePayload(fieldRef);
           ByteString payloadNew = serializePayload(fieldNew);
           if (!payloadRef.equals(payloadNew)) {
-            OptionChangeInfo.Builder builder =
-                OptionChangeInfo.newBuilder()
+            OptionChange.Builder builder =
+                OptionChange.newBuilder()
                     .setChangeType(ChangeType.PAYLOAD_CHANGED)
                     .setType(changeType)
                     .setOptionNumber(optionNumber)
@@ -822,13 +819,13 @@ public class ProtoDiff {
     DescriptorProtos.FileOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.FileOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.FILE_OPTION,
+        OptionChange.OptionType.FILE_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.FILE_OPTION,
+        OptionChange.OptionType.FILE_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -840,13 +837,13 @@ public class ProtoDiff {
     DescriptorProtos.FieldOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.FieldOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.FIELD_OPTION,
+        OptionChange.OptionType.FIELD_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.FIELD_OPTION,
+        OptionChange.OptionType.FIELD_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -859,13 +856,13 @@ public class ProtoDiff {
     DescriptorProtos.EnumValueOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.EnumValueOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.ENUM_VALUE_OPTION,
+        OptionChange.OptionType.ENUM_VALUE_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.ENUM_VALUE_OPTION,
+        OptionChange.OptionType.ENUM_VALUE_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,
@@ -877,13 +874,13 @@ public class ProtoDiff {
     DescriptorProtos.MethodOptions optionsRef = descriptorRef.getOptions();
     DescriptorProtos.MethodOptions optionsNew = descriptorNew.getOptions();
     diffExtensionOptions(
-        OptionChangeInfo.OptionType.METHOD_OPTION,
+        OptionChange.OptionType.METHOD_OPTION,
         descriptorRef,
         optionsRef.getAllFields(),
         descriptorNew,
         optionsNew.getAllFields());
     diffUnknownOptions(
-        OptionChangeInfo.OptionType.METHOD_OPTION,
+        OptionChange.OptionType.METHOD_OPTION,
         descriptorRef,
         optionsRef.getUnknownFields(),
         descriptorNew,

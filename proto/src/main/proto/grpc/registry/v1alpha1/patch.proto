@@ -72,30 +72,30 @@ message RuleInfo {
     string code = 2;
 }
 
-// Generic ChangeInfo message menth for top level objects like File, Message,
+// Generic Change message menth for top level objects like File, Message,
 // Enum and Service. As the don't contain any time information and are
 // actually containers they only support addition, renames and removals.
-message ChangeInfo {
+message Change {
     string from_name = 1;
     string to_name = 2;
     ChangeType change_type = 3;
 }
 
-message ImportChangeInfo {
+message ImportChange {
     ChangeType change_type = 1;
     string name = 2;
 }
 
 message FilePatch {
     string file_name = 1;
-    repeated string message_result_ref = 2;
+    repeated string message_patch_ref = 2;
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    Change change = 4;
 
-    repeated ImportChangeInfo import_change = 9;
-    repeated OptionChangeInfo option_change = 10;
+    repeated ImportChange import_change = 9;
+    repeated OptionChange option_change = 10;
 }
 
 message MessagePatch {
@@ -104,12 +104,12 @@ message MessagePatch {
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    Change change = 4;
 
 
     repeated FieldPatch field_patches = 5;
 
-    repeated OptionChangeInfo option_change = 10;
+    repeated OptionChange option_change = 10;
 }
 
 message FieldPatch {
@@ -118,12 +118,12 @@ message FieldPatch {
 
     repeated RuleInfo info = 3;
 
-    FieldChangeInfo change = 4;
+    FieldChange change = 4;
 
-    repeated OptionChangeInfo option_change = 10;
+    repeated OptionChange option_change = 10;
 }
 
-message OptionChangeInfo {
+message OptionChange {
     enum OptionType {
         OPTION_TYPE_UNSET = 0;
         FILE_OPTION = 1;
@@ -145,7 +145,7 @@ message OptionChangeInfo {
     string option_name = 8;
 }
 
-message FieldChangeInfo {
+message FieldChange {
     enum FieldType {
         FIELD_TYPE_UNSET = 0;
         FIELD_TYPE_DOUBLE = 1;
@@ -182,7 +182,7 @@ message FieldChangeInfo {
     string to_type_name = 11;
 }
 
-message EnumValueChangeInfo {
+message EnumValueChange {
     ChangeType change_type = 1;
 
     string from_name = 2;
@@ -194,7 +194,7 @@ message EnumValueChangeInfo {
     bool to_reserved = 9;
 }
 
-message MethodChangeInfo {
+message MethodChange {
     ChangeType change_type = 1;
 
     string from_name = 2;
@@ -211,7 +211,7 @@ message ServicePatch {
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    Change change = 4;
 
     repeated MethodPatch method_patches = 5;
 }
@@ -221,7 +221,7 @@ message MethodPatch {
 
     repeated RuleInfo info = 3;
 
-    MethodChangeInfo change = 4;
+    MethodChange change = 4;
 }
 
 message EnumPatch {
@@ -230,7 +230,7 @@ message EnumPatch {
 
     repeated RuleInfo info = 3;
 
-    ChangeInfo change = 4;
+    Change change = 4;
 
     repeated EnumValuePatch value_patches = 5;
 }
@@ -241,5 +241,5 @@ message EnumValuePatch {
 
     repeated RuleInfo info = 3;
 
-    EnumValueChangeInfo change = 4;
+    EnumValueChange change = 4;
 }

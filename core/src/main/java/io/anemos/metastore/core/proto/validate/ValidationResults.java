@@ -97,42 +97,42 @@ public class ValidationResults {
     fileResult.addResult(ruleInfo);
   }
 
-  void setPatch(Descriptors.FieldDescriptor fd, FieldChangeInfo patch) {
+  void setPatch(Descriptors.FieldDescriptor fd, FieldChange patch) {
     MessagePatchContainer resultContainer = getOrCreateMessage(fd.getContainingType());
     resultContainer.addPatch(fd, patch);
   }
 
-  void setPatch(Descriptors.MethodDescriptor fd, MethodChangeInfo patch) {
+  void setPatch(Descriptors.MethodDescriptor fd, MethodChange patch) {
     ServicePatchContainer resultContainer = getOrCreateService(fd.getService());
     resultContainer.addPatch(fd, patch);
   }
 
-  void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChangeInfo patch) {
+  void setPatch(Descriptors.EnumValueDescriptor fd, EnumValueChange patch) {
     EnumPatchContainer resultContainer = getOrCreateEnum(fd.getType());
     resultContainer.addPatch(fd, patch);
   }
 
-  void setPatch(Descriptors.Descriptor fd, ChangeInfo patch) {
+  void setPatch(Descriptors.Descriptor fd, Change patch) {
     MessagePatchContainer resultContainer = getOrCreateMessage(fd);
     resultContainer.setPatch(patch);
   }
 
-  void setPatch(Descriptors.FileDescriptor fd, ChangeInfo patch) {
+  void setPatch(Descriptors.FileDescriptor fd, Change patch) {
     FilePatchContainer resultContainer = getOrCreateFile(fd.getFullName());
     resultContainer.setPatch(patch);
   }
 
-  void setPatch(Descriptors.EnumDescriptor fd, ChangeInfo patch) {
+  void setPatch(Descriptors.EnumDescriptor fd, Change patch) {
     EnumPatchContainer resultContainer = getOrCreateEnum(fd);
     resultContainer.setPatch(patch);
   }
 
-  void setPatch(Descriptors.ServiceDescriptor fd, ChangeInfo patch) {
+  void setPatch(Descriptors.ServiceDescriptor fd, Change patch) {
     ServicePatchContainer serviceResult = getOrCreateService(fd);
     serviceResult.setPatch(patch);
   }
 
-  void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChangeInfo info) {
+  void addOptionChange(Descriptors.GenericDescriptor descriptor, OptionChange info) {
     if (descriptor instanceof Descriptors.FileDescriptor) {
       FilePatchContainer fileResultContainer = getOrCreateFile(descriptor.getFullName());
       fileResultContainer.addOptionChange(info);
@@ -149,7 +149,7 @@ public class ValidationResults {
     }
   }
 
-  void addImportChange(String fullName, ImportChangeInfo info) {
+  void addImportChange(String fullName, ImportChange info) {
     FilePatchContainer fileResultContainer = getOrCreateFile(fullName);
     fileResultContainer.addImportChange(info);
   }
@@ -170,8 +170,8 @@ public class ValidationResults {
 
   static class FieldPatchContainer {
     List<RuleInfo> info = new ArrayList<>();
-    List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
-    FieldChangeInfo patch;
+    List<OptionChange> optionChanges = new ArrayList<>();
+    FieldChange patch;
     String name;
     int number;
 
@@ -185,19 +185,19 @@ public class ValidationResults {
               .setName(name)
               .setNumber(number)
               .addAllInfo(info)
-              .addAllOptionChange(optionChangeInfos);
+              .addAllOptionChange(optionChanges);
       if (patch != null) {
         builder.setChange(patch);
       }
       return builder.build();
     }
 
-    void addPatch(FieldChangeInfo patch) {
+    void addPatch(FieldChange patch) {
       this.patch = patch;
     }
 
-    void addOptionChange(OptionChangeInfo optionChangeInfo) {
-      this.optionChangeInfos.add(optionChangeInfo);
+    void addOptionChange(OptionChange optionChange) {
+      this.optionChanges.add(optionChange);
     }
   }
 
@@ -207,15 +207,15 @@ public class ValidationResults {
 
     List<RuleInfo> info = new ArrayList<>();
     Map<String, FieldPatchContainer> fieldMap = new HashMap<>();
-    ChangeInfo patch;
-    List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
+    Change patch;
+    List<OptionChange> optionChanges = new ArrayList<>();
 
     public void add(Descriptors.FieldDescriptor field, RuleInfo ruleInfo) {
       FieldPatchContainer fieldResultContainer = getOrCreateFieldContainer(field);
       fieldResultContainer.add(ruleInfo);
     }
 
-    void addPatch(Descriptors.FieldDescriptor field, FieldChangeInfo patch) {
+    void addPatch(Descriptors.FieldDescriptor field, FieldChange patch) {
       FieldPatchContainer fieldResultContainer = getOrCreateFieldContainer(field);
       fieldResultContainer.addPatch(patch);
     }
@@ -240,7 +240,7 @@ public class ValidationResults {
       }
       fieldMap.values().forEach(field -> messageInfo.addFieldPatches(field.createProto()));
       messageInfo.addAllInfo(info);
-      messageInfo.addAllOptionChange(optionChangeInfos);
+      messageInfo.addAllOptionChange(optionChanges);
       return messageInfo.build();
     }
 
@@ -248,17 +248,17 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    void setPatch(ChangeInfo patch) {
+    void setPatch(Change patch) {
       this.patch = patch;
     }
 
-    void addOptionChange(OptionChangeInfo info) {
-      optionChangeInfos.add(info);
+    void addOptionChange(OptionChange info) {
+      optionChanges.add(info);
     }
 
-    void addOptionChange(Descriptors.FieldDescriptor field, OptionChangeInfo optionChangeInfo) {
+    void addOptionChange(Descriptors.FieldDescriptor field, OptionChange optionChange) {
       FieldPatchContainer fieldResultContainer = getOrCreateFieldContainer(field);
-      fieldResultContainer.addOptionChange(optionChangeInfo);
+      fieldResultContainer.addOptionChange(optionChange);
     }
   }
 
@@ -267,11 +267,11 @@ public class ValidationResults {
 
     List<RuleInfo> info = new ArrayList<>();
     // Map<String, FieldPatchContainer> fieldMap = new HashMap<>();
-    ChangeInfo patch;
-    List<OptionChangeInfo> optionChangeInfos = new ArrayList<>();
-    List<ImportChangeInfo> importChangeInfo = new ArrayList<>();
+    Change patch;
+    List<OptionChange> optionChanges = new ArrayList<>();
+    List<ImportChange> importChange = new ArrayList<>();
 
-    void setPatch(ChangeInfo patch) {
+    void setPatch(Change patch) {
       this.patch = patch;
     }
 
@@ -281,8 +281,8 @@ public class ValidationResults {
           FilePatch.newBuilder()
               .setFileName(fullName)
               .addAllInfo(info)
-              .addAllOptionChange(optionChangeInfos)
-              .addAllImportChange(importChangeInfo);
+              .addAllOptionChange(optionChanges)
+              .addAllImportChange(importChange);
       if (patch != null) {
         builder.setChange(patch);
       }
@@ -293,12 +293,12 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    void addOptionChange(OptionChangeInfo optionChangeInfo) {
-      this.optionChangeInfos.add(optionChangeInfo);
+    void addOptionChange(OptionChange optionChange) {
+      this.optionChanges.add(optionChange);
     }
 
-    void addImportChange(ImportChangeInfo changeInfo) {
-      this.importChangeInfo.add(changeInfo);
+    void addImportChange(ImportChange changeInfo) {
+      this.importChange.add(changeInfo);
     }
   }
 
@@ -308,14 +308,14 @@ public class ValidationResults {
 
     List<RuleInfo> info = new ArrayList<>();
     Map<String, MethodPatchContainer> methodMap = new HashMap<>();
-    ChangeInfo patch;
+    Change patch;
 
     public void add(Descriptors.MethodDescriptor method, RuleInfo ruleInfo) {
       MethodPatchContainer methoddResultContainer = getOrCreateMethodContainer(method);
       methoddResultContainer.add(ruleInfo);
     }
 
-    public void addPatch(Descriptors.MethodDescriptor method, MethodChangeInfo patch) {
+    public void addPatch(Descriptors.MethodDescriptor method, MethodChange patch) {
       MethodPatchContainer methodResultContainer = getOrCreateMethodContainer(method);
       methodResultContainer.addPatch(patch);
     }
@@ -346,14 +346,14 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    void setPatch(ChangeInfo patch) {
+    void setPatch(Change patch) {
       this.patch = patch;
     }
   }
 
   static class MethodPatchContainer {
     List<RuleInfo> info = new ArrayList<>();
-    MethodChangeInfo patch;
+    MethodChange patch;
     String fullName;
 
     public void add(RuleInfo ruleInfo) {
@@ -368,7 +368,7 @@ public class ValidationResults {
       return builder.build();
     }
 
-    void addPatch(MethodChangeInfo patch) {
+    void addPatch(MethodChange patch) {
       this.patch = patch;
     }
   }
@@ -379,14 +379,14 @@ public class ValidationResults {
 
     List<RuleInfo> info = new ArrayList<>();
     Map<String, EnumValuePatchContainer> valueMap = new HashMap<>();
-    ChangeInfo patch;
+    Change patch;
 
     public void add(Descriptors.EnumValueDescriptor value, RuleInfo ruleInfo) {
       EnumValuePatchContainer methodResultContainer = getOrCreateValueContainer(value);
       methodResultContainer.add(ruleInfo);
     }
 
-    public void addPatch(Descriptors.EnumValueDescriptor value, EnumValueChangeInfo patch) {
+    public void addPatch(Descriptors.EnumValueDescriptor value, EnumValueChange patch) {
       EnumValuePatchContainer valueResultContainer = getOrCreateValueContainer(value);
       valueResultContainer.addPatch(patch);
     }
@@ -419,14 +419,14 @@ public class ValidationResults {
       info.add(ruleInfo);
     }
 
-    void setPatch(ChangeInfo patch) {
+    void setPatch(Change patch) {
       this.patch = patch;
     }
   }
 
   static class EnumValuePatchContainer {
     List<RuleInfo> info = new ArrayList<>();
-    EnumValueChangeInfo patch;
+    EnumValueChange patch;
     String fullName;
     int number;
 
@@ -443,7 +443,7 @@ public class ValidationResults {
       return builder.build();
     }
 
-    void addPatch(EnumValueChangeInfo patch) {
+    void addPatch(EnumValueChange patch) {
       this.patch = patch;
     }
   }

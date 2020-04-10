@@ -7,9 +7,9 @@ import com.google.protobuf.UnknownFieldSet;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.FieldPatch;
 import io.anemos.metastore.v1alpha1.FilePatch;
-import io.anemos.metastore.v1alpha1.ImportChangeInfo;
+import io.anemos.metastore.v1alpha1.ImportChange;
 import io.anemos.metastore.v1alpha1.MessagePatch;
-import io.anemos.metastore.v1alpha1.OptionChangeInfo;
+import io.anemos.metastore.v1alpha1.OptionChange;
 import io.anemos.metastore.v1alpha1.Patch;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -141,7 +141,7 @@ class ShadowApply {
   }
 
   private DescriptorProtos.FileDescriptorProto.Builder applyFileOptionChanges(
-      Descriptors.FileDescriptor fileDescriptor, List<OptionChangeInfo> optionChanges) {
+      Descriptors.FileDescriptor fileDescriptor, List<OptionChange> optionChanges) {
     DescriptorProtos.FileDescriptorProto.Builder newDescriptorBuilder =
         fileDescriptor.toProto().toBuilder();
     UnknownFieldSet unknownFieldSet = buildUnknownFieldSet(optionChanges);
@@ -151,7 +151,7 @@ class ShadowApply {
   }
 
   private DescriptorProtos.FileDescriptorProto.Builder applyImportChanges(
-      DescriptorProtos.FileDescriptorProto.Builder builder, List<ImportChangeInfo> importChanges) {
+      DescriptorProtos.FileDescriptorProto.Builder builder, List<ImportChange> importChanges) {
 
     Set<String> dependencyList = new HashSet<>(builder.getDependencyList());
     importChanges.forEach(
@@ -175,7 +175,7 @@ class ShadowApply {
   private DescriptorProtos.DescriptorProto applyMessageOptionChanges(
       DescriptorProtos.DescriptorProto.Builder newDescriptorBuilder,
       Descriptors.Descriptor descriptor,
-      List<OptionChangeInfo> optionChanges) {
+      List<OptionChange> optionChanges) {
     UnknownFieldSet unknownFieldSet = buildUnknownFieldSet(optionChanges);
     DescriptorProtos.MessageOptions messageOptions =
         DescriptorProtos.MessageOptions.newBuilder().setUnknownFields(unknownFieldSet).build();
@@ -183,7 +183,7 @@ class ShadowApply {
   }
 
   private DescriptorProtos.FieldDescriptorProto applyFieldOptionChanges(
-      Descriptors.FieldDescriptor fieldDescriptor, List<OptionChangeInfo> optionChanges) {
+      Descriptors.FieldDescriptor fieldDescriptor, List<OptionChange> optionChanges) {
     DescriptorProtos.FieldDescriptorProto.Builder newFieldDescriptorProtoBuilder =
         fieldDescriptor.toProto().toBuilder();
     UnknownFieldSet unknownFieldSet = buildUnknownFieldSet(optionChanges);
@@ -194,9 +194,9 @@ class ShadowApply {
     return newFieldDescriptorProtoBuilder.setOptions(fieldOptions).build();
   }
 
-  private UnknownFieldSet buildUnknownFieldSet(List<OptionChangeInfo> optionChanges) {
+  private UnknownFieldSet buildUnknownFieldSet(List<OptionChange> optionChanges) {
     UnknownFieldSet.Builder unknownFieldSetBuilder = UnknownFieldSet.newBuilder();
-    for (OptionChangeInfo optionChange : optionChanges) {
+    for (OptionChange optionChange : optionChanges) {
       switch (optionChange.getChangeType()) {
         case ADDITION:
           unknownFieldSetBuilder =

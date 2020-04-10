@@ -410,8 +410,7 @@ public class ProtoDiffTest {
     Assert.assertEquals(
         "google.protobuf.StringValue", result.getFieldPatches(0).getChange().getFromTypeName());
     Assert.assertEquals(
-        FieldChangeInfo.FieldType.FIELD_TYPE_STRING,
-        result.getFieldPatches(0).getChange().getToType());
+        FieldChange.FieldType.FIELD_TYPE_STRING, result.getFieldPatches(0).getChange().getToType());
   }
 
   @Test

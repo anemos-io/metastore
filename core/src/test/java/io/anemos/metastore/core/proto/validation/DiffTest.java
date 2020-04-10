@@ -1,7 +1,7 @@
 package io.anemos.metastore.core.proto.validation;
 
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_STRING;
-import static io.anemos.metastore.v1alpha1.FieldChangeInfo.FieldType.FIELD_TYPE_UNSET;
+import static io.anemos.metastore.v1alpha1.FieldChange.FieldType.FIELD_TYPE_STRING;
+import static io.anemos.metastore.v1alpha1.FieldChange.FieldType.FIELD_TYPE_UNSET;
 
 import io.anemos.metastore.core.proto.TestSets;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -21,7 +21,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.CHANGED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
@@ -39,7 +39,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.REMOVAL, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
@@ -57,7 +57,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.RESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
@@ -75,7 +75,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.RESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
@@ -93,7 +93,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.CHANGED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
@@ -111,7 +111,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.ADDITION, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
@@ -129,7 +129,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.UNRESERVED, change.getChangeType());
     Assert.assertEquals("primitive_string", change.getFromName());
@@ -147,7 +147,7 @@ public class DiffTest {
     Assert.assertEquals(16, fieldResults.getNumber());
     Assert.assertEquals("primitive_string", fieldResults.getName());
 
-    FieldChangeInfo change = fieldResults.getChange();
+    FieldChange change = fieldResults.getChange();
 
     Assert.assertEquals(ChangeType.UNRESERVED, change.getChangeType());
     Assert.assertEquals("", change.getFromName());
