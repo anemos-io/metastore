@@ -5,8 +5,10 @@
   "fields": [
     {
       "name": "field1",
-      "type": "array",
-      "items": "int"
+      "type": {
+        "type": "array",
+        "items": "int"
+      }
     }
   ]
 }

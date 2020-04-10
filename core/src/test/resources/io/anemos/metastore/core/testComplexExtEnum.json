@@ -1,7 +1,7 @@
 {
   "type": "record",
   "namespace": "io.anemos.metastore.core.proto",
-  "name": "TestComplexEnum",
+  "name": "TestComplexExtEnum",
   "fields": [
     {
       "name": "field1",

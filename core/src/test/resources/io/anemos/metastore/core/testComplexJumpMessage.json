@@ -1,0 +1,76 @@
+{
+  "type": "record",
+  "namespace": "acme.jumpgate.v1alpha1",
+  "name": "Jump",
+  "fields": [
+    {
+      "name": "ulid",
+      "type": "string"
+    },
+    {
+      "name": "heat",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "nullable_string",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "hannes",
+      "type": "int"
+    },
+    {
+      "name": "power_used",
+      "type": {
+        "type": "record",
+        "name": "PowerUsed",
+        "fields": [
+          {
+            "name": "terra_watt",
+            "type": "int"
+          },
+          {
+            "name": "ship_mass",
+            "type": "long"
+          }
+        ]
+      }
+    },
+    {
+      "name": "billing",
+      "type": {
+        "name": "JumpBilling",
+        "type": "enum",
+        "symbols": [
+          "NONE",
+          "CORPORATE",
+          "INDIVIDUAL",
+          "AUTHORITIES"
+        ]
+      }
+    },
+    {
+      "name": "gate",
+      "type": {
+        "type": "record",
+        "name": "Gate",
+        "fields": [
+          {
+            "name": "uuid",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

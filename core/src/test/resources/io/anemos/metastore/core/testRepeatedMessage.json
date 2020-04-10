@@ -1,0 +1,73 @@
+{
+  "type": "record",
+  "namespace": "io.anemos.metastore.core.proto",
+  "name": "TestMultipleRepeated",
+  "fields": [
+    {
+      "name": "primitive_double",
+      "type": {
+        "type": "array",
+        "items": "double"
+      }
+    },
+    {
+      "name": "primitive_int32",
+      "type": {
+        "type": "array",
+        "items": "int"
+      }
+    },
+    {
+      "name": "primitive_bool",
+      "type": {
+        "type": "array",
+        "items": "boolean"
+      }
+    },
+    {
+      "name": "primitive_string",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    },
+    {
+      "name": "primitive_bytes",
+      "type": {
+        "type": "array",
+        "items": "bytes"
+      }
+    },
+    {
+      "name": "enum_values",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "EnumValue",
+          "type": "enum",
+          "symbols": [
+            "ENUM1",
+            "ENUM2",
+            "ENUM3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "message_int",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "TestSingleInt",
+          "fields": [
+            {
+              "name": "field1",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

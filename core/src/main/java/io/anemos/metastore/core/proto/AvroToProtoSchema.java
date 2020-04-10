@@ -121,7 +121,7 @@ public class AvroToProtoSchema {
       fieldDescriptor.setType(extractPrimitiveType(field.path("type")));
     } else if (isFieldArray(field)) {
       // fieldType = field.path("type").asText();
-      fieldDescriptor.setType(extractPrimitiveType(field.path("items")));
+      fieldDescriptor.setType(extractPrimitiveType(field.path("type").path("items")));
       fieldDescriptor.setLabel(DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED);
     } else if (isFieldComplex(field)) {
       JsonNode typeNode = extractComplexTypeNode(field.get("type"));
@@ -248,7 +248,8 @@ public class AvroToProtoSchema {
   }
 
   private boolean isFieldArray(JsonNode fieldNode) {
-    return fieldNode.get("type").isTextual() && "array".equals(fieldNode.get("type").asText());
+    return fieldNode.get("type").isObject()
+        && "array".equals(fieldNode.get("type").get("type").asText());
   }
 
   private boolean isFieldComplex(JsonNode fieldNode) {
