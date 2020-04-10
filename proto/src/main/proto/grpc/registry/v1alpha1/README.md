@@ -1,11 +1,3 @@
-syntax = "proto3";
-
-option java_package = "io.anemos.metastore.v1alpha1";
-option java_multiple_files = true;
-
-package grpc.registry.v1alpha1;
-
-enum LintRule {
     LINT_OK = 0;
 
     LINT_MESSAGE_CUSTOM = 10000;
@@ -34,5 +26,3 @@ enum LintRule {
 
     LINT_IMPORT_CUSTOM = 80000;
     LINT_IMPORT_NO_ALIGNMENT = 80001;
-
-}

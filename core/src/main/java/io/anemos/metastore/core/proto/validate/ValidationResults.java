@@ -13,8 +13,8 @@ public class ValidationResults {
   private Map<String, EnumPatchContainer> enumMap = new HashMap<>();
   private Map<String, ServicePatchContainer> serviceMap = new HashMap<>();
 
-  public List<RuleInfo> getInfo(String messageName, String fieldName) {
-    List<RuleInfo> rules = new ArrayList<>();
+  public List<LintRule> getInfo(String messageName, String fieldName) {
+    List<LintRule> rules = new ArrayList<>();
     MessagePatchContainer messageResult = messageMap.get(messageName);
     if (messageResult != null) {
       FieldPatchContainer fieldResultContainer = messageResult.fieldMap.get(fieldName);
@@ -72,27 +72,27 @@ public class ValidationResults {
     return enumResult;
   }
 
-  void addResult(Descriptors.FieldDescriptor fd, RuleInfo ruleInfo) {
+  void addResult(Descriptors.FieldDescriptor fd, LintRule ruleInfo) {
     MessagePatchContainer messageResult = getOrCreateMessage(fd.getContainingType());
     messageResult.add(fd, ruleInfo);
   }
 
-  void addResult(Descriptors.MethodDescriptor md, RuleInfo ruleInfo) {
+  void addResult(Descriptors.MethodDescriptor md, LintRule ruleInfo) {
     ServicePatchContainer messageResult = getOrCreateService(md.getService());
     messageResult.add(md, ruleInfo);
   }
 
-  void addResult(Descriptors.Descriptor descriptor, RuleInfo ruleInfo) {
+  void addResult(Descriptors.Descriptor descriptor, LintRule ruleInfo) {
     MessagePatchContainer messageResult = getOrCreateMessage(descriptor);
     messageResult.addResult(ruleInfo);
   }
 
-  void addResult(Descriptors.ServiceDescriptor descriptor, RuleInfo ruleInfo) {
+  void addResult(Descriptors.ServiceDescriptor descriptor, LintRule ruleInfo) {
     ServicePatchContainer serviceResult = getOrCreateService(descriptor);
     serviceResult.addResult(ruleInfo);
   }
 
-  void addResult(Descriptors.FileDescriptor descriptor, RuleInfo ruleInfo) {
+  void addResult(Descriptors.FileDescriptor descriptor, LintRule ruleInfo) {
     FilePatchContainer fileResult = getOrCreateFile(descriptor.getFullName());
     fileResult.addResult(ruleInfo);
   }
@@ -169,13 +169,13 @@ public class ValidationResults {
   }
 
   static class FieldPatchContainer {
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     List<OptionChange> optionChanges = new ArrayList<>();
     FieldChange patch;
     String name;
     int number;
 
-    public void add(RuleInfo ruleInfo) {
+    public void add(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -205,12 +205,12 @@ public class ValidationResults {
     String packageName;
     String fullName;
 
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     Map<String, FieldPatchContainer> fieldMap = new HashMap<>();
     Change patch;
     List<OptionChange> optionChanges = new ArrayList<>();
 
-    public void add(Descriptors.FieldDescriptor field, RuleInfo ruleInfo) {
+    public void add(Descriptors.FieldDescriptor field, LintRule ruleInfo) {
       FieldPatchContainer fieldResultContainer = getOrCreateFieldContainer(field);
       fieldResultContainer.add(ruleInfo);
     }
@@ -244,7 +244,7 @@ public class ValidationResults {
       return messageInfo.build();
     }
 
-    void addResult(RuleInfo ruleInfo) {
+    void addResult(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -265,7 +265,7 @@ public class ValidationResults {
   class FilePatchContainer {
     String fullName;
 
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     // Map<String, FieldPatchContainer> fieldMap = new HashMap<>();
     Change patch;
     List<OptionChange> optionChanges = new ArrayList<>();
@@ -289,7 +289,7 @@ public class ValidationResults {
       return builder.build();
     }
 
-    void addResult(RuleInfo ruleInfo) {
+    void addResult(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -306,11 +306,11 @@ public class ValidationResults {
     String packageName;
     String fullName;
 
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     Map<String, MethodPatchContainer> methodMap = new HashMap<>();
     Change patch;
 
-    public void add(Descriptors.MethodDescriptor method, RuleInfo ruleInfo) {
+    public void add(Descriptors.MethodDescriptor method, LintRule ruleInfo) {
       MethodPatchContainer methoddResultContainer = getOrCreateMethodContainer(method);
       methoddResultContainer.add(ruleInfo);
     }
@@ -342,7 +342,7 @@ public class ValidationResults {
       return serviceInfo.build();
     }
 
-    void addResult(RuleInfo ruleInfo) {
+    void addResult(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -352,11 +352,11 @@ public class ValidationResults {
   }
 
   static class MethodPatchContainer {
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     MethodChange patch;
     String fullName;
 
-    public void add(RuleInfo ruleInfo) {
+    public void add(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -377,11 +377,11 @@ public class ValidationResults {
     String packageName;
     String fullName;
 
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     Map<String, EnumValuePatchContainer> valueMap = new HashMap<>();
     Change patch;
 
-    public void add(Descriptors.EnumValueDescriptor value, RuleInfo ruleInfo) {
+    public void add(Descriptors.EnumValueDescriptor value, LintRule ruleInfo) {
       EnumValuePatchContainer methodResultContainer = getOrCreateValueContainer(value);
       methodResultContainer.add(ruleInfo);
     }
@@ -415,7 +415,7 @@ public class ValidationResults {
       return messageInfo.build();
     }
 
-    void addResult(RuleInfo ruleInfo) {
+    void addResult(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 
@@ -425,12 +425,12 @@ public class ValidationResults {
   }
 
   static class EnumValuePatchContainer {
-    List<RuleInfo> info = new ArrayList<>();
+    List<LintRule> info = new ArrayList<>();
     EnumValueChange patch;
     String fullName;
     int number;
 
-    public void add(RuleInfo ruleInfo) {
+    public void add(LintRule ruleInfo) {
       info.add(ruleInfo);
     }
 

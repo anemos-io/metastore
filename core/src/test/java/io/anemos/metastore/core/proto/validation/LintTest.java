@@ -30,9 +30,9 @@ public class LintTest {
     Assert.assertEquals(1, result.getMessagePatchesCount());
 
     MessagePatch mr = result.getMessagePatchesOrThrow("anemos.metastore.core.LintFieldNamesBad");
-    assertOnField(mr, 1, LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE, "L20001/02");
-    assertOnField(mr, 2, LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE, "L20001/01");
-    assertOnField(mr, 3, LintRule.LINT_FIELD_NAME_SHOULD_BE_SNAKE, "L20001/05");
+    assertOnField(mr, 1, "LINT_FIELD_NAME_SHOULD_BE_SNAKE");
+    assertOnField(mr, 2, "LINT_FIELD_NAME_SHOULD_BE_SNAKE");
+    assertOnField(mr, 3, "LINT_FIELD_NAME_SHOULD_BE_SNAKE");
   }
 
   @Test
@@ -41,7 +41,7 @@ public class LintTest {
     Assert.assertEquals(1, result.getMessagePatchesCount());
 
     MessagePatch mr = result.getMessagePatchesOrThrow("anemos.metastore.core.lintmessagelowercase");
-    assertOnMessage(mr, LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL, "L10001/00");
+    assertOnMessage(mr, "LINT_MESSAGE_NAME_SHOULD_BE_PASCAL");
   }
 
   @Test
@@ -51,7 +51,7 @@ public class LintTest {
 
     MessagePatch mr =
         result.getMessagePatchesOrThrow("anemos.metastore.core.lint_message_camelcase");
-    assertOnMessage(mr, LintRule.LINT_MESSAGE_NAME_SHOULD_BE_PASCAL, "L10001/00");
+    assertOnMessage(mr, "LINT_MESSAGE_NAME_SHOULD_BE_PASCAL");
   }
 
   @Test
@@ -61,8 +61,8 @@ public class LintTest {
 
     ServicePatch mr = result.getServicePatchesOrThrow("anemos.metastore.core.MethodService");
     Assert.assertEquals(2, getInfoForMethod(mr, "MethodEmpty").size());
-    assertOnMethod(mr, "MethodEmpty", LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE, "L50003/00");
-    assertOnMethod(mr, "MethodEmpty", LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST, "L50002/00");
+    assertOnMethod(mr, "MethodEmpty", "LINT_METHOD_RTYPE_END_WITH_RESPONSE");
+    assertOnMethod(mr, "MethodEmpty", "LINT_METHOD_ITYPE_END_WITH_REQUEST");
   }
 
   @Test
@@ -72,7 +72,7 @@ public class LintTest {
 
     ServicePatch mr = result.getServicePatchesOrThrow("anemos.metastore.core.MethodService");
     Assert.assertEquals(1, getInfoForMethod(mr, "MethodEmptyI").size());
-    assertOnMethod(mr, "MethodEmptyI", LintRule.LINT_METHOD_ITYPE_END_WITH_REQUEST, "L50002/00");
+    assertOnMethod(mr, "MethodEmptyI", "LINT_METHOD_ITYPE_END_WITH_REQUEST");
   }
 
   @Test
@@ -82,7 +82,7 @@ public class LintTest {
 
     ServicePatch mr = result.getServicePatchesOrThrow("anemos.metastore.core.MethodService");
     Assert.assertEquals(1, getInfoForMethod(mr, "MethodEmptyR").size());
-    assertOnMethod(mr, "MethodEmptyR", LintRule.LINT_METHOD_RTYPE_END_WITH_RESPONSE, "L50003/00");
+    assertOnMethod(mr, "MethodEmptyR", "LINT_METHOD_RTYPE_END_WITH_RESPONSE");
   }
 
   @Test
@@ -114,7 +114,7 @@ public class LintTest {
     return results.createProto();
   }
 
-  private List<RuleInfo> getInfoForField(MessagePatch mr, int fieldNumber) {
+  private List<LintRule> getInfoForField(MessagePatch mr, int fieldNumber) {
     for (FieldPatch fieldResult : mr.getFieldPatchesList()) {
       if (fieldResult.getNumber() == fieldNumber) {
         return fieldResult.getInfoList();
@@ -124,7 +124,7 @@ public class LintTest {
     return null;
   }
 
-  private List<RuleInfo> getInfoForMethod(ServicePatch mr, String methodName) {
+  private List<LintRule> getInfoForMethod(ServicePatch mr, String methodName) {
     for (MethodPatch methodResult : mr.getMethodPatchesList()) {
       if (methodResult.getName().equals(methodName)) {
         return methodResult.getInfoList();
@@ -133,49 +133,41 @@ public class LintTest {
     return null;
   }
 
-  private void assertOnMethod(
-      ServicePatch mr, String methodName, LintRule expecredRule, String expectedCode) {
-    List<RuleInfo> infoForField = getInfoForMethod(mr, methodName);
+  private void assertOnMethod(ServicePatch mr, String methodName, String expecredRule) {
+    List<LintRule> infoForField = getInfoForMethod(mr, methodName);
     String code = null;
-    LintRule rule = null;
-    for (RuleInfo ruleInfo : infoForField) {
-      if (ruleInfo.getCode().equals(expectedCode) && ruleInfo.getLintRule().equals(expecredRule)) {
+    String rule = null;
+    for (LintRule ruleInfo : infoForField) {
+      if (ruleInfo.getLintRule().equals(expecredRule)) {
         return;
       }
-      code = ruleInfo.getCode();
       rule = ruleInfo.getLintRule();
     }
-    Assert.assertEquals(expectedCode, code);
     Assert.assertEquals(expecredRule, rule);
   }
 
-  private void assertOnField(
-      MessagePatch mr, int fieldNumber, LintRule expecredRule, String expectedCode) {
-    List<RuleInfo> infoForField = getInfoForField(mr, fieldNumber);
+  private void assertOnField(MessagePatch mr, int fieldNumber, String expecredRule) {
+    List<LintRule> infoForField = getInfoForField(mr, fieldNumber);
     String code = null;
-    LintRule rule = null;
-    for (RuleInfo ruleInfo : infoForField) {
-      if (ruleInfo.getCode().equals(expectedCode) && ruleInfo.getLintRule().equals(expecredRule)) {
+    String rule = null;
+    for (LintRule ruleInfo : infoForField) {
+      if (ruleInfo.getLintRule().equals(expecredRule)) {
         return;
       }
-      code = ruleInfo.getCode();
       rule = ruleInfo.getLintRule();
     }
-    Assert.assertEquals(expectedCode, code);
     Assert.assertEquals(expecredRule, rule);
   }
 
-  private void assertOnMessage(MessagePatch mr, LintRule expectedRule, String expectedCode) {
+  private void assertOnMessage(MessagePatch mr, String expectedRule) {
     String code = null;
-    LintRule rule = null;
-    for (RuleInfo ruleInfo : mr.getInfoList()) {
-      if (ruleInfo.getCode().equals(expectedCode) && ruleInfo.getLintRule().equals(expectedRule)) {
+    String rule = null;
+    for (LintRule ruleInfo : mr.getInfoList()) {
+      if (ruleInfo.getLintRule().equals(expectedRule)) {
         return;
       }
-      code = ruleInfo.getCode();
       rule = ruleInfo.getLintRule();
     }
-    Assert.assertEquals(expectedCode, code);
     Assert.assertEquals(expectedRule, rule);
   }
 
@@ -193,20 +185,18 @@ public class LintTest {
     FilePatch fr = result.getFilePatchesOrThrow("anemos/metastore/invalid/invalid.proto");
 
     Assert.assertEquals(1, result.getFilePatchesCount());
-    assertOnFile(fr, LintRule.LINT_PACKAGE_NO_DIR_ALIGNMENT, "L70001/00");
+    assertOnFile(fr, "LINT_PACKAGE_NO_DIR_ALIGNMENT");
   }
 
-  private void assertOnFile(FilePatch fr, LintRule expectedRule, String expectedCode) {
+  private void assertOnFile(FilePatch fr, String expectedRule) {
     String code = null;
-    LintRule rule = null;
-    for (RuleInfo ruleInfo : fr.getInfoList()) {
-      if (ruleInfo.getCode().equals(expectedCode) && ruleInfo.getLintRule().equals(expectedRule)) {
+    String rule = null;
+    for (LintRule ruleInfo : fr.getInfoList()) {
+      if (ruleInfo.getLintRule().equals(expectedRule)) {
         return;
       }
-      code = ruleInfo.getCode();
       rule = ruleInfo.getLintRule();
     }
-    Assert.assertEquals(expectedCode, code);
     Assert.assertEquals(expectedRule, rule);
   }
 
@@ -234,7 +224,7 @@ public class LintTest {
         result.getFilePatchesOrThrow("anemos/metastore/core/test/v1/version_scope_invalid.proto");
 
     Assert.assertEquals(1, result.getFilePatchesCount());
-    assertOnFile(fr, LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT, "L70002/00");
+    assertOnFile(fr, "LINT_PACKAGE_NO_VERSION_ALIGNMENT");
   }
 
   private Patch lintVersion(Descriptors.Descriptor ref) throws IOException {
@@ -260,7 +250,7 @@ public class LintTest {
     FilePatch fr =
         result.getFilePatchesOrThrow("anemos/metastore/unused/invalid/unused_invalid_import.proto");
     Assert.assertEquals(1, result.getFilePatchesCount());
-    assertOnFile(fr, LintRule.LINT_IMPORT_NO_ALIGNMENT, "L80001/00");
+    assertOnFile(fr, "LINT_IMPORT_NO_ALIGNMENT");
   }
 
   private Patch lintImport(Descriptors.Descriptor ref) throws IOException {
