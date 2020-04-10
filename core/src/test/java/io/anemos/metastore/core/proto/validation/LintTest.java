@@ -20,13 +20,13 @@ public class LintTest {
 
   @Test
   public void fieldOkSnakeCase() throws IOException {
-    Report result = lintMessage(Lint.LintFieldNamesGood.getDescriptor());
+    Patch result = lintMessage(Lint.LintFieldNamesGood.getDescriptor());
     Assert.assertEquals(0, result.getMessageResultsCount());
   }
 
   @Test
   public void fieldNokCamel() throws IOException {
-    Report result = lintMessage(Lint.LintFieldNamesBad.getDescriptor());
+    Patch result = lintMessage(Lint.LintFieldNamesBad.getDescriptor());
     Assert.assertEquals(1, result.getMessageResultsCount());
 
     MessageResult mr = result.getMessageResultsOrThrow("anemos.metastore.core.LintFieldNamesBad");
@@ -37,7 +37,7 @@ public class LintTest {
 
   @Test
   public void messageLowerCase() throws IOException {
-    Report result = lintMessage(Lint.lintmessagelowercase.getDescriptor());
+    Patch result = lintMessage(Lint.lintmessagelowercase.getDescriptor());
     Assert.assertEquals(1, result.getMessageResultsCount());
 
     MessageResult mr =
@@ -47,7 +47,7 @@ public class LintTest {
 
   @Test
   public void messageCamelCase() throws IOException {
-    Report result = lintMessage(Lint.lint_message_camelcase.getDescriptor());
+    Patch result = lintMessage(Lint.lint_message_camelcase.getDescriptor());
     Assert.assertEquals(1, result.getMessageResultsCount());
 
     MessageResult mr =
@@ -57,7 +57,7 @@ public class LintTest {
 
   @Test
   public void methodInputAndReturnTypeNoRR() throws IOException {
-    Report result =
+    Patch result =
         lintService(Lint.LintFieldNamesGood.getDescriptor(), "anemos.metastore.core.MethodService");
 
     ServiceResult mr = result.getServiceResultsOrThrow("anemos.metastore.core.MethodService");
@@ -68,7 +68,7 @@ public class LintTest {
 
   @Test
   public void methodInputTypeNoR() throws IOException {
-    Report result =
+    Patch result =
         lintService(Lint.LintFieldNamesGood.getDescriptor(), "anemos.metastore.core.MethodService");
 
     ServiceResult mr = result.getServiceResultsOrThrow("anemos.metastore.core.MethodService");
@@ -78,7 +78,7 @@ public class LintTest {
 
   @Test
   public void methodReturnTypeNoR() throws IOException {
-    Report result =
+    Patch result =
         lintService(Lint.LintFieldNamesGood.getDescriptor(), "anemos.metastore.core.MethodService");
 
     ServiceResult mr = result.getServiceResultsOrThrow("anemos.metastore.core.MethodService");
@@ -88,14 +88,14 @@ public class LintTest {
 
   @Test
   public void methodOk() throws IOException {
-    Report result =
+    Patch result =
         lintService(Lint.LintFieldNamesGood.getDescriptor(), "anemos.metastore.core.MethodService");
 
     ServiceResult mr = result.getServiceResultsOrThrow("anemos.metastore.core.MethodService");
     Assert.assertNull(getInfoForMethod(mr, "MethodOk"));
   }
 
-  private Report lintMessage(Descriptors.Descriptor d) throws IOException {
+  private Patch lintMessage(Descriptors.Descriptor d) throws IOException {
     ProtoDomain pd = ProtoDomain.buildFrom(d);
     String message = d.getFullName();
 
@@ -105,7 +105,7 @@ public class LintTest {
     return results.createProto();
   }
 
-  private Report lintService(Descriptors.Descriptor ref, String name) throws IOException {
+  private Patch lintService(Descriptors.Descriptor ref, String name) throws IOException {
     ProtoDomain pd = ProtoDomain.buildFrom(ref);
 
     ValidationResults results = new ValidationResults();
@@ -183,14 +183,14 @@ public class LintTest {
   @Test
   public void packageScopeVersionValid() throws IOException {
     Descriptors.Descriptor descriptor = Lint.LintFieldNamesBad.getDescriptor();
-    Report result = lintPackage(descriptor);
+    Patch result = lintPackage(descriptor);
     Assert.assertEquals(0, result.getFileResultsCount());
   }
 
   @Test
   public void packageScopeVersionInvalid() throws IOException {
     Descriptors.Descriptor descriptor = Invalid.InvalidMessage.getDescriptor();
-    Report result = lintPackage(descriptor);
+    Patch result = lintPackage(descriptor);
     FileResult fr = result.getFileResultsOrThrow("anemos/metastore/invalid/invalid.proto");
 
     Assert.assertEquals(1, result.getFileResultsCount());
@@ -211,7 +211,7 @@ public class LintTest {
     Assert.assertEquals(expectedRule, rule);
   }
 
-  private Report lintPackage(Descriptors.Descriptor ref) throws IOException {
+  private Patch lintPackage(Descriptors.Descriptor ref) throws IOException {
     ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 
@@ -223,14 +223,14 @@ public class LintTest {
   @Test
   public void versionScopeValid() throws IOException {
     Descriptors.Descriptor descriptor = VersionScopeValid.VersionValid.getDescriptor();
-    Report result = lintVersion(descriptor);
+    Patch result = lintVersion(descriptor);
     Assert.assertEquals(0, result.getFileResultsCount());
   }
 
   @Test
   public void versionScopeInvalid() throws IOException {
     Descriptors.Descriptor descriptor = VersionScopeInvalid.VersionInValid.getDescriptor();
-    Report result = lintVersion(descriptor);
+    Patch result = lintVersion(descriptor);
     FileResult fr =
         result.getFileResultsOrThrow("anemos/metastore/core/test/v1/version_scope_invalid.proto");
 
@@ -238,7 +238,7 @@ public class LintTest {
     assertOnFile(fr, LintRule.LINT_PACKAGE_NO_VERSION_ALIGNMENT, "L70002/00");
   }
 
-  private Report lintVersion(Descriptors.Descriptor ref) throws IOException {
+  private Patch lintVersion(Descriptors.Descriptor ref) throws IOException {
     ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 
@@ -250,21 +250,21 @@ public class LintTest {
   @Test
   public void unusedImportValid() throws IOException {
     Descriptors.Descriptor descriptor = UsedValidImport.Valid.getDescriptor();
-    Report result = lintImport(descriptor);
+    Patch result = lintImport(descriptor);
     Assert.assertEquals(0, result.getFileResultsCount());
   }
 
   @Test
   public void unusedImportInvalid() throws IOException {
     Descriptors.Descriptor descriptor = UnusedInvalidImport.Invalid.getDescriptor();
-    Report result = lintImport(descriptor);
+    Patch result = lintImport(descriptor);
     FileResult fr =
         result.getFileResultsOrThrow("anemos/metastore/unused/invalid/unused_invalid_import.proto");
     Assert.assertEquals(1, result.getFileResultsCount());
     assertOnFile(fr, LintRule.LINT_IMPORT_NO_ALIGNMENT, "L80001/00");
   }
 
-  private Report lintImport(Descriptors.Descriptor ref) throws IOException {
+  private Patch lintImport(Descriptors.Descriptor ref) throws IOException {
     ProtoDomain pd = ProtoDomain.buildFrom(ref);
     ValidationResults results = new ValidationResults();
 

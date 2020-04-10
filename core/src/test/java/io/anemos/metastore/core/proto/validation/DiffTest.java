@@ -160,32 +160,32 @@ public class DiffTest {
 
   @Test
   public void toBaseExtraFileAdded() throws IOException {
-    Report report = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
+    Patch patch = diffOnPackage(TestSets.base(), TestSets.baseExtraFile());
 
-    Assert.assertEquals(1, report.getFileResultsCount());
+    Assert.assertEquals(1, patch.getFileResultsCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        report.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        patch.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, report.getMessageResultsCount());
+    Assert.assertEquals(1, patch.getMessageResultsCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        report.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
   @Test
   public void toBaseExtraFileRemoved() throws IOException {
-    Report report = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
+    Patch patch = diffOnPackage(TestSets.baseExtraFile(), TestSets.base());
 
-    Assert.assertEquals(1, report.getFileResultsCount());
+    Assert.assertEquals(1, patch.getFileResultsCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        report.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
+        patch.getFileResultsOrThrow("test/v1/extra.proto").getChange().getChangeType());
 
-    Assert.assertEquals(1, report.getMessageResultsCount());
+    Assert.assertEquals(1, patch.getMessageResultsCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        report.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch.getMessageResultsOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
   }
 
   private FieldResult diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
@@ -193,12 +193,12 @@ public class DiffTest {
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnMessage("test.v1.ProtoBeamBasicMessage");
 
-    Report result = results.createProto();
+    Patch result = results.createProto();
     System.out.println(result);
     return result.getMessageResultsMap().get("test.v1.ProtoBeamBasicMessage").getFieldResults(0);
   }
 
-  private Report diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
+  private Patch diffOnPackage(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnPackagePrefix("test.v1");

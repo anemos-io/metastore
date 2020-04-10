@@ -10,7 +10,7 @@ import io.anemos.metastore.v1alpha1.FileResult;
 import io.anemos.metastore.v1alpha1.ImportChangeInfo;
 import io.anemos.metastore.v1alpha1.MessageResult;
 import io.anemos.metastore.v1alpha1.OptionChangeInfo;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.Patch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,14 +22,14 @@ class ShadowApply {
 
   private ProtoDomain shadow;
 
-  public ProtoDomain applyDelta(ProtoDomain defaultDescriptor, Report delta) {
+  public ProtoDomain applyDelta(ProtoDomain defaultDescriptor, Patch patch) {
     try {
       shadow = defaultDescriptor;
 
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders =
           new HashMap<>();
-      applyMessageResults(delta, fileDescriptorProtoBuilders);
-      applyFileResults(delta, fileDescriptorProtoBuilders);
+      applyMessageResults(patch, fileDescriptorProtoBuilders);
+      applyFileResults(patch, fileDescriptorProtoBuilders);
       List<DescriptorProtos.FileDescriptorProto> fileDescriptorProtos = new ArrayList<>();
       fileDescriptorProtoBuilders.forEach(
           (name, fd) -> {
@@ -37,14 +37,14 @@ class ShadowApply {
           });
       return shadow.toBuilder().merge(fileDescriptorProtos).build();
     } catch (Exception e) {
-      throw new RuntimeException("Failed to apply delta", e);
+      throw new RuntimeException("Failed to apply patch", e);
     }
   }
 
   private void applyFileResults(
-      Report delta,
+      Patch patch,
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
-    for (Map.Entry<String, FileResult> fileResultEntry : delta.getFileResultsMap().entrySet()) {
+    for (Map.Entry<String, FileResult> fileResultEntry : patch.getFileResultsMap().entrySet()) {
       Descriptors.FileDescriptor fileDescriptor =
           shadow.getFileDescriptorByFileName(fileResultEntry.getKey());
 
@@ -61,10 +61,10 @@ class ShadowApply {
   }
 
   private void applyMessageResults(
-      Report delta,
+      Patch patch,
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
     for (Map.Entry<String, MessageResult> messageResultEntry :
-        delta.getMessageResultsMap().entrySet()) {
+        patch.getMessageResultsMap().entrySet()) {
       Descriptors.Descriptor descriptor = shadow.getDescriptorByName(messageResultEntry.getKey());
       HashMap<String, Integer> messageNameToIndexMap =
           getMessageNameToIndexMap(descriptor.getFile());

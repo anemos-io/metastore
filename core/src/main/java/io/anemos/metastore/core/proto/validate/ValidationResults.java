@@ -156,8 +156,8 @@ public class ValidationResults {
     fileResultContainer.addImportChange(info);
   }
 
-  public Report createProto() {
-    Report.Builder builder = Report.newBuilder();
+  public Patch createProto() {
+    Patch.Builder builder = Patch.newBuilder();
     fileMap.values().forEach(file -> builder.putFileResults(file.fullName, file.createProto()));
     messageMap
         .values()

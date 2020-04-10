@@ -8,12 +8,15 @@ option java_multiple_files = true;
 package grpc.registry.v1alpha1;
 
 message Report {
+    Patch patch = 1;
+    ResultCount result_count = 5;
+}
+
+message Patch {
     map<string, FileResult> file_results = 1;
     map<string, MessageResult> message_results = 2;
     map<string, EnumResult> enum_results = 3;
     map<string, ServiceResult> service_results = 4;
-
-    ResultCount result_count = 5;
 }
 
 message ResultCount {

@@ -24,12 +24,13 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
   }
 
   @Override
-  public Report validate(Report report) {
+  public Report validate(Patch patch) {
     ResultCount.Builder resultCountBuilder = ResultCount.newBuilder();
 
-    Report.Builder builder = Report.newBuilder(report);
+    Report.Builder builder = Report.newBuilder();
+    builder.setPatch(patch);
     int error = 0;
-    for (MessageResult messageResult : builder.getMessageResultsMap().values()) {
+    for (MessageResult messageResult : patch.getMessageResultsMap().values()) {
       if (skipValidationForAlpha(messageResult.getPackage())) {
         continue;
       }
@@ -103,7 +104,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         }
       }
     }
-    for (EnumResult enumResult : builder.getEnumResultsMap().values()) {
+    for (EnumResult enumResult : patch.getEnumResultsMap().values()) {
       if (skipValidationForAlpha(enumResult.getPackage())) {
         continue;
       }

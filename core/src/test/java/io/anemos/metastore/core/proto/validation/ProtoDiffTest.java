@@ -131,7 +131,7 @@ public class ProtoDiffTest {
   public void noDiff() throws Exception {
     ProtoDomain dRef = ProtoDomain.builder().add(FILE_V1).build();
     ProtoDomain dNew = ProtoDomain.builder().add(FILE_V1).build();
-    Report report = diff(dRef, dNew);
+    Patch patch = diff(dRef, dNew);
   }
 
   @Test
@@ -152,8 +152,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum2");
+    Patch patch = diff(dRef, dNew);
+    EnumResult result = patch.getEnumResultsMap().get("package.v1.Enum2");
     Assert.assertEquals("package.v1.Enum2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
@@ -164,8 +164,8 @@ public class ProtoDiffTest {
     DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().clearEnumType().build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
+    Patch patch = diff(dRef, dNew);
+    EnumResult result = patch.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals("package.v1.Enum1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
@@ -188,8 +188,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
+    Patch patch = diff(dRef, dNew);
+    EnumResult result = patch.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(2, result.getValueResults(0).getNumber());
@@ -208,8 +208,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
+    Patch patch = diff(dRef, dNew);
+    EnumResult result = patch.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -233,8 +233,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    EnumResult result = report.getEnumResultsMap().get("package.v1.Enum1");
+    Patch patch = diff(dRef, dNew);
+    EnumResult result = patch.getEnumResultsMap().get("package.v1.Enum1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getValueResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getValueResults(0).getNumber());
@@ -254,8 +254,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message2");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message2");
     Assert.assertEquals("package.v1.Message2", result.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, result.getChange().getChangeType());
   }
@@ -266,8 +266,8 @@ public class ProtoDiffTest {
     DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().removeMessageType(0).build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals("package.v1.Message1", result.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, result.getChange().getChangeType());
   }
@@ -291,8 +291,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.ADDITION, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(4, result.getFieldResults(0).getNumber());
@@ -311,8 +311,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -338,8 +338,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(1, result.getFieldResults(0).getNumber());
@@ -371,8 +371,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(
@@ -403,8 +403,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.Message1");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.Message1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(
@@ -437,8 +437,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    MessageResult result = report.getMessageResultsMap().get("package.v1.TestSubMessage");
+    Patch patch = diff(dRef, dNew);
+    MessageResult result = patch.getMessageResultsMap().get("package.v1.TestSubMessage");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.CHANGED, result.getFieldResults(0).getChange().getChangeType());
     Assert.assertEquals(
@@ -458,8 +458,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    ServiceResult serviceResult = report.getServiceResultsMap().get("package.v1.Service2");
+    Patch patch = diff(dRef, dNew);
+    ServiceResult serviceResult = patch.getServiceResultsMap().get("package.v1.Service2");
     Assert.assertEquals("package.v1.Service2", serviceResult.getChange().getToName());
     Assert.assertEquals(ChangeType.ADDITION, serviceResult.getChange().getChangeType());
   }
@@ -470,8 +470,8 @@ public class ProtoDiffTest {
     DescriptorProtos.FileDescriptorProto fd = FILE_V1.toBuilder().clearService().build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    ServiceResult serviceResult = report.getServiceResultsMap().get("package.v1.Service1");
+    Patch patch = diff(dRef, dNew);
+    ServiceResult serviceResult = patch.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals("package.v1.Service1", serviceResult.getChange().getFromName());
     Assert.assertEquals(ChangeType.REMOVAL, serviceResult.getChange().getChangeType());
   }
@@ -495,8 +495,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
+    Patch patch = diff(dRef, dNew);
+    ServiceResult result = patch.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(
         ChangeType.ADDITION, result.getMethodResults(0).getChange().getChangeType());
@@ -515,8 +515,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
+    Patch patch = diff(dRef, dNew);
+    ServiceResult result = patch.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
     Assert.assertEquals(ChangeType.REMOVAL, result.getMethodResults(0).getChange().getChangeType());
     Assert.assertEquals("Method1", result.getMethodResults(0).getName());
@@ -540,8 +540,8 @@ public class ProtoDiffTest {
             .build();
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
-    Report report = diff(dRef, dNew);
-    ServiceResult result = report.getServiceResultsMap().get("package.v1.Service1");
+    Patch patch = diff(dRef, dNew);
+    ServiceResult result = patch.getServiceResultsMap().get("package.v1.Service1");
     Assert.assertEquals(ChangeType.UNCHANGED, result.getChange().getChangeType());
 
     Assert.assertEquals(
@@ -556,7 +556,7 @@ public class ProtoDiffTest {
     Assert.assertEquals("", result.getMethodResults(1).getChange().getToName());
   }
 
-  private Report diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
+  private Patch diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(dRef, dNew, results);
     diff.diffOnFileName("package/v1/file1.proto");

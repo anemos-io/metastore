@@ -135,7 +135,7 @@ public class ShadowE2ETest {
                     fileDescriptor.toProto().toByteString()));
     schemaRegistyStub.submitSchema(submitSchemaRequest2.build());
 
-    // check shadow delta insides
+    // check shadow patch insides
     ValidationResults expectedResults = new ValidationResults();
     ProtoDiff protoDiff = new ProtoDiff(baseKnownOption(), baseAddMessageOption(), expectedResults);
     protoDiff.diffOnFileName("test/v1/simple.proto");
@@ -144,7 +144,7 @@ public class ShadowE2ETest {
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
         expectedResults.createProto().getMessageResultsMap(),
-        actualShadowReport.getMessageResultsMap());
+        actualShadowReport.getPatch().getMessageResultsMap());
 
     // add field to default
     RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
@@ -163,6 +163,7 @@ public class ShadowE2ETest {
         ChangeType.ADDITION,
         verifyDefaultResponse2
             .getReport()
+            .getPatch()
             .getMessageResultsMap()
             .get("test.v1.ProtoBeamBasicMessage")
             .getFieldResults(0)
@@ -176,7 +177,7 @@ public class ShadowE2ETest {
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
         expectedResults.createProto().getMessageResultsMap(),
-        actualShadowReport.getMessageResultsMap());
+        actualShadowReport.getPatch().getMessageResultsMap());
 
     actualShadowRepo = ProtocUtil.createDescriptorSet(shadowrepoPath.toAbsolutePath().toString());
     Assert.assertEquals(
