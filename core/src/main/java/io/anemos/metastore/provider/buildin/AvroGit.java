@@ -27,18 +27,14 @@ public class AvroGit extends GitBase {
       String name, GitConfig config, ProtoDomain protoDomain, String rootOptionName)
       throws IOException {
 
-    RegistryP.SubmitSchemaRequest.Comment comment =
-        RegistryP.SubmitSchemaRequest.Comment.newBuilder()
-            .setDescription("Sync avro schema files.")
-            .build();
+    RegistryP.Note note = RegistryP.Note.newBuilder().setNote("Sync avro schema files.").build();
     AvroGit gitWriteOnly = new AvroGit(name, config, rootOptionName);
     gitWriteOnly.init();
-    gitWriteOnly.sync(protoDomain, comment);
+    gitWriteOnly.sync(protoDomain, note);
   }
 
   @Override
-  protected void sync(ProtoDomain protoContainer, RegistryP.SubmitSchemaRequest.Comment comment)
-      throws IOException {
+  protected void sync(ProtoDomain protoContainer, RegistryP.Note note) throws IOException {
     if (!config.isGitEnabled()) {
       return;
     }
@@ -65,7 +61,7 @@ public class AvroGit extends GitBase {
 
       Status status = gitRepo.status().call();
       if (status.hasUncommittedChanges()) {
-        this.commit(comment);
+        this.commit(note);
         this.push();
         LOG.info("Git changes pushed");
       } else {

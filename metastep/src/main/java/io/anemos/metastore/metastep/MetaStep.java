@@ -277,13 +277,27 @@ public class MetaStep {
     Map<String, Object> attributes = res.getAttrs();
 
     if (attributes.get("package_prefix") != null) {
-      schemaRequestBuilder.setPackagePrefix((String) attributes.get("package_prefix"));
+      schemaRequestBuilder.setMergeStrategy(
+          RegistryP.Merge.newBuilder()
+              .setPackagePrefixes(
+                  RegistryP.Merge.PackagePrefix.newBuilder()
+                      .addPackagePrefix((String) attributes.get("package_prefix")))
+              .setStrategy(RegistryP.Merge.Strategy.REPLACE));
     }
     if (attributes.get("package_name") != null) {
-      schemaRequestBuilder.setPackageName((String) attributes.get("package_name"));
+      schemaRequestBuilder.setMergeStrategy(
+          RegistryP.Merge.newBuilder()
+              .setPackageNames(
+                  RegistryP.Merge.PackageName.newBuilder()
+                      .addPackageName((String) attributes.get("package_name")))
+              .setStrategy(RegistryP.Merge.Strategy.REPLACE));
     }
     if (attributes.get("file_name") != null) {
-      schemaRequestBuilder.setFileName((String) attributes.get("file_name"));
+      schemaRequestBuilder.setMergeStrategy(
+          RegistryP.Merge.newBuilder()
+              .setFiles(
+                  RegistryP.Merge.Files.newBuilder()
+                      .addFileName((String) attributes.get("file_name"))));
     }
     if (attributes.get("registry") != null) {
       schemaRequestBuilder.setRegistryName((String) attributes.get("registry"));
@@ -292,16 +306,15 @@ public class MetaStep {
       schemaRequestBuilder.setValidationProfile((String) attributes.get("profile"));
     }
     if (attributes.get("comment") != null) {
-      RegistryP.SubmitSchemaRequest.Comment.Builder comment =
-          RegistryP.SubmitSchemaRequest.Comment.newBuilder()
-              .setDescription((String) attributes.get("comment"));
+      RegistryP.Note.Builder note =
+          RegistryP.Note.newBuilder().setNote((String) attributes.get("comment"));
       if (attributes.get("email") != null) {
-        comment.setEmail((String) attributes.get("email"));
+        note.setEmail((String) attributes.get("email"));
       }
       if (attributes.get("user") != null) {
-        comment.setName((String) attributes.get("user"));
+        note.setName((String) attributes.get("user"));
       }
-      schemaRequestBuilder.setComment(comment.build());
+      schemaRequestBuilder.setNote(note);
     }
     return schemaRequestBuilder.build();
   }

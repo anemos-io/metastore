@@ -2,7 +2,7 @@ package io.anemos.metastore.core.registry;
 
 import io.anemos.metastore.config.MetaStoreConfig;
 import io.anemos.metastore.config.RegistryConfig;
-import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
+import io.anemos.metastore.v1alpha1.RegistryP.Note;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import java.util.ArrayList;
@@ -49,10 +49,10 @@ public class Registries {
             });
   }
 
-  void notifyShadows(String name, Comment comment) {
+  void notifyShadows(String name, Note note) {
     List<AbstractRegistry> registries = shadowSubscribers.get(name);
     if (registries != null) {
-      registries.forEach(registry -> registry.update(comment));
+      registries.forEach(registry -> registry.update(note));
     }
   }
 

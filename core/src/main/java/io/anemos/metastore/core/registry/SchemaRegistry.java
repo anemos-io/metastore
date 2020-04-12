@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ class SchemaRegistry extends AbstractRegistry {
       writeWriteOnly();
     }
     initGitRepo();
-    syncGitRepo(Comment.newBuilder().setDescription("(Re)Sync repo").build());
+    syncGitRepo(RegistryP.Note.newBuilder().setNote("(Re)Sync repo").build());
   }
 
   @Override
@@ -41,17 +41,17 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report, RegistryP.Note note) {
     protoContainer = in;
-    update(comment);
-    syncGitRepo(comment);
+    update(note);
+    syncGitRepo(note);
     notifyEventListeners(report);
   }
 
   @Override
-  public void update(Comment comment) {
+  public void update(RegistryP.Note note) {
     write();
-    registries.notifyShadows(getName(), comment);
+    registries.notifyShadows(getName(), note);
   }
 
   private void write() {

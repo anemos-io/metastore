@@ -71,7 +71,6 @@ message LintRule {
     string lint_rule = 1;
     bool suppressed = 3;
     google.protobuf.StringValue suppressed_comment = 4;
-
 }
 
 // Generic Change message meant for top level objects like File, Message,

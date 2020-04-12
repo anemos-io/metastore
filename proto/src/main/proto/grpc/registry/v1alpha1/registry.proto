@@ -12,49 +12,35 @@ service Registry {
     rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
     rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
     rpc SubmitSchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
+    rpc VerifyPatch (PatchSchemaRequest) returns (PatchSchemaResponse);
+    rpc PatchSchema (PatchSchemaRequest) returns (PatchSchemaResponse);
 }
 
 message SubmitSchemaRequest {
-
-    // Information of this schema changes.
-    message Comment {
-        string name = 1;
-        string email = 2;
-        string description = 3;
-    }
-
-    message FileGroup {
-        repeated string file_name = 1;
-    }
-
-    // How a scoped submit will be merged into the existing registry.
-    enum MergeStrategy {
-        MERGE = 0;
-        REPLACE = 1;
-        CLEAR = 2;
-    }
-
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
 
-    // These are proto2 type google.protobuf.FileDescriptorProto, but
-    // we avoid taking a dependency on descriptor.proto, which uses
-    // proto2 only features, by making them opaque
-    // bytes instead
+    // The google.protobuf.FileDescriptorProto to be submitted or verified. As these
+    // messages are proto2 we avoid taking a dependency on  descriptor.proto, which uses
+    // proto2 only features, by making them opaque bytes instead.
     repeated bytes file_descriptor_proto = 2;
 
-    MergeStrategy merge_strategy = 9;
+    // Describes the intended merge behaviour towards the current domain already present
+    // in the registry. A lot of use-cases merit partial updates, and even clearing of
+    // file descriptors present in the registry.
+    //
+    // If the no strategy is provided a simple merge strategy is applied that is equivalent
+    // to setting domain with merge strategy MERGE.
+    Merge merge_strategy = 3;
 
-    oneof entity_scope {
-        string package_name = 3;
-        string package_prefix = 4;
-        string file_name = 5;
-        FileGroup file_group = 8;
-    }
+    // The validation profile that is applied to this request. If non is provided the service
+    // default profile is applied. If the service doesn't recognises the profile and error is
+    // expected to be returned.
+    string validation_profile = 4;
 
-    string validation_profile = 6;
-    Comment comment = 7;
+    // If the service keeps track of the registry the note can provide usefull information.
+    Note note = 5;
 }
 
 message SubmitSchemaResponse {
@@ -81,10 +67,62 @@ message GetSchemaRequest {
 }
 
 message GetSchemaResponse {
-    // These are proto2 type google.protobuf.FileDescriptorProto, but
-    // we avoid taking a dependency on descriptor.proto, which uses
-    // proto2 only features, by making them opaque
-    // bytes instead
+    // The requested google.protobuf.FileDescriptorProto binaries. As these messages
+    // are proto2 we avoid taking a dependency on  descriptor.proto, which uses proto2 only
+    // features, by making them opaque bytes instead.
     repeated bytes file_descriptor_proto = 1;
     int32 error_code = 2;
 }
+
+message PatchSchemaRequest {
+
+    // Represents the schema registry names. If a schema registry doesn't support multiple
+    // registries this field is ignored. The default value represents the default registry.
+    string registry_name = 1;
+
+    Patch patch = 2;
+
+    string validation_profile = 3;
+    Note note = 4;
+}
+
+message PatchSchemaResponse {
+    string schema_profile = 1;
+    Report report = 2;
+    int32 error_code = 3;
+}
+
+// Information of this schema changes.
+message Note {
+    string name = 1;
+    string email = 2;
+    string note = 3;
+}
+
+message Merge {
+    // How a scoped submit will be merged into the existing registry.
+    enum Strategy {
+        MERGE = 0;
+        REPLACE = 1;
+    }
+
+    message Files {
+        repeated string file_name = 1;
+    }
+
+    message PackageName {
+        repeated string package_name = 1;
+    }
+
+    message PackagePrefix {
+        repeated string package_prefix = 1;
+    }
+
+    oneof merge_strategy {
+        Files files = 1;
+        PackageName package_names = 2;
+        PackagePrefix package_prefixes = 3;
+    }
+    Strategy strategy = 4;
+}
+

@@ -1,5 +1,10 @@
 package io.anemos.metastore;
 
+import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.MERGESTRATEGY_NOT_SET;
+import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.PACKAGE_NAMES;
+import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.PACKAGE_PREFIXES;
+import static io.anemos.metastore.v1alpha1.RegistryP.Merge.Strategy.REPLACE;
+
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.core.proto.profile.*;
 import io.anemos.metastore.core.proto.validate.ProtoDiff;
@@ -88,37 +93,44 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     ProtoDomain in;
     try {
       ProtoDomain.Builder builder = registry.get().toBuilder();
-      switch (request.getEntityScopeCase()) {
-        case PACKAGE_NAME:
-          in =
-              builder
-                  .replacePackageBinary(
-                      validatePackage(request.getPackageName()),
-                      request.getFileDescriptorProtoList())
-                  .build();
+      RegistryP.Merge mergeStrategy = request.getMergeStrategy();
+      switch (mergeStrategy.getMergeStrategyCase()) {
+        case PACKAGE_NAMES:
+          if (mergeStrategy.getStrategy().equals(REPLACE)) {
+            mergeStrategy.getPackageNames().getPackageNameList().forEach(builder::clearPackage);
+          }
+          for (String name1 : mergeStrategy.getPackageNames().getPackageNameList()) {
+            builder.mergeInPackageBinary(name1, request.getFileDescriptorProtoList());
+          }
           break;
-        case PACKAGE_PREFIX:
-          in =
-              builder
-                  .replacePackagePrefixBinary(
-                      validatePackage(request.getPackagePrefix()),
-                      request.getFileDescriptorProtoList())
-                  .build();
+        case PACKAGE_PREFIXES:
+          if (mergeStrategy.getStrategy().equals(REPLACE)) {
+            mergeStrategy
+                .getPackagePrefixes()
+                .getPackagePrefixList()
+                .forEach(builder::clearPackagePrefix);
+          }
+          for (String s : mergeStrategy.getPackagePrefixes().getPackagePrefixList()) {
+            builder.mergeInPackagePrefixBinary(s, request.getFileDescriptorProtoList());
+          }
           break;
-        case FILE_NAME:
-          in =
-              builder
-                  .replaceFileBinary(
-                      validateFileName(request.getFileName()), request.getFileDescriptorProtoList())
-                  .build();
+        case FILES:
+          if (mergeStrategy.getStrategy().equals(REPLACE)) {
+            mergeStrategy.getFiles().getFileNameList().forEach(builder::clearFile);
+          }
+          for (String name : mergeStrategy.getFiles().getFileNameList()) {
+            builder.mergeFileBinary(name, request.getFileDescriptorProtoList());
+          }
           break;
-        case ENTITYSCOPE_NOT_SET:
+        case MERGESTRATEGY_NOT_SET:
         default:
-          in = builder.mergeBinary(request.getFileDescriptorProtoList()).build();
+          if (mergeStrategy.getStrategy().equals(REPLACE)) {
+            builder.clearPackagePrefix("");
+          }
+          builder.mergeBinary(request.getFileDescriptorProtoList()).build();
+          break;
       }
-    } catch (StatusException e) {
-      responseObserver.onError(e);
-      return;
+      in = builder.build();
     } catch (IOException | RuntimeException e) {
       LOG.error("Invalid FileDescriptor Set", e);
       responseObserver.onError(
@@ -140,7 +152,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
                   .asRuntimeException());
           return;
         }
-        registry.update(registry.ref(), in, report, request.getComment());
+        registry.update(registry.ref(), in, report, request.getNote());
       }
 
       responseObserver.onNext(
@@ -169,22 +181,41 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
 
-    switch (request.getEntityScopeCase()) {
-      case ENTITYSCOPE_NOT_SET:
+    RegistryP.Merge mergeStrategy = request.getMergeStrategy();
+    switch (mergeStrategy.getMergeStrategyCase()) {
+      case MERGESTRATEGY_NOT_SET:
         diff.diffOnPackagePrefix("");
         lint.lintOnPackagePrefix("");
         break;
-      case PACKAGE_PREFIX:
-        diff.diffOnPackagePrefix(request.getPackagePrefix());
-        lint.lintOnPackagePrefix(request.getPackagePrefix());
+      case PACKAGE_PREFIXES:
+        mergeStrategy
+            .getPackagePrefixes()
+            .getPackagePrefixList()
+            .forEach(
+                name -> {
+                  diff.diffOnPackagePrefix(name);
+                  lint.lintOnPackagePrefix(name);
+                });
         break;
-      case PACKAGE_NAME:
-        diff.diffOnPackage(request.getPackageName());
-        lint.lintOnPackage(request.getPackageName());
+      case PACKAGE_NAMES:
+        mergeStrategy
+            .getPackageNames()
+            .getPackageNameList()
+            .forEach(
+                name -> {
+                  diff.diffOnPackage(name);
+                  lint.lintOnPackage(name);
+                });
         break;
-      case FILE_NAME:
-        diff.diffOnFileName(request.getFileName());
-        lint.lintOnFileName(request.getFileName());
+      case FILES:
+        mergeStrategy
+            .getFiles()
+            .getFileNameList()
+            .forEach(
+                name -> {
+                  diff.diffOnFileName(name);
+                  lint.lintOnFileName(name);
+                });
         break;
       default:
         throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
@@ -207,8 +238,11 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       case "avro:forward":
       case "avro:backward":
       case "allow:add":
-      default:
+      case "":
         profile = new ProfileAllowAdd();
+        break;
+      default:
+        throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
     }
 
     return profile.validate(results.createProto());

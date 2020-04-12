@@ -101,8 +101,11 @@ public class ShadowE2ETest {
 
     RegistryP.SubmitSchemaRequest.Builder submitSchemaRequest =
         RegistryP.SubmitSchemaRequest.newBuilder()
-            .setPackagePrefix("test")
-            .setRegistryName("default");
+            .setRegistryName("default")
+            .setMergeStrategy(
+                RegistryP.Merge.newBuilder()
+                    .setPackagePrefixes(
+                        RegistryP.Merge.PackagePrefix.newBuilder().addPackagePrefix("test")));
     baseKnownOption()
         .iterator()
         .forEach(
@@ -148,7 +151,12 @@ public class ShadowE2ETest {
 
     // add field to default
     RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
-        RegistryP.SubmitSchemaRequest.newBuilder().setPackagePrefix("test");
+        RegistryP.SubmitSchemaRequest.newBuilder()
+            .setMergeStrategy(
+                RegistryP.Merge.newBuilder()
+                    .setPackagePrefixes(
+                        RegistryP.Merge.PackagePrefix.newBuilder().addPackagePrefix("test").build())
+                    .build());
     baseKnownOptionAddField()
         .iterator()
         .forEach(

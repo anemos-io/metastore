@@ -3,7 +3,7 @@ package io.anemos.metastore.core.registry;
 import io.anemos.metastore.core.git.GitBase;
 import io.anemos.metastore.core.git.GitConfig;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.opencensus.common.Scope;
 import java.io.File;
 import java.util.List;
@@ -25,7 +25,7 @@ public class MetaGit extends GitBase {
   }
 
   @Override
-  protected void sync(ProtoDomain protoContainer, Comment comment) {
+  protected void sync(ProtoDomain protoContainer, RegistryP.Note note) {
     if (!config.isGitEnabled()) {
       return;
     }
@@ -42,7 +42,7 @@ public class MetaGit extends GitBase {
       clean(protoContainer);
       Status status = gitRepo.status().call();
       if (status.hasUncommittedChanges()) {
-        this.commit(comment);
+        this.commit(note);
         this.push();
         LOG.info("Git changes pushed");
       } else {

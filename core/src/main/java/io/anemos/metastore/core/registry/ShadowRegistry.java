@@ -7,7 +7,7 @@ import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Patch;
-import io.anemos.metastore.v1alpha1.RegistryP.SubmitSchemaRequest.Comment;
+import io.anemos.metastore.v1alpha1.RegistryP;
 import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
@@ -30,7 +30,7 @@ class ShadowRegistry extends AbstractRegistry {
     }
     updateShadowCache();
     initGitRepo();
-    syncGitRepo(Comment.newBuilder().setDescription("(Re)Sync repo").build());
+    syncGitRepo(RegistryP.Note.newBuilder().setNote("(Re)Sync repo").build());
   }
 
   private void updateShadowCache() {
@@ -64,7 +64,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report, Comment comment) {
+  public void update(ProtoDomain ref, ProtoDomain in, Report report, RegistryP.Note note) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.getScope() != null) {
@@ -75,15 +75,15 @@ class ShadowRegistry extends AbstractRegistry {
       throw new RuntimeException("Shadow registry should have package prefix scopes defined.");
     }
     patch = results.createProto();
-    update(comment);
+    update(note);
     notifyEventListeners(report);
   }
 
   @Override
-  public void update(Comment comment) {
+  public void update(RegistryP.Note note) {
     write();
     updateShadowCache();
-    syncGitRepo(comment);
+    syncGitRepo(note);
   }
 
   private void write() {

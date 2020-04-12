@@ -571,20 +571,34 @@ public class ProtoDomain implements Serializable {
       return merge(updateProtos);
     }
 
-    public Builder replaceFileBinary(String file, Collection<ByteString> updateBytes)
+    public Builder clearFile(String file) {
+      fileDescriptorMap.remove(file);
+      return this;
+    }
+
+    public Builder mergeFileBinary(String file, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> map = toMap(updateBytes);
       if (map.containsKey(file)) {
         add(map.get(file));
-      } else {
-        fileDescriptorMap.remove(file);
       }
       return this;
     }
 
-    public Builder replacePackageBinary(String packageName, Collection<ByteString> updateBytes)
+    public Builder mergeInPackageBinary(String packageName, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
+      // only add with package prefix
+      updated.forEach(
+          (fileName, fdp) -> {
+            if (fdp.getPackage().equals(packageName)) {
+              fileDescriptorMap.put(fileName, fdp);
+            }
+          });
+      return this;
+    }
+
+    public Builder clearPackage(String packageName) {
       List<String> removing = new ArrayList<>();
       // clear the package
       fileDescriptorMap.forEach(
@@ -594,13 +608,6 @@ public class ProtoDomain implements Serializable {
             }
           });
       removing.forEach(f -> fileDescriptorMap.remove(f));
-      // only add with package prefix
-      updated.forEach(
-          (fileName, fdp) -> {
-            if (fdp.getPackage().equals(packageName)) {
-              fileDescriptorMap.put(fileName, fdp);
-            }
-          });
       return this;
     }
 
@@ -614,10 +621,21 @@ public class ProtoDomain implements Serializable {
       return false;
     }
 
-    public Builder replacePackagePrefixBinary(
+    public Builder mergeInPackagePrefixBinary(
         String packagePrefix, Collection<ByteString> updateBytes)
         throws InvalidProtocolBufferException {
       Map<String, DescriptorProtos.FileDescriptorProto> updated = toMap(updateBytes);
+      // only add in package
+      updated.forEach(
+          (fileName, fdp) -> {
+            if (isInPackagePrefix(fdp, packagePrefix)) {
+              fileDescriptorMap.put(fileName, fdp);
+            }
+          });
+      return this;
+    }
+
+    public Builder clearPackagePrefix(String packagePrefix) {
       List<String> removing = new ArrayList<>();
       // clear the package prefix
       fileDescriptorMap.forEach(
@@ -627,13 +645,6 @@ public class ProtoDomain implements Serializable {
             }
           });
       removing.forEach(f -> fileDescriptorMap.remove(f));
-      // only add in package
-      updated.forEach(
-          (fileName, fdp) -> {
-            if (isInPackagePrefix(fdp, packagePrefix)) {
-              fileDescriptorMap.put(fileName, fdp);
-            }
-          });
       return this;
     }
 

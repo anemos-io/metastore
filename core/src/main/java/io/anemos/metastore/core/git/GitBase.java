@@ -139,15 +139,15 @@ public abstract class GitBase {
     gitRepo.pull().setTransportConfigCallback(transportConfigCallback).call();
   }
 
-  protected void commit(RegistryP.SubmitSchemaRequest.Comment comment) throws GitAPIException {
+  protected void commit(RegistryP.Note note) throws GitAPIException {
     CommitCommand commit = gitRepo.commit();
-    if (comment.getDescription().length() > 0) {
-      commit.setMessage(comment.getDescription());
+    if (note.getNote().length() > 0) {
+      commit.setMessage(note.getNote());
     } else {
       commit.setMessage("No message provider");
     }
-    if (comment.getEmail().length() > 0 || comment.getName().length() > 0) {
-      commit.setAuthor(comment.getName(), comment.getEmail());
+    if (note.getEmail().length() > 0 || note.getName().length() > 0) {
+      commit.setAuthor(note.getName(), note.getEmail());
     }
     commit.call();
   }
@@ -164,8 +164,7 @@ public abstract class GitBase {
     return null;
   }
 
-  protected abstract void sync(
-      ProtoDomain protoContainer, RegistryP.SubmitSchemaRequest.Comment comment) throws IOException;
+  protected abstract void sync(ProtoDomain protoContainer, RegistryP.Note note) throws IOException;
 
   protected abstract void clean(ProtoDomain domain) throws GitAPIException;
 
