@@ -18,13 +18,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ShadowApply {
+public class ProtoPatch {
 
-  private ProtoDomain shadow;
+  private ProtoDomain base;
 
-  public ProtoDomain applyDelta(ProtoDomain defaultDescriptor, Patch patch) {
+  public static ProtoDomain apply(ProtoDomain base, Patch patch) {
+    return new ProtoPatch(base).applyPatch(patch);
+  }
+
+  private ProtoPatch() {}
+
+  private ProtoPatch(ProtoDomain base) {
+    this.base = base;
+  }
+
+  private ProtoDomain applyPatch(Patch patch) {
     try {
-      shadow = defaultDescriptor;
 
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders =
           new HashMap<>();
@@ -35,7 +44,7 @@ class ShadowApply {
           (name, fd) -> {
             fileDescriptorProtos.add(fd.build());
           });
-      return shadow.toBuilder().merge(fileDescriptorProtos).build();
+      return base.toBuilder().merge(fileDescriptorProtos).build();
     } catch (Exception e) {
       throw new RuntimeException("Failed to apply patch", e);
     }
@@ -46,7 +55,7 @@ class ShadowApply {
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
     for (Map.Entry<String, FilePatch> fileResultEntry : patch.getFilePatchesMap().entrySet()) {
       Descriptors.FileDescriptor fileDescriptor =
-          shadow.getFileDescriptorByFileName(fileResultEntry.getKey());
+          base.getFileDescriptorByFileName(fileResultEntry.getKey());
 
       DescriptorProtos.FileDescriptorProto.Builder fileDescriptorProtoBuilder =
           getOrCreateFileDescriptorProtoBuilder(
@@ -65,7 +74,7 @@ class ShadowApply {
       HashMap<String, DescriptorProtos.FileDescriptorProto.Builder> fileDescriptorProtoBuilders) {
     for (Map.Entry<String, MessagePatch> messageResultEntry :
         patch.getMessagePatchesMap().entrySet()) {
-      Descriptors.Descriptor descriptor = shadow.getDescriptorByName(messageResultEntry.getKey());
+      Descriptors.Descriptor descriptor = base.getDescriptorByName(messageResultEntry.getKey());
       HashMap<String, Integer> messageNameToIndexMap =
           getMessageNameToIndexMap(descriptor.getFile());
       DescriptorProtos.DescriptorProto.Builder newDescriptorProtoBuilder =

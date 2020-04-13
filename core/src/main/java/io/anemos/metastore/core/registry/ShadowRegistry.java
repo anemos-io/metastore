@@ -40,7 +40,7 @@ class ShadowRegistry extends AbstractRegistry {
     } catch (StatusException e) {
       throw new RuntimeException("Unable to find registry with name " + shadowOf);
     }
-    protoContainer = new ShadowApply().applyDelta(original, this.patch);
+    protoContainer = ProtoPatch.apply(original, this.patch);
     protoContainer.registerOptions();
   }
 

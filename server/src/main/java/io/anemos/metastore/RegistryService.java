@@ -1,8 +1,5 @@
 package io.anemos.metastore;
 
-import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.MERGESTRATEGY_NOT_SET;
-import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.PACKAGE_NAMES;
-import static io.anemos.metastore.v1alpha1.RegistryP.Merge.MergeStrategyCase.PACKAGE_PREFIXES;
 import static io.anemos.metastore.v1alpha1.RegistryP.Merge.Strategy.REPLACE;
 
 import com.google.protobuf.Descriptors;
@@ -11,6 +8,7 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ProtoLint;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.core.registry.AbstractRegistry;
+import io.anemos.metastore.core.registry.ProtoPatch;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.BindP;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
@@ -141,26 +139,52 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       return;
     }
 
-    try {
-      Report report = validate(registry, request, registry.get(), in);
-
-      if (submit) {
-        if (hasErrors(report)) {
-          responseObserver.onError(
-              Status.fromCode(Status.Code.FAILED_PRECONDITION)
-                  .withDescription("Incompatible schema, us verify to get errors.")
-                  .asRuntimeException());
-          return;
-        }
-        registry.update(registry.ref(), in, report, request.getNote());
+    Report report =
+        validate(request.getValidationProfile(), request.getMergeStrategy(), registry.get(), in);
+    if (submit) {
+      if (hasErrors(report)) {
+        responseObserver.onError(
+            Status.fromCode(Status.Code.FAILED_PRECONDITION)
+                .withDescription("Incompatible schema, us verify to get errors.")
+                .asRuntimeException());
+        return;
       }
+      registry.update(registry.ref(), in, report, request.getNote());
+    }
 
-      responseObserver.onNext(
-          RegistryP.SubmitSchemaResponse.newBuilder().setReport(report).build());
-      responseObserver.onCompleted();
+    responseObserver.onNext(RegistryP.SubmitSchemaResponse.newBuilder().setReport(report).build());
+    responseObserver.onCompleted();
+  }
+
+  public void patch(
+      RegistryP.PatchSchemaRequest request,
+      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver,
+      boolean submit) {
+
+    AbstractRegistry registry;
+    try {
+      registry = metaStore.registries.get(request.getRegistryName());
     } catch (StatusException e) {
       responseObserver.onError(e);
+      return;
     }
+
+    ProtoDomain in = ProtoPatch.apply(registry.get(), request.getPatch());
+
+    Report report = validate(request.getValidationProfile(), registry.get(), in);
+    if (submit) {
+      if (hasErrors(report)) {
+        responseObserver.onError(
+            Status.fromCode(Status.Code.FAILED_PRECONDITION)
+                .withDescription("Incompatible schema, us verify to get errors.")
+                .asRuntimeException());
+        return;
+      }
+      registry.update(registry.ref(), in, report, request.getNote());
+    }
+
+    responseObserver.onNext(RegistryP.PatchSchemaResponse.newBuilder().setReport(report).build());
+    responseObserver.onCompleted();
   }
 
   private boolean hasErrors(Report report) {
@@ -171,17 +195,16 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     return false;
   }
 
+  private Report validate(String validationProfile, ProtoDomain ref, ProtoDomain in) {
+    return validate(validationProfile, RegistryP.Merge.getDefaultInstance(), ref, in);
+  }
+
   private Report validate(
-      AbstractRegistry registry,
-      RegistryP.SubmitSchemaRequest request,
-      ProtoDomain ref,
-      ProtoDomain in)
-      throws StatusException {
+      String validationProfile, RegistryP.Merge mergeStrategy, ProtoDomain ref, ProtoDomain in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
 
-    RegistryP.Merge mergeStrategy = request.getMergeStrategy();
     switch (mergeStrategy.getMergeStrategyCase()) {
       case MERGESTRATEGY_NOT_SET:
         diff.diffOnPackagePrefix("");
@@ -222,7 +245,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     }
 
     ValidationProfile profile;
-    switch (request.getValidationProfile()) {
+    switch (validationProfile) {
       case "allow:all":
         profile = new ProfileAllowAll();
         break;
@@ -354,5 +377,19 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     } catch (StatusException e) {
       responseObserver.onError(e);
     }
+  }
+
+  @Override
+  public void verifyPatch(
+      RegistryP.PatchSchemaRequest request,
+      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver) {
+    patch(request, responseObserver, false);
+  }
+
+  @Override
+  public void patchSchema(
+      RegistryP.PatchSchemaRequest request,
+      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver) {
+    patch(request, responseObserver, true);
   }
 }

@@ -38,7 +38,7 @@ public class ShadowTest {
 
     //    ShadowRegistry shadowRegistry = new ShadowRegistry(base, result);
     //    shadowRegistry.setDelta(result);
-    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = ProtoPatch.apply(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddMessageOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -60,7 +60,7 @@ public class ShadowTest {
     Patch result = results.createProto();
     System.out.println(result);
 
-    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = ProtoPatch.apply(base, result);
 
     Descriptors.Descriptor expectedDescriptor =
         baseAddFieldOption.getDescriptorByName("test.v1.ProtoBeamBasicMessage");
@@ -83,7 +83,7 @@ public class ShadowTest {
     Patch result = results.createProto();
     System.out.println(result);
 
-    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = ProtoPatch.apply(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseAddFileOption.getFileDescriptorByFileName(fileName);
@@ -106,7 +106,7 @@ public class ShadowTest {
     Patch result = results.createProto();
     System.out.println(result);
 
-    ProtoDomain shadow = new ShadowApply().applyDelta(base, result);
+    ProtoDomain shadow = ProtoPatch.apply(base, result);
 
     Descriptors.FileDescriptor expectedDescriptor =
         baseMultipleOptions.getFileDescriptorByFileName(fileName);
