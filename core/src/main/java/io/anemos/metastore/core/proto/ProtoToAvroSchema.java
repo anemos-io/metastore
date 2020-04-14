@@ -1,16 +1,16 @@
 package io.anemos.metastore.core.proto;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.grpc.Status;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /** https://avro.apache.org/docs/1.8.2/api/java/org/apache/avro/protobuf/package-summary.html */
 public class ProtoToAvroSchema {
@@ -45,6 +45,7 @@ public class ProtoToAvroSchema {
       avroType.setNamespace(namespace);
     }
     avroType.setName(descriptor.getName());
+    avroType.setOptions(toOptions(descriptor.getOptions().getAllFields()));
 
     descriptor
         .getFields()
@@ -52,6 +53,7 @@ public class ProtoToAvroSchema {
             f -> {
               AvroSchemaItem field = new AvroSchemaItem();
               field.setName(f.getName());
+              field.setOptions(toOptions(f.getOptions().getAllFields()));
               switch (f.getType()) {
                 case MESSAGE:
                   if (f.isMapField()) {
@@ -191,11 +193,30 @@ public class ProtoToAvroSchema {
     return arrayItem;
   }
 
+  private Map<String, Object> toOptions(Map<Descriptors.FieldDescriptor, Object> optionFields) {
+    if (optionFields.size() == 0) {
+      return null;
+    }
+
+    Map<String, Object> options = new HashMap<>();
+    optionFields.forEach(
+        (k, v) -> {
+          if (v.getClass().getName().equals("com.google.protobuf.DynamicMessage")) {
+            options.put(k.getFullName(), toOptions((((DynamicMessage) v).getAllFields())));
+          } else {
+            options.put(k.getFullName(), v);
+          }
+        });
+
+    return options;
+  }
+
   @JsonInclude(JsonInclude.Include.NON_NULL)
   static class AvroSchema {
     private Object type;
     private String namespace;
     private String name;
+    private Map<String, Object> options;
     private List<AvroSchemaItem> fields;
 
     public void addField(AvroSchemaItem field) {
@@ -232,6 +253,15 @@ public class ProtoToAvroSchema {
     public void setName(String name) {
       this.name = name;
     }
+
+    @JsonAnyGetter
+    public Map<String, Object> getOptions() {
+      return this.options;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+      this.options = options;
+    }
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -243,6 +273,7 @@ public class ProtoToAvroSchema {
     private Integer size;
     private List<String> symbols;
     private String values;
+    private Map<String, Object> options;
 
     public String getName() {
       return this.name;
@@ -298,6 +329,15 @@ public class ProtoToAvroSchema {
 
     public void setValues(String values) {
       this.values = values;
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getOptions() {
+      return this.options;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+      this.options = options;
     }
   }
 }

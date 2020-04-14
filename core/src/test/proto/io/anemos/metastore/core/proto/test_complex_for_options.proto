@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "test/v1/option.proto";
+
+package io.anemos.metastore.core.proto;
+option java_multiple_files = true;
+
+message TestComplexWithOptions {
+    option (test.v1.message_option) = {
+		single_string: "contract option root test"
+		single_int32: 2
+	};
+
+    int32 optionId = 1 [(test.v1.field_option_1) = 1, (test.v1.field_option_2) = "this is a bar", (test.v1.field_option) = {single_string : "this is foo"}];
+    string optionName = 2 [(test.v1.field_option_1) = 2, (test.v1.field_option_2) = "this is a bar name"];
+}

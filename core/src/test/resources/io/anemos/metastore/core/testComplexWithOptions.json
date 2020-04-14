@@ -1,0 +1,23 @@
+{
+  "type" : "record",
+  "namespace" : "io.anemos.metastore.core.proto",
+  "name" : "TestComplexWithOptions",
+  "fields" : [ {
+    "name" : "optionId",
+    "type" : "int",
+    "test.v1.field_option_1" : 1,
+    "test.v1.field_option" : {
+      "test.v1.TestOption.single_string" : "this is foo"
+    },
+    "test.v1.field_option_2" : "this is a bar"
+  }, {
+    "name" : "optionName",
+    "type" : "string",
+    "test.v1.field_option_1" : 2,
+    "test.v1.field_option_2" : "this is a bar name"
+  } ],
+  "test.v1.message_option" : {
+    "test.v1.TestOption.single_string" : "contract option root test",
+    "test.v1.TestOption.single_int32" : 2
+  }
+}
