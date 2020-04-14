@@ -11,9 +11,9 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.ChangeType;
+import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
@@ -142,12 +142,12 @@ public class ShadowE2ETest {
     ValidationResults expectedResults = new ValidationResults();
     ProtoDiff protoDiff = new ProtoDiff(baseKnownOption(), baseAddMessageOption(), expectedResults);
     protoDiff.diffOnFileName("test/v1/simple.proto");
-    Report actualShadowReport =
-        Report.parseFrom(
+    Patch actualShadowReport =
+        Patch.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
         expectedResults.createProto().getMessagePatchesMap(),
-        actualShadowReport.getPatch().getMessagePatchesMap());
+        actualShadowReport.getMessagePatchesMap());
 
     // add field to default
     RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
@@ -166,12 +166,11 @@ public class ShadowE2ETest {
 
     RegistryP.SubmitSchemaResponse verifyDefaultResponse2 =
         schemaRegistyStub.verifySchema(submitDefaultAddField.build());
-    Assert.assertFalse(verifyDefaultResponse2.getReport().getResultCount().getDiffErrors() > 0);
+    Assert.assertFalse(verifyDefaultResponse2.getValidationSummary().getDiffErrors() > 0);
     Assert.assertEquals(
         ChangeType.ADDITION,
         verifyDefaultResponse2
-            .getReport()
-            .getPatch()
+            .getAppliedPatch()
             .getMessagePatchesMap()
             .get("test.v1.ProtoBeamBasicMessage")
             .getFieldPatches(0)
@@ -181,11 +180,11 @@ public class ShadowE2ETest {
     schemaRegistyStub.submitSchema(submitDefaultAddField.build());
     // check shadow insides
     actualShadowReport =
-        Report.parseFrom(
+        Patch.parseFrom(
             new FileInputStream(metastorePath.toAbsolutePath().toString() + "/shadow.pb"));
     Assert.assertEquals(
         expectedResults.createProto().getMessagePatchesMap(),
-        actualShadowReport.getPatch().getMessagePatchesMap());
+        actualShadowReport.getMessagePatchesMap());
 
     actualShadowRepo = ProtocUtil.createDescriptorSet(shadowrepoPath.toAbsolutePath().toString());
     Assert.assertEquals(

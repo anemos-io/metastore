@@ -170,7 +170,10 @@ public class DiffTest {
     Assert.assertEquals(1, patch.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.ADDITION,
-        patch.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch
+            .getMessagePatchesOrThrow("test.v1.ProtoExtraMessage")
+            .getNameChange()
+            .getChangeType());
   }
 
   @Test
@@ -185,7 +188,10 @@ public class DiffTest {
     Assert.assertEquals(1, patch.getMessagePatchesCount());
     Assert.assertEquals(
         ChangeType.REMOVAL,
-        patch.getMessagePatchesOrThrow("test.v1.ProtoExtraMessage").getChange().getChangeType());
+        patch
+            .getMessagePatchesOrThrow("test.v1.ProtoExtraMessage")
+            .getNameChange()
+            .getChangeType());
   }
 
   private FieldPatch diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {

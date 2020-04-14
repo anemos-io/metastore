@@ -7,46 +7,11 @@ option java_multiple_files = true;
 
 package grpc.registry.v1alpha1;
 
-message Report {
-    Patch patch = 1;
-    ResultCount result_count = 5;
-}
-
 message Patch {
     map<string, FilePatch> file_patches = 1;
     map<string, MessagePatch> message_patches = 2;
     map<string, EnumPatch> enum_patches = 3;
     map<string, ServicePatch> service_patches = 4;
-}
-
-message ResultCount {
-    int32 lint_errors = 1;
-    int32 lint_warnings = 2;
-    int32 lint_infos = 3;
-    int32 diff_errors = 4;
-    int32 diff_warnings = 5;
-    int32 diff_infos = 6;
-
-    repeated ErrorInfo error_info = 7;
-}
-
-message ErrorInfo {
-    enum ErrorType {
-        ERROR = 0;
-        WARNING = 1;
-        INFO = 2;
-    }
-    ErrorType type = 1;
-    oneof path {
-        string message = 3;
-        string field = 4;
-        string enum = 5;
-        string enum_value = 6;
-        string service = 7;
-        string method = 8;
-    }
-    string code = 9;
-    string description = 10;
 }
 
 enum ChangeType {
@@ -61,69 +26,53 @@ enum ChangeType {
     PAYLOAD_CHANGED = 8;
 }
 
-enum TypeChange {
-    TYPE_UNCHANGED = 0;
-    TYPE_SAFE = 1;
-    TYPE_LOOSE_INFO = 2;
-}
-
-message LintRule {
-    string lint_rule = 1;
-    bool suppressed = 3;
-    google.protobuf.StringValue suppressed_comment = 4;
+message Rule {
+    enum RuleType {
+        RULE_TYPE_UNKNOWN = 0;
+        RULE_TYPE_LINT = 1;
+        RULE_TYPE_CUSTOM = 15;
+    }
+    string rule_name = 1;
+    RuleType rule_type = 2;
 }
 
 // Generic Change message meant for top level objects like File, Message,
 // Enum and Service. As the don't contain any time information and are
 // actually containers they only support addition, renames and removals.
 message Change {
-    string from_name = 1;
-    string to_name = 2;
-    ChangeType change_type = 3;
+    ChangeType change_type = 1;
+
+    string from_name = 2;
+    string to_name = 3;
 }
 
 message ImportChange {
     ChangeType change_type = 1;
+
     string name = 2;
 }
 
-message FilePatch {
-    string file_name = 1;
-    repeated string message_patch_ref = 2;
+message EnumValueChange {
+    ChangeType change_type = 1;
 
-    repeated LintRule info = 3;
+    string from_name = 2;
+    bool from_deprecated = 4;
+    bool from_reserved = 5;
 
-    Change change = 4;
-
-    repeated ImportChange import_change = 9;
-    repeated OptionChange option_change = 10;
+    string to_name = 6;
+    bool to_deprecated = 8;
+    bool to_reserved = 9;
 }
 
-message MessagePatch {
-    string package = 1;
-    string name = 2;
+message MethodChange {
+    ChangeType change_type = 1;
 
-    repeated LintRule info = 3;
+    string from_name = 2;
+    bool from_deprecated = 4;
 
-    Change change = 4;
-
-
-    repeated FieldPatch field_patches = 5;
-
-    repeated OptionChange option_change = 10;
+    string to_name = 6;
+    bool to_deprecated = 8;
 }
-
-message FieldPatch {
-    int32 number = 1;
-    string name = 2;
-
-    repeated LintRule info = 3;
-
-    FieldChange change = 4;
-
-    repeated OptionChange option_change = 10;
-}
-
 message OptionChange {
     enum OptionType {
         OPTION_TYPE_UNSET = 0;
@@ -183,36 +132,50 @@ message FieldChange {
     string to_type_name = 11;
 }
 
-message EnumValueChange {
-    ChangeType change_type = 1;
+message FilePatch {
+    string file_name = 1;
+    repeated string message_patch_ref = 2;
 
-    string from_name = 2;
-    bool from_deprecated = 4;
-    bool from_reserved = 5;
+    repeated Rule rule = 3;
 
-    string to_name = 6;
-    bool to_deprecated = 8;
-    bool to_reserved = 9;
+    Change change = 4;
+
+    repeated ImportChange import_change = 9;
+    repeated OptionChange option_change = 10;
 }
 
-message MethodChange {
-    ChangeType change_type = 1;
+message MessagePatch {
+    string package = 1;
+    string name = 2;
 
-    string from_name = 2;
-    bool from_deprecated = 4;
+    repeated Rule rule = 3;
 
-    string to_name = 6;
-    bool to_deprecated = 8;
+    Change name_change = 4;
+
+
+    repeated FieldPatch field_patches = 5;
+
+    repeated OptionChange option_change = 10;
 }
 
+message FieldPatch {
+    int32 number = 1;
+    string name = 2;
+
+    repeated Rule rule = 3;
+
+    FieldChange change = 4;
+
+    repeated OptionChange option_change = 10;
+}
 
 message ServicePatch {
     string package = 1;
     string name = 2;
 
-    repeated LintRule info = 3;
+    repeated Rule rule = 3;
 
-    Change change = 4;
+    Change name_change = 4;
 
     repeated MethodPatch method_patches = 5;
 }
@@ -220,18 +183,18 @@ message ServicePatch {
 message MethodPatch {
     string name = 2;
 
-    repeated LintRule info = 3;
+    repeated Rule rule = 3;
 
-    MethodChange change = 4;
+    MethodChange method_change = 4;
 }
 
 message EnumPatch {
     string package = 1;
     string name = 2;
 
-    repeated LintRule info = 3;
+    repeated Rule rule = 3;
 
-    Change change = 4;
+    Change name_change = 4;
 
     repeated EnumValuePatch value_patches = 5;
 }
@@ -240,7 +203,7 @@ message EnumValuePatch {
     int32 number = 1;
     string name = 2;
 
-    repeated LintRule info = 3;
+    repeated Rule rule = 3;
 
-    EnumValueChange change = 4;
+    EnumValueChange value_change = 4;
 }

@@ -24,22 +24,20 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
   }
 
   @Override
-  public Report validate(Patch patch) {
-    ResultCount.Builder resultCountBuilder = ResultCount.newBuilder();
+  public ValidationSummary validate(Patch patch) {
+    ValidationSummary.Builder builder = ValidationSummary.newBuilder();
 
-    Report.Builder builder = Report.newBuilder();
-    builder.setPatch(patch);
     int error = 0;
     for (MessagePatch messageResult : patch.getMessagePatchesMap().values()) {
       if (skipValidationForAlpha(messageResult.getPackage())) {
         continue;
       }
-      switch (messageResult.getChange().getChangeType()) {
+      switch (messageResult.getNameChange().getChangeType()) {
         case REMOVAL:
           error++;
-          resultCountBuilder.addErrorInfo(
+          builder.addErrorInfo(
               ErrorInfo.newBuilder()
-                  .setType(ErrorInfo.ErrorType.ERROR)
+                  .setType(ErrorType.ERROR)
                   .setMessage(messageResult.getName())
                   .setCode("CAVR-0001")
                   .setDescription(
@@ -61,9 +59,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         switch (fieldResult.getChange().getChangeType()) {
           case REMOVAL:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0001")
                     .setDescription(
@@ -72,9 +70,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
             break;
           case RESERVED:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0002")
                     .setDescription(
@@ -84,9 +82,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
             break;
           case CHANGED:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(messageResult.getName() + "#" + fieldResult.getName())
                     .setCode("CAVR-0003")
                     .setDescription(
@@ -108,12 +106,12 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
       if (skipValidationForAlpha(enumResult.getPackage())) {
         continue;
       }
-      switch (enumResult.getChange().getChangeType()) {
+      switch (enumResult.getNameChange().getChangeType()) {
         case REMOVAL:
           error++;
-          resultCountBuilder.addErrorInfo(
+          builder.addErrorInfo(
               ErrorInfo.newBuilder()
-                  .setType(ErrorInfo.ErrorType.ERROR)
+                  .setType(ErrorType.ERROR)
                   .setEnum(enumResult.getName())
                   .setCode("CAVR-0001")
                   .setDescription(
@@ -132,12 +130,12 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
           break;
       }
       for (EnumValuePatch valueResult : enumResult.getValuePatchesList()) {
-        switch (valueResult.getChange().getChangeType()) {
+        switch (valueResult.getValueChange().getChangeType()) {
           case REMOVAL:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0001")
                     .setDescription(
@@ -147,9 +145,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
             break;
           case RESERVED:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0002")
                     .setDescription(
@@ -159,9 +157,9 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
             break;
           case CHANGED:
             error++;
-            resultCountBuilder.addErrorInfo(
+            builder.addErrorInfo(
                 ErrorInfo.newBuilder()
-                    .setType(ErrorInfo.ErrorType.ERROR)
+                    .setType(ErrorType.ERROR)
                     .setField(enumResult.getName() + "#" + valueResult.getName())
                     .setCode("CAVR-0003")
                     .setDescription(
@@ -179,7 +177,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
         }
       }
     }
-    builder.setResultCount(resultCountBuilder.setDiffErrors(error).build());
+    builder.setDiffErrors(error);
     return builder.build();
   }
 }

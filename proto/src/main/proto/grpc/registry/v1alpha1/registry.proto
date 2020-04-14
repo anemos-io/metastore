@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "grpc/registry/v1alpha1/patch.proto";
+import "grpc/registry/v1alpha1/summary.proto";
 import "google/protobuf/timestamp.proto";
 
 option java_package = "io.anemos.metastore.v1alpha1";
@@ -44,9 +45,9 @@ message SubmitSchemaRequest {
 }
 
 message SubmitSchemaResponse {
-    string schema_profile = 1;
-    Report report = 2;
-    int32 error_code = 3;
+    Patch applied_patch = 2;
+    ValidationSummary validation_summary = 3;
+    int32 error_code = 4;
 }
 
 message GetSchemaRequest {
@@ -87,9 +88,9 @@ message PatchSchemaRequest {
 }
 
 message PatchSchemaResponse {
-    string schema_profile = 1;
-    Report report = 2;
-    int32 error_code = 3;
+    Patch applied_patch = 2;
+    ValidationSummary validation_summary = 3;
+    int32 error_code = 4;
 }
 
 // Information of this schema changes.

@@ -114,47 +114,47 @@ public class LintTest {
     return results.createProto();
   }
 
-  private List<LintRule> getInfoForField(MessagePatch mr, int fieldNumber) {
+  private List<Rule> getInfoForField(MessagePatch mr, int fieldNumber) {
     for (FieldPatch fieldResult : mr.getFieldPatchesList()) {
       if (fieldResult.getNumber() == fieldNumber) {
-        return fieldResult.getInfoList();
+        return fieldResult.getRuleList();
       }
     }
     Assert.assertNotNull(null);
     return null;
   }
 
-  private List<LintRule> getInfoForMethod(ServicePatch mr, String methodName) {
+  private List<Rule> getInfoForMethod(ServicePatch mr, String methodName) {
     for (MethodPatch methodResult : mr.getMethodPatchesList()) {
       if (methodResult.getName().equals(methodName)) {
-        return methodResult.getInfoList();
+        return methodResult.getRuleList();
       }
     }
     return null;
   }
 
   private void assertOnMethod(ServicePatch mr, String methodName, String expecredRule) {
-    List<LintRule> infoForField = getInfoForMethod(mr, methodName);
+    List<Rule> infoForField = getInfoForMethod(mr, methodName);
     String code = null;
     String rule = null;
-    for (LintRule ruleInfo : infoForField) {
-      if (ruleInfo.getLintRule().equals(expecredRule)) {
+    for (Rule ruleInfo : infoForField) {
+      if (ruleInfo.getRuleName().equals(expecredRule)) {
         return;
       }
-      rule = ruleInfo.getLintRule();
+      rule = ruleInfo.getRuleName();
     }
     Assert.assertEquals(expecredRule, rule);
   }
 
   private void assertOnField(MessagePatch mr, int fieldNumber, String expecredRule) {
-    List<LintRule> infoForField = getInfoForField(mr, fieldNumber);
+    List<Rule> infoForField = getInfoForField(mr, fieldNumber);
     String code = null;
     String rule = null;
-    for (LintRule ruleInfo : infoForField) {
-      if (ruleInfo.getLintRule().equals(expecredRule)) {
+    for (Rule ruleInfo : infoForField) {
+      if (ruleInfo.getRuleName().equals(expecredRule)) {
         return;
       }
-      rule = ruleInfo.getLintRule();
+      rule = ruleInfo.getRuleName();
     }
     Assert.assertEquals(expecredRule, rule);
   }
@@ -162,11 +162,11 @@ public class LintTest {
   private void assertOnMessage(MessagePatch mr, String expectedRule) {
     String code = null;
     String rule = null;
-    for (LintRule ruleInfo : mr.getInfoList()) {
-      if (ruleInfo.getLintRule().equals(expectedRule)) {
+    for (Rule ruleInfo : mr.getRuleList()) {
+      if (ruleInfo.getRuleName().equals(expectedRule)) {
         return;
       }
-      rule = ruleInfo.getLintRule();
+      rule = ruleInfo.getRuleName();
     }
     Assert.assertEquals(expectedRule, rule);
   }
@@ -191,11 +191,11 @@ public class LintTest {
   private void assertOnFile(FilePatch fr, String expectedRule) {
     String code = null;
     String rule = null;
-    for (LintRule ruleInfo : fr.getInfoList()) {
-      if (ruleInfo.getLintRule().equals(expectedRule)) {
+    for (Rule ruleInfo : fr.getRuleList()) {
+      if (ruleInfo.getRuleName().equals(expectedRule)) {
         return;
       }
-      rule = ruleInfo.getLintRule();
+      rule = ruleInfo.getRuleName();
     }
     Assert.assertEquals(expectedRule, rule);
   }

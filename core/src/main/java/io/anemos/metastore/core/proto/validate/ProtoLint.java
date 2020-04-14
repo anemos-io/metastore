@@ -2,7 +2,7 @@ package io.anemos.metastore.core.proto.validate;
 
 import com.google.protobuf.Descriptors;
 import io.anemos.metastore.putils.ProtoDomain;
-import io.anemos.metastore.v1alpha1.LintRule;
+import io.anemos.metastore.v1alpha1.Rule;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class ProtoLint {
     String name = service.getName();
     if (!isPascalCase(name)) {
       results.addResult(
-          service, LintRule.newBuilder().setLintRule("LINT_SERVICE_NAME_SHOULD_BE_PASCAL").build());
+          service, Rule.newBuilder().setRuleName("LINT_SERVICE_NAME_SHOULD_BE_PASCAL").build());
     }
 
     service.getMethods().forEach(m -> lintMethod(m));
@@ -71,7 +71,7 @@ public class ProtoLint {
     String name = dp.getName();
     if (!isPascalCase(name)) {
       results.addResult(
-          dp, LintRule.newBuilder().setLintRule("LINT_MESSAGE_NAME_SHOULD_BE_PASCAL").build());
+          dp, Rule.newBuilder().setRuleName("LINT_MESSAGE_NAME_SHOULD_BE_PASCAL").build());
     }
 
     dp.getFields().forEach(fd -> lintField(fd));
@@ -80,11 +80,11 @@ public class ProtoLint {
   private void lintMethod(Descriptors.MethodDescriptor md) {
     if (!md.getInputType().getFullName().endsWith("Request")) {
       results.addResult(
-          md, LintRule.newBuilder().setLintRule("LINT_METHOD_ITYPE_END_WITH_REQUEST").build());
+          md, Rule.newBuilder().setRuleName("LINT_METHOD_ITYPE_END_WITH_REQUEST").build());
     }
     if (!md.getOutputType().getFullName().endsWith("Response")) {
       results.addResult(
-          md, LintRule.newBuilder().setLintRule("LINT_METHOD_RTYPE_END_WITH_RESPONSE").build());
+          md, Rule.newBuilder().setRuleName("LINT_METHOD_RTYPE_END_WITH_RESPONSE").build());
     }
   }
 
@@ -93,7 +93,7 @@ public class ProtoLint {
     String suffix = isSnakeCase(name);
     if (suffix != null) {
       results.addResult(
-          fd, LintRule.newBuilder().setLintRule("LINT_FIELD_NAME_SHOULD_BE_SNAKE").build());
+          fd, Rule.newBuilder().setRuleName("LINT_FIELD_NAME_SHOULD_BE_SNAKE").build());
     }
   }
 
@@ -163,8 +163,7 @@ public class ProtoLint {
     String dirName = fileName.substring(0, fileName.lastIndexOf("/")).replace("/", ".");
     if (!dirName.equals(protoPackageName)) {
       results.addResult(
-          fileDescriptor,
-          LintRule.newBuilder().setLintRule("LINT_PACKAGE_NO_DIR_ALIGNMENT").build());
+          fileDescriptor, Rule.newBuilder().setRuleName("LINT_PACKAGE_NO_DIR_ALIGNMENT").build());
     }
   }
 
@@ -184,7 +183,7 @@ public class ProtoLint {
       if (!dependencyVersion.equals(protoVersion)) {
         results.addResult(
             fileDescriptor,
-            LintRule.newBuilder().setLintRule("LINT_PACKAGE_NO_VERSION_ALIGNMENT").build());
+            Rule.newBuilder().setRuleName("LINT_PACKAGE_NO_VERSION_ALIGNMENT").build());
       }
     }
   }
@@ -219,7 +218,7 @@ public class ProtoLint {
       }
       if (!dependencyUsed) {
         results.addResult(
-            fileDescriptor, LintRule.newBuilder().setLintRule("LINT_IMPORT_NO_ALIGNMENT").build());
+            fileDescriptor, Rule.newBuilder().setRuleName("LINT_IMPORT_NO_ALIGNMENT").build());
       }
     }
   }

@@ -4,8 +4,8 @@ import com.google.protobuf.ByteString;
 import io.anemos.metastore.config.RegistryConfig;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
 import java.io.IOException;
 
 class SchemaRegistry extends AbstractRegistry {
@@ -41,11 +41,11 @@ class SchemaRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report, RegistryP.Note note) {
+  public void update(ProtoDomain ref, ProtoDomain in, Patch patch, RegistryP.Note note) {
     protoContainer = in;
     update(note);
     syncGitRepo(note);
-    notifyEventListeners(report);
+    notifyEventListeners(patch);
   }
 
   @Override

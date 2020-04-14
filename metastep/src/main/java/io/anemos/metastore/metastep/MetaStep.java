@@ -4,8 +4,7 @@ import io.anemos.metastore.core.proto.ProtocUtil;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
-import io.anemos.metastore.v1alpha1.ResultCount;
+import io.anemos.metastore.v1alpha1.ValidationSummary;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
@@ -233,20 +232,22 @@ public class MetaStep {
     RegistryP.SubmitSchemaResponse verifySchemaResponse =
         schemaRegistry.verifySchema(createSchemaRequest());
 
-    Report report = verifySchemaResponse.getReport();
+    ValidationSummary validationSummary = verifySchemaResponse.getValidationSummary();
 
-    ResultCount resultCount = report.getResultCount();
     int errors = 0, warnings = 0, infos = 0;
-    errors += resultCount.getDiffErrors();
-    errors += resultCount.getLintErrors();
-    warnings += resultCount.getLintWarnings();
-    warnings += resultCount.getDiffWarnings();
-    System.out.print(report);
+    errors += validationSummary.getDiffErrors();
+    errors += validationSummary.getLintErrors();
+    warnings += validationSummary.getLintWarnings();
+    warnings += validationSummary.getDiffWarnings();
+    System.out.print(verifySchemaResponse.getAppliedPatch());
+
+    System.out.print(validationSummary);
 
     System.out.println(
         String.format("%d errors, %d warnings and %d infos", errors, warnings, infos));
     if (errors > 0) {
-      resultCount
+      verifySchemaResponse
+          .getValidationSummary()
           .getErrorInfoList()
           .forEach(
               e -> {

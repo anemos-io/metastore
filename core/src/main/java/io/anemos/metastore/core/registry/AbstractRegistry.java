@@ -11,8 +11,8 @@ import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.BindP;
+import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import java.net.URI;
@@ -74,7 +74,7 @@ public abstract class AbstractRegistry implements RegistryInfo {
 
   public abstract ProtoDomain ref();
 
-  public abstract void update(ProtoDomain ref, ProtoDomain in, Report report, RegistryP.Note note);
+  public abstract void update(ProtoDomain ref, ProtoDomain in, Patch patch, RegistryP.Note note);
 
   void syncGitRepo(RegistryP.Note note) {
     metaGit.sync(protoContainer, note);
@@ -188,10 +188,10 @@ public abstract class AbstractRegistry implements RegistryInfo {
     }
   }
 
-  void notifyEventListeners(Report report) {
+  void notifyEventListeners(Patch patch) {
     eventingProviders.forEach(
         provider -> {
-          provider.descriptorsChanged(report);
+          provider.descriptorsChanged(patch);
         });
   }
 

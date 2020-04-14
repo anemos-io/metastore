@@ -8,7 +8,6 @@ import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
 import io.grpc.StatusException;
 import java.io.IOException;
 
@@ -64,7 +63,7 @@ class ShadowRegistry extends AbstractRegistry {
   }
 
   @Override
-  public void update(ProtoDomain ref, ProtoDomain in, Report report, RegistryP.Note note) {
+  public void update(ProtoDomain ref, ProtoDomain in, Patch patch, RegistryP.Note note) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     if (registryConfig.getScope() != null) {
@@ -76,7 +75,7 @@ class ShadowRegistry extends AbstractRegistry {
     }
     patch = results.createProto();
     update(note);
-    notifyEventListeners(report);
+    notifyEventListeners(patch);
   }
 
   @Override

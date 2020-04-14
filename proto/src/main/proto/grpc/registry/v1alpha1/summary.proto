@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+option java_package = "io.anemos.metastore.v1alpha1";
+option java_multiple_files = true;
+
+package grpc.registry.v1alpha1;
+
+message ValidationSummary {
+    string validation_profile = 1;
+
+    int32 lint_errors = 2;
+    int32 lint_warnings = 3;
+    int32 lint_infos = 4;
+    int32 diff_errors = 5;
+    int32 diff_warnings = 6;
+    int32 diff_infos = 7;
+
+    repeated ErrorInfo error_info = 8;
+ }
+
+ enum ErrorType {
+    ERROR = 0;
+    WARNING = 1;
+    INFO = 2;
+}
+
+message ErrorInfo {
+    ErrorType type = 1;
+    oneof path {
+        string message = 3;
+        string field = 4;
+        string enum = 5;
+        string enum_value = 6;
+        string service = 7;
+        string method = 8;
+    }
+    string code = 9;
+    string description = 10;
+}
+

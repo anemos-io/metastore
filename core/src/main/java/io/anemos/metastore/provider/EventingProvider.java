@@ -1,6 +1,6 @@
 package io.anemos.metastore.provider;
 
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.Patch;
 import java.util.Map;
 
 /**
@@ -12,5 +12,5 @@ public interface EventingProvider {
   void initForChangeEvent(RegistryInfo registryInfo, Map<String, String> config);
 
   /** Send event for descriptor changes. */
-  void descriptorsChanged(Report report);
+  void descriptorsChanged(Patch patch);
 }

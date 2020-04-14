@@ -9,7 +9,7 @@ import io.anemos.metastore.core.proto.validate.ProtoDiff;
 import io.anemos.metastore.core.proto.validate.ValidationResults;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.Patch;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.ValidationSummary;
 import java.io.IOException;
 import org.junit.Test;
 
@@ -26,9 +26,9 @@ public class ProfileTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    Report report = new ProfileAllowAdd().validate(patch);
-    assertEquals(1, report.getPatch().getMessagePatchesCount());
-    assertEquals(1, report.getResultCount().getDiffErrors());
+    ValidationSummary report = new ProfileAllowAdd().validate(patch);
+    assertEquals(1, patch.getMessagePatchesCount());
+    assertEquals(1, report.getDiffErrors());
   }
 
   @Test
@@ -42,9 +42,9 @@ public class ProfileTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    Report report = new ProfileAllowAdd().validate(patch);
-    assertEquals(1, report.getPatch().getMessagePatchesCount());
-    assertEquals(1, report.getResultCount().getDiffErrors());
+    ValidationSummary report = new ProfileAllowAdd().validate(patch);
+    assertEquals(1, patch.getMessagePatchesCount());
+    assertEquals(1, report.getDiffErrors());
   }
 
   @Test
@@ -58,9 +58,9 @@ public class ProfileTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    Report report = new ProfileAllowStableAddAlphaAll().validate(patch);
-    assertEquals(1, report.getPatch().getMessagePatchesCount());
-    assertEquals(1, report.getResultCount().getDiffErrors());
+    ValidationSummary report = new ProfileAllowStableAddAlphaAll().validate(patch);
+    assertEquals(1, patch.getMessagePatchesCount());
+    assertEquals(1, report.getDiffErrors());
   }
 
   @Test
@@ -74,9 +74,9 @@ public class ProfileTest {
 
     ProtoDomain dNew = ProtoDomain.builder().add(fd).build();
     Patch patch = diff(dRef, dNew);
-    Report report = new ProfileAllowStableAddAlphaAll().validate(patch);
-    assertEquals(1, report.getPatch().getMessagePatchesCount());
-    assertEquals(0, report.getResultCount().getDiffErrors());
+    ValidationSummary report = new ProfileAllowStableAddAlphaAll().validate(patch);
+    assertEquals(1, patch.getMessagePatchesCount());
+    assertEquals(0, report.getDiffErrors());
   }
 
   private Patch diff(ProtoDomain dRef, ProtoDomain dNew) throws IOException {

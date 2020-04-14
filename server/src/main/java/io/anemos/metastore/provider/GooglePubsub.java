@@ -4,7 +4,7 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PubsubMessage;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.Patch;
 import java.io.IOException;
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class GooglePubsub implements EventingProvider {
   }
 
   @Override
-  public void descriptorsChanged(Report report) {
+  public void descriptorsChanged(Patch report) {
     PubsubMessage message = PubsubMessage.newBuilder().setData(report.toByteString()).build();
     publisherDescriptorChange.publish(message);
   }

@@ -1,9 +1,9 @@
 package io.anemos.metastore.core.proto.profile;
 
 import io.anemos.metastore.v1alpha1.Patch;
-import io.anemos.metastore.v1alpha1.Report;
+import io.anemos.metastore.v1alpha1.ValidationSummary;
 
 public interface ValidationProfile {
 
-  Report validate(Patch patch);
+  ValidationSummary validate(Patch patch);
 }

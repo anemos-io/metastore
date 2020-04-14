@@ -11,10 +11,10 @@ import io.anemos.metastore.core.registry.AbstractRegistry;
 import io.anemos.metastore.core.registry.ProtoPatch;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.BindP;
+import io.anemos.metastore.v1alpha1.Patch;
 import io.anemos.metastore.v1alpha1.RegistryGrpc;
 import io.anemos.metastore.v1alpha1.RegistryP;
-import io.anemos.metastore.v1alpha1.Report;
-import io.anemos.metastore.v1alpha1.ResultCount;
+import io.anemos.metastore.v1alpha1.ValidationSummary;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
@@ -139,20 +139,24 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       return;
     }
 
-    Report report =
-        validate(request.getValidationProfile(), request.getMergeStrategy(), registry.get(), in);
+    Patch appliedPatch = createPatch(request.getMergeStrategy(), registry.get(), in);
+    ValidationSummary summary = validate(request.getValidationProfile(), appliedPatch);
     if (submit) {
-      if (hasErrors(report)) {
+      if (hasErrors(summary)) {
         responseObserver.onError(
             Status.fromCode(Status.Code.FAILED_PRECONDITION)
                 .withDescription("Incompatible schema, us verify to get errors.")
                 .asRuntimeException());
         return;
       }
-      registry.update(registry.ref(), in, report, request.getNote());
+      registry.update(registry.ref(), in, appliedPatch, request.getNote());
     }
 
-    responseObserver.onNext(RegistryP.SubmitSchemaResponse.newBuilder().setReport(report).build());
+    responseObserver.onNext(
+        RegistryP.SubmitSchemaResponse.newBuilder()
+            .setAppliedPatch(appliedPatch)
+            .setValidationSummary(summary)
+            .build());
     responseObserver.onCompleted();
   }
 
@@ -171,36 +175,36 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
 
     ProtoDomain in = ProtoPatch.apply(registry.get(), request.getPatch());
 
-    Report report = validate(request.getValidationProfile(), registry.get(), in);
+    Patch appliedPatch = createPatch(registry.get(), in);
+    ValidationSummary summary = validate(request.getValidationProfile(), appliedPatch);
     if (submit) {
-      if (hasErrors(report)) {
+      if (hasErrors(summary)) {
         responseObserver.onError(
             Status.fromCode(Status.Code.FAILED_PRECONDITION)
                 .withDescription("Incompatible schema, us verify to get errors.")
                 .asRuntimeException());
         return;
       }
-      registry.update(registry.ref(), in, report, request.getNote());
+      registry.update(registry.ref(), in, appliedPatch, request.getNote());
     }
 
-    responseObserver.onNext(RegistryP.PatchSchemaResponse.newBuilder().setReport(report).build());
+    responseObserver.onNext(
+        RegistryP.PatchSchemaResponse.newBuilder()
+            .setAppliedPatch(appliedPatch)
+            .setValidationSummary(summary)
+            .build());
     responseObserver.onCompleted();
   }
 
-  private boolean hasErrors(Report report) {
-    if (report.hasResultCount()) {
-      ResultCount resultCount = report.getResultCount();
-      return resultCount.getDiffErrors() > 0 || resultCount.getLintErrors() > 0;
-    }
-    return false;
+  private boolean hasErrors(ValidationSummary report) {
+    return report.getDiffErrors() > 0 || report.getLintErrors() > 0;
   }
 
-  private Report validate(String validationProfile, ProtoDomain ref, ProtoDomain in) {
-    return validate(validationProfile, RegistryP.Merge.getDefaultInstance(), ref, in);
+  private Patch createPatch(ProtoDomain ref, ProtoDomain in) {
+    return createPatch(RegistryP.Merge.getDefaultInstance(), ref, in);
   }
 
-  private Report validate(
-      String validationProfile, RegistryP.Merge mergeStrategy, ProtoDomain ref, ProtoDomain in) {
+  private Patch createPatch(RegistryP.Merge mergeStrategy, ProtoDomain ref, ProtoDomain in) {
     ValidationResults results = new ValidationResults();
     ProtoDiff diff = new ProtoDiff(ref, in, results);
     ProtoLint lint = new ProtoLint(in, results);
@@ -243,7 +247,10 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
       default:
         throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
     }
+    return results.createProto();
+  }
 
+  private ValidationSummary validate(String validationProfile, Patch patch) {
     ValidationProfile profile;
     switch (validationProfile) {
       case "allow:all":
@@ -268,7 +275,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
         throw Status.fromCode(Status.Code.INTERNAL).asRuntimeException();
     }
 
-    return profile.validate(results.createProto());
+    return profile.validate(patch);
   }
 
   @Override
