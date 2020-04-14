@@ -9,6 +9,6 @@ public class ProfileProtoEvolve implements ValidationProfile {
 
   @Override
   public ValidationSummary validate(Patch patch) {
-    return null;
+    return ValidationSummary.newBuilder().setValidationProfile(profileName).build();
   }
 }

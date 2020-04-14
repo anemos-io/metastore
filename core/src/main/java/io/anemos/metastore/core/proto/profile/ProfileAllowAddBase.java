@@ -26,6 +26,7 @@ public abstract class ProfileAllowAddBase implements ValidationProfile {
   @Override
   public ValidationSummary validate(Patch patch) {
     ValidationSummary.Builder builder = ValidationSummary.newBuilder();
+    builder.setValidationProfile(profileName);
 
     int error = 0;
     for (MessagePatch messageResult : patch.getMessagePatchesMap().values()) {

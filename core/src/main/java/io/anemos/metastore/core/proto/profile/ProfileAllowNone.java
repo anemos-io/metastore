@@ -10,6 +10,6 @@ public class ProfileAllowNone implements ValidationProfile {
   // TODO implement
   @Override
   public ValidationSummary validate(Patch patch) {
-    return ValidationSummary.getDefaultInstance();
+    return ValidationSummary.newBuilder().setValidationProfile(profileName).build();
   }
 }

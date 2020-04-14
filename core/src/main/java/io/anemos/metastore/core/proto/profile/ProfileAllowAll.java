@@ -9,6 +9,6 @@ public class ProfileAllowAll implements ValidationProfile {
 
   @Override
   public ValidationSummary validate(Patch patch) {
-    return ValidationSummary.getDefaultInstance();
+    return ValidationSummary.newBuilder().setValidationProfile(profileName).build();
   }
 }
