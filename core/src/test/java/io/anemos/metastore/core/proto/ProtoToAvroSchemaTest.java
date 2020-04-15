@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
+import test.v1.Option;
 
 public class ProtoToAvroSchemaTest {
   @Test
@@ -263,6 +264,25 @@ public class ProtoToAvroSchemaTest {
         ProtoToAvroSchema.convert(
             protoDomain,
             String.format("%s.TestMultipleRepeated", fileDescriptorProto.getPackage()));
+
+    Assert.assertEquals(node, avroSchema);
+  }
+
+  @Test
+  public void testMessageWithOptions() throws IOException {
+    String node = getJsonNode("testComplexWithOptions");
+
+    final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
+        TestComplexWithOptions.getDescriptor().getFile().toProto();
+    final DescriptorProtos.FileDescriptorProto optionsDescriptorProto =
+        Option.TestOption.getDescriptor().getFile().toProto();
+    ProtoDomain protoDomain =
+        ProtoDomain.builder().add(fileDescriptorProto).add(optionsDescriptorProto).build();
+
+    String avroSchema =
+        ProtoToAvroSchema.convert(
+            protoDomain,
+            String.format("%s.TestComplexWithOptions", fileDescriptorProto.getPackage()));
 
     Assert.assertEquals(node, avroSchema);
   }
