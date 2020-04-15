@@ -1,14 +1,15 @@
 package io.anemos.metastore;
 
+import io.anemos.metastore.core.proto.ProtoToAvroSchema;
 import io.anemos.metastore.core.proto.ProtoToJsonSchema;
 import io.anemos.metastore.core.registry.AbstractRegistry;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.anemos.metastore.v1alpha1.MetaStoreGrpc;
 import io.anemos.metastore.v1alpha1.MetaStoreP;
-import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.io.IOException;
 
 public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
   private MetaStore metaStore;
@@ -21,13 +22,17 @@ public class MetaStoreService extends MetaStoreGrpc.MetaStoreImplBase {
   public void getAvroSchema(
       MetaStoreP.GetAvroSchemaRequest request,
       StreamObserver<MetaStoreP.GetAvroSchemaResponse> responseObserver) {
-    if ("demo".equals(request.getRegistryName())) {
 
-      responseObserver.onNext(MetaStoreP.GetAvroSchemaResponse.newBuilder().build());
+    try {
+      AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
+      ProtoDomain pContainer = registry.get();
+
+      String avroSchema = ProtoToAvroSchema.convert(pContainer, request.getMessageName());
+      responseObserver.onNext(
+          MetaStoreP.GetAvroSchemaResponse.newBuilder().setSchema(avroSchema).build());
       responseObserver.onCompleted();
-
-    } else {
-      responseObserver.onError(new StatusException(Status.NOT_FOUND));
+    } catch (StatusException | IOException | StatusRuntimeException e) {
+      responseObserver.onError(e);
     }
   }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.DescriptorProtos;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.grpc.StatusRuntimeException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Assert;
@@ -13,7 +14,7 @@ import test.v1.Option;
 
 public class ProtoToAvroSchemaTest {
   @Test
-  public void testSingleString() throws IOException {
+  public void testSingleString() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleString");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -28,7 +29,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleInt() throws IOException {
+  public void testSingleInt() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleInt");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -43,7 +44,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleLong() throws IOException {
+  public void testSingleLong() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleLong");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -58,7 +59,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleFloat() throws IOException {
+  public void testSingleFloat() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleFloat");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -73,7 +74,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleDouble() throws IOException {
+  public void testSingleDouble() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleDouble");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -88,7 +89,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleBoolean() throws IOException {
+  public void testSingleBoolean() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleBoolean");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -103,7 +104,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleBytes() throws IOException {
+  public void testSingleBytes() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleBytes");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -118,7 +119,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testSingleTimestamp() throws IOException {
+  public void testSingleTimestamp() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testSingleTimestamp");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -133,7 +134,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void TestComplexEnum() throws IOException {
+  public void TestComplexEnum() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexEnum");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -148,7 +149,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexExtEnum() throws IOException {
+  public void testComplexExtEnum() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexExtEnum");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -163,7 +164,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexTopEnum() throws IOException {
+  public void testComplexTopEnum() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexTopEnum");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -178,7 +179,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexArrayInt() throws IOException {
+  public void testComplexArrayInt() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexArray");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -193,7 +194,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexWrapperValues() throws IOException {
+  public void testComplexWrapperValues() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexWrapperValues");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -208,7 +209,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexMap() throws IOException {
+  public void testComplexMap() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexMap");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -223,7 +224,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testComplexNestedMessage() throws IOException {
+  public void testComplexNestedMessage() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexNestedMessage");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -238,7 +239,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testJumpMessage() throws IOException {
+  public void testJumpMessage() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexJumpMessage");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -253,7 +254,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testRepeatedMessage() throws IOException {
+  public void testRepeatedMessage() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testRepeatedMessage");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
@@ -269,7 +270,7 @@ public class ProtoToAvroSchemaTest {
   }
 
   @Test
-  public void testMessageWithOptions() throws IOException {
+  public void testMessageWithOptions() throws IOException, StatusRuntimeException {
     String node = getJsonNode("testComplexWithOptions");
 
     final DescriptorProtos.FileDescriptorProto fileDescriptorProto =
