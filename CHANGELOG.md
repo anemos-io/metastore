@@ -1,9 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.11
+
 ### Added
 
 - Improved SSH documentation.
+- AvroStorageProver to write equivalent Avro schema
 
 ### Fixed
 - Support different remote host key types.
