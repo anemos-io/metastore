@@ -8,6 +8,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.anemos.metastore.putils.ProtoDomain;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.io.IOException;
 import java.util.*;
 
@@ -20,8 +21,14 @@ public class ProtoToAvroSchema {
     this.descriptor = descriptor;
   }
 
-  public static String convert(ProtoDomain pd, String messageName) throws IOException {
+  public static String convert(ProtoDomain pd, String messageName)
+      throws IOException, StatusRuntimeException {
     Descriptors.Descriptor descriptor = pd.getDescriptorByName(messageName);
+    if (descriptor == null) {
+      throw Status.fromCode(Status.Code.NOT_FOUND)
+          .withDescription(String.format("The contract : %s is not found.", messageName))
+          .asRuntimeException();
+    }
     ObjectMapper mapper =
         new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)

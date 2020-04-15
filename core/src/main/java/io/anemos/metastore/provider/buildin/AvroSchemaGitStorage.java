@@ -40,7 +40,7 @@ public class AvroSchemaGitStorage implements StorageProvider {
       ProtoDomain protoDomain = ProtoDomain.buildFrom(payload);
       AvroGit.write(registryInfo.getName(), gitConfig, protoDomain, rootOptionName);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 }
