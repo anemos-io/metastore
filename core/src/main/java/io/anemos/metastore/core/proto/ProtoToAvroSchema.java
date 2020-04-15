@@ -2,7 +2,6 @@ package io.anemos.metastore.core.proto;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.protobuf.Descriptors;
@@ -45,7 +44,7 @@ public class ProtoToAvroSchema {
       avroType.setNamespace(namespace);
     }
     avroType.setName(descriptor.getName());
-    avroType.setOptions(toOptions(descriptor.getOptions().getAllFields()));
+    avroType.setOptions(toOptions(descriptor.getOptions().getAllFields(), true));
 
     descriptor
         .getFields()
@@ -53,7 +52,7 @@ public class ProtoToAvroSchema {
             f -> {
               AvroSchemaItem field = new AvroSchemaItem();
               field.setName(f.getName());
-              field.setOptions(toOptions(f.getOptions().getAllFields()));
+              field.setOptions(toOptions(f.getOptions().getAllFields(), true));
               switch (f.getType()) {
                 case MESSAGE:
                   if (f.isMapField()) {
@@ -193,7 +192,8 @@ public class ProtoToAvroSchema {
     return arrayItem;
   }
 
-  private Map<String, Object> toOptions(Map<Descriptors.FieldDescriptor, Object> optionFields) {
+  private Map<String, Object> toOptions(
+      Map<Descriptors.FieldDescriptor, Object> optionFields, Boolean useFullName) {
     if (optionFields.size() == 0) {
       return null;
     }
@@ -202,9 +202,10 @@ public class ProtoToAvroSchema {
     optionFields.forEach(
         (k, v) -> {
           if (v.getClass().getName().equals("com.google.protobuf.DynamicMessage")) {
-            options.put(k.getFullName(), toOptions((((DynamicMessage) v).getAllFields())));
+            options.put(k.getFullName(), toOptions((((DynamicMessage) v).getAllFields()), false));
           } else {
-            options.put(k.getFullName(), v);
+            final String fieldName = useFullName ? k.getFullName() : k.getName();
+            options.put(fieldName, v);
           }
         });
 
