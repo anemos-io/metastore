@@ -43,20 +43,6 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     this.metaStore = metaStore;
   }
 
-  @Override
-  public void submitSchema(
-      RegistryP.SubmitSchemaRequest request,
-      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver) {
-    schema(request, responseObserver, true);
-  }
-
-  @Override
-  public void verifySchema(
-      RegistryP.SubmitSchemaRequest request,
-      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver) {
-    schema(request, responseObserver, false);
-  }
-
   private String validatePackage(String packageName) throws StatusException {
     if (packageName.contains("/")) {
       throw new StatusException(
@@ -75,10 +61,10 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     return fileName;
   }
 
-  public void schema(
-      RegistryP.SubmitSchemaRequest request,
-      StreamObserver<RegistryP.SubmitSchemaResponse> responseObserver,
-      boolean submit) {
+  @Override
+  public void putDescriptors(
+      RegistryP.PutDescriptorsRequest request,
+      StreamObserver<RegistryP.PutDescriptorsResponse> responseObserver) {
 
     AbstractRegistry registry;
     try {
@@ -141,7 +127,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
 
     Patch appliedPatch = createPatch(request.getMergeStrategy(), registry.get(), in);
     ValidationSummary summary = validate(request.getValidationProfile(), appliedPatch);
-    if (submit) {
+    if (!request.getDryRun()) {
       if (hasErrors(summary)) {
         responseObserver.onError(
             Status.fromCode(Status.Code.FAILED_PRECONDITION)
@@ -153,17 +139,17 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     }
 
     responseObserver.onNext(
-        RegistryP.SubmitSchemaResponse.newBuilder()
+        RegistryP.PutDescriptorsResponse.newBuilder()
             .setAppliedPatch(appliedPatch)
             .setValidationSummary(summary)
             .build());
     responseObserver.onCompleted();
   }
 
-  public void patch(
-      RegistryP.PatchSchemaRequest request,
-      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver,
-      boolean submit) {
+  @Override
+  public void patchDescriptors(
+      RegistryP.PatchDescriptorsRequest request,
+      StreamObserver<RegistryP.PatchDescriptorsResponse> responseObserver) {
 
     AbstractRegistry registry;
     try {
@@ -177,7 +163,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
 
     Patch appliedPatch = createPatch(registry.get(), in);
     ValidationSummary summary = validate(request.getValidationProfile(), appliedPatch);
-    if (submit) {
+    if (!request.getDryRun()) {
       if (hasErrors(summary)) {
         responseObserver.onError(
             Status.fromCode(Status.Code.FAILED_PRECONDITION)
@@ -189,7 +175,7 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     }
 
     responseObserver.onNext(
-        RegistryP.PatchSchemaResponse.newBuilder()
+        RegistryP.PatchDescriptorsResponse.newBuilder()
             .setAppliedPatch(appliedPatch)
             .setValidationSummary(summary)
             .build());
@@ -279,12 +265,12 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
   }
 
   @Override
-  public void getSchema(
-      RegistryP.GetSchemaRequest request,
-      StreamObserver<RegistryP.GetSchemaResponse> responseObserver) {
+  public void getDescriptors(
+      RegistryP.GetDescriptorsRequest request,
+      StreamObserver<RegistryP.GetDescriptorsResponse> responseObserver) {
     try {
-      RegistryP.GetSchemaResponse.Builder schemaResponseBuilder =
-          RegistryP.GetSchemaResponse.newBuilder();
+      RegistryP.GetDescriptorsResponse.Builder schemaResponseBuilder =
+          RegistryP.GetDescriptorsResponse.newBuilder();
 
       AbstractRegistry registry = metaStore.registries.get(request.getRegistryName());
       ProtoDomain pContainer = registry.get();
@@ -384,19 +370,5 @@ public class RegistryService extends RegistryGrpc.RegistryImplBase {
     } catch (StatusException e) {
       responseObserver.onError(e);
     }
-  }
-
-  @Override
-  public void verifyPatch(
-      RegistryP.PatchSchemaRequest request,
-      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver) {
-    patch(request, responseObserver, false);
-  }
-
-  @Override
-  public void patchSchema(
-      RegistryP.PatchSchemaRequest request,
-      StreamObserver<RegistryP.PatchSchemaResponse> responseObserver) {
-    patch(request, responseObserver, true);
   }
 }

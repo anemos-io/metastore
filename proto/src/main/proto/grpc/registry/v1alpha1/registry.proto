@@ -10,14 +10,37 @@ option java_outer_classname = "RegistryP";
 package grpc.registry.v1alpha1;
 
 service Registry {
-    rpc GetSchema (GetSchemaRequest) returns (GetSchemaResponse);
-    rpc VerifySchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
-    rpc SubmitSchema (SubmitSchemaRequest) returns (SubmitSchemaResponse);
-    rpc VerifyPatch (PatchSchemaRequest) returns (PatchSchemaResponse);
-    rpc PatchSchema (PatchSchemaRequest) returns (PatchSchemaResponse);
+    rpc GetDescriptors (GetDescriptorsRequest) returns (GetDescriptorsResponse);
+    rpc PutDescriptors (PutDescriptorsRequest) returns (PutDescriptorsResponse);
+    rpc PatchDescriptors (PatchDescriptorsRequest) returns (PatchDescriptorsResponse);
 }
 
-message SubmitSchemaRequest {
+message GetDescriptorsRequest {
+    // Represents the schema registry names. If a schema registry doesn't support multiple
+    // registries this field is ignored. The default value represents the default registry.
+    string registry_name = 1;
+
+    oneof entity_scope {
+        string linked_resource = 2;
+        string package_name = 3;
+        string package_prefix = 4;
+        string file_name = 5;
+        string message_name = 6;
+        string service_name = 7;
+        string enum_name = 8;
+    }
+    bool transitive = 9;
+}
+
+message GetDescriptorsResponse {
+    // The requested google.protobuf.FileDescriptorProto binaries. As these messages
+    // are proto2 we avoid taking a dependency on  descriptor.proto, which uses proto2 only
+    // features, by making them opaque bytes instead.
+    repeated bytes file_descriptor_proto = 1;
+    int32 error_code = 2;
+}
+
+message PutDescriptorsRequest {
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
     string registry_name = 1;
@@ -42,40 +65,17 @@ message SubmitSchemaRequest {
 
     // If the service keeps track of the registry the note can provide usefull information.
     Note note = 5;
+
+    bool dry_run = 15;
 }
 
-message SubmitSchemaResponse {
+message PutDescriptorsResponse {
     Patch applied_patch = 2;
     ValidationSummary validation_summary = 3;
     int32 error_code = 4;
 }
 
-message GetSchemaRequest {
-    // Represents the schema registry names. If a schema registry doesn't support multiple
-    // registries this field is ignored. The default value represents the default registry.
-    string registry_name = 1;
-
-    oneof entity_scope {
-        string linked_resource = 2;
-        string package_name = 3;
-        string package_prefix = 4;
-        string file_name = 5;
-        string message_name = 6;
-        string service_name = 7;
-        string enum_name = 8;
-    }
-    bool transitive = 9;
-}
-
-message GetSchemaResponse {
-    // The requested google.protobuf.FileDescriptorProto binaries. As these messages
-    // are proto2 we avoid taking a dependency on  descriptor.proto, which uses proto2 only
-    // features, by making them opaque bytes instead.
-    repeated bytes file_descriptor_proto = 1;
-    int32 error_code = 2;
-}
-
-message PatchSchemaRequest {
+message PatchDescriptorsRequest {
 
     // Represents the schema registry names. If a schema registry doesn't support multiple
     // registries this field is ignored. The default value represents the default registry.
@@ -84,10 +84,13 @@ message PatchSchemaRequest {
     Patch patch = 2;
 
     string validation_profile = 3;
+
     Note note = 4;
+
+    bool dry_run = 15;
 }
 
-message PatchSchemaResponse {
+message PatchDescriptorsResponse {
     Patch applied_patch = 2;
     ValidationSummary validation_summary = 3;
     int32 error_code = 4;

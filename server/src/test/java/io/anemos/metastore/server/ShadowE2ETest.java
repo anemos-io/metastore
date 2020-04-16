@@ -97,10 +97,10 @@ public class ShadowE2ETest {
 
     MetaStore metaStore = new MetaStore(config);
 
-    RegistryGrpc.RegistryBlockingStub schemaRegistyStub = getSchemaRegistryStub(metaStore);
+    RegistryGrpc.RegistryBlockingStub schemaRegistyStub = GetDescriptorsRegistryStub(metaStore);
 
-    RegistryP.SubmitSchemaRequest.Builder submitSchemaRequest =
-        RegistryP.SubmitSchemaRequest.newBuilder()
+    RegistryP.PutDescriptorsRequest.Builder PutDescriptorsRequest =
+        RegistryP.PutDescriptorsRequest.newBuilder()
             .setRegistryName("default")
             .setMergeStrategy(
                 RegistryP.Merge.newBuilder()
@@ -110,9 +110,9 @@ public class ShadowE2ETest {
         .iterator()
         .forEach(
             fileDescriptor ->
-                submitSchemaRequest.addFileDescriptorProto(
+                PutDescriptorsRequest.addFileDescriptorProto(
                     fileDescriptor.toProto().toByteString()));
-    schemaRegistyStub.submitSchema(submitSchemaRequest.build());
+    schemaRegistyStub.putDescriptors(PutDescriptorsRequest.build());
 
     // check default registry insides
     ProtoDomain actualDefaultRegistry =
@@ -128,15 +128,15 @@ public class ShadowE2ETest {
         baseKnownOption().toFileDescriptorSet(), actualShadowRepo.toFileDescriptorSet());
 
     // add option to shadow
-    RegistryP.SubmitSchemaRequest.Builder submitSchemaRequest2 =
-        RegistryP.SubmitSchemaRequest.newBuilder().setRegistryName("shadow");
+    RegistryP.PutDescriptorsRequest.Builder PutDescriptorsRequest2 =
+        RegistryP.PutDescriptorsRequest.newBuilder().setRegistryName("shadow");
     baseAddMessageOption()
         .iterator()
         .forEach(
             fileDescriptor ->
-                submitSchemaRequest2.addFileDescriptorProto(
+                PutDescriptorsRequest2.addFileDescriptorProto(
                     fileDescriptor.toProto().toByteString()));
-    schemaRegistyStub.submitSchema(submitSchemaRequest2.build());
+    schemaRegistyStub.putDescriptors(PutDescriptorsRequest2.build());
 
     // check shadow patch insides
     ValidationResults expectedResults = new ValidationResults();
@@ -150,8 +150,8 @@ public class ShadowE2ETest {
         actualShadowReport.getMessagePatchesMap());
 
     // add field to default
-    RegistryP.SubmitSchemaRequest.Builder submitDefaultAddField =
-        RegistryP.SubmitSchemaRequest.newBuilder()
+    RegistryP.PutDescriptorsRequest.Builder submitDefaultAddField =
+        RegistryP.PutDescriptorsRequest.newBuilder()
             .setMergeStrategy(
                 RegistryP.Merge.newBuilder()
                     .setPackagePrefixes(
@@ -164,8 +164,8 @@ public class ShadowE2ETest {
               submitDefaultAddField.addFileDescriptorProto(fileDescriptor.toProto().toByteString());
             });
 
-    RegistryP.SubmitSchemaResponse verifyDefaultResponse2 =
-        schemaRegistyStub.verifySchema(submitDefaultAddField.build());
+    RegistryP.PutDescriptorsResponse verifyDefaultResponse2 =
+        schemaRegistyStub.putDescriptors(submitDefaultAddField.setDryRun(true).build());
     Assert.assertFalse(verifyDefaultResponse2.getValidationSummary().getDiffErrors() > 0);
     Assert.assertEquals(
         ChangeType.ADDITION,
@@ -177,7 +177,7 @@ public class ShadowE2ETest {
             .getChange()
             .getChangeType());
 
-    schemaRegistyStub.submitSchema(submitDefaultAddField.build());
+    schemaRegistyStub.putDescriptors(submitDefaultAddField.setDryRun(false).build());
     // check shadow insides
     actualShadowReport =
         Patch.parseFrom(
@@ -191,7 +191,7 @@ public class ShadowE2ETest {
         shadowDefaultFieldAdded().toFileDescriptorSet(), actualShadowRepo.toFileDescriptorSet());
   }
 
-  private RegistryGrpc.RegistryBlockingStub getSchemaRegistryStub(MetaStore metaStore)
+  private RegistryGrpc.RegistryBlockingStub GetDescriptorsRegistryStub(MetaStore metaStore)
       throws IOException {
     String serverName = InProcessServerBuilder.generateName();
     grpcCleanup.register(

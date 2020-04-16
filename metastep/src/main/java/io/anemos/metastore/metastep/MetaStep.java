@@ -229,8 +229,8 @@ public class MetaStep {
   private void validate() throws IOException {
     System.out.println("Contract Validation started");
 
-    RegistryP.SubmitSchemaResponse verifySchemaResponse =
-        schemaRegistry.verifySchema(createSchemaRequest());
+    RegistryP.PutDescriptorsResponse verifySchemaResponse =
+        schemaRegistry.putDescriptors(createSchemaRequest(true));
 
     ValidationSummary validationSummary = verifySchemaResponse.getValidationSummary();
 
@@ -260,14 +260,14 @@ public class MetaStep {
 
   private void publish() throws IOException {
     System.out.println("Contract Push started");
-    schemaRegistry.submitSchema(createSchemaRequest());
+    schemaRegistry.putDescriptors(createSchemaRequest(false));
   }
 
-  private RegistryP.SubmitSchemaRequest createSchemaRequest() throws IOException {
+  private RegistryP.PutDescriptorsRequest createSchemaRequest(boolean dryRun) throws IOException {
     ProtoDomain protoContainer = createDescriptorSet();
 
-    RegistryP.SubmitSchemaRequest.Builder schemaRequestBuilder =
-        RegistryP.SubmitSchemaRequest.newBuilder();
+    RegistryP.PutDescriptorsRequest.Builder schemaRequestBuilder =
+        RegistryP.PutDescriptorsRequest.newBuilder();
     protoContainer
         .iterator()
         .forEach(
@@ -317,6 +317,7 @@ public class MetaStep {
       }
       schemaRequestBuilder.setNote(note);
     }
+    schemaRequestBuilder.setDryRun(dryRun);
     return schemaRequestBuilder.build();
   }
 }
