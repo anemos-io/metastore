@@ -13,8 +13,11 @@ import java.util.Collection;
 import java.util.List;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AvroGit extends GitBase {
+  private static final Logger LOG = LoggerFactory.getLogger(AvroGit.class);
   private String rootOptionName;
   private List<String> schemaFiles;
 
@@ -54,7 +57,7 @@ public class AvroGit extends GitBase {
       writeToFile(avroSchema, fullName, new File(config.getPath()).toPath().toString());
     }
 
-    try (Scope ss = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
+    try (Scope scope = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
       if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
         return;
       }

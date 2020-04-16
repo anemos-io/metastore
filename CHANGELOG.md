@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.8.12
+
+### Added
+
+- Access to the Avro schema representation via the API
+- Extra logging and tracing for the providers
+
 ## 0.8.11
 
 ### Added

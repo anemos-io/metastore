@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetaGit extends GitBase {
+  private static final Logger LOG = LoggerFactory.getLogger(MetaGit.class);
+
   MetaGit(String name, GitConfig config) {
     super(name, config);
   }
@@ -30,7 +34,7 @@ public class MetaGit extends GitBase {
       return;
     }
 
-    try (Scope ss = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
+    try (Scope scope = TRACER.spanBuilder("GitSync").setRecordEvents(true).startScopedSpan()) {
       if (System.getenv("DEBUG") != null && System.getenv("DEBUG").equals("true")) {
         protoContainer.writeToDirectory(new File(config.getPath()).toPath().toString());
         return;

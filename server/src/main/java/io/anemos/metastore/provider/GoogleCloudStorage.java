@@ -7,12 +7,19 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
+import io.opencensus.common.Scope;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GoogleCloudStorage.class);
+  private static final Tracer TRACER = Tracing.getTracer();
   private Storage storage;
   private String bucket;
   private String project;
@@ -76,42 +83,81 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
   @Override
   public void write(ByteString payload) {
-    storage.create(BlobInfo.newBuilder(bucket, fileName).build(), payload.toByteArray());
+    try (Scope scope =
+        TRACER.spanBuilder("GoogleCloudStorage.write").setRecordEvents(true).startScopedSpan()) {
+      storage.create(BlobInfo.newBuilder(bucket, fileName).build(), payload.toByteArray());
+    }
   }
 
   @Override
   public void createResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
-    saveBind();
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.createResourceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
+      saveBind();
+    }
   }
 
   @Override
   public void updateResourceBinding(String resourceUrn, Descriptors.Descriptor descriptor) {
-    bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
-    saveBind();
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.updateResourceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      bindDatabase.bindMessage(resourceUrn, descriptor.getFullName());
+      saveBind();
+    }
   }
 
   @Override
   public void createServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
-    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
-    saveBind();
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.createServiceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      bindDatabase.bindService(resourceUrn, descriptor.getFullName());
+      saveBind();
+    }
   }
 
   @Override
   public void updateServiceBinding(String resourceUrn, Descriptors.ServiceDescriptor descriptor) {
-    bindDatabase.bindService(resourceUrn, descriptor.getFullName());
-    saveBind();
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.updateServiceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      bindDatabase.bindService(resourceUrn, descriptor.getFullName());
+      saveBind();
+    }
   }
 
   @Override
   public void deleteResourceBinding(String resourceUrn) {
-    bindDatabase.remove(resourceUrn);
-    saveBind();
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.deleteResourceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      bindDatabase.remove(resourceUrn);
+      saveBind();
+    }
   }
 
   @Override
   public List<BindResult> listResourceBindings(String next_page_token) {
-    return bindDatabase.list(next_page_token);
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.listResourceBindings")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      return bindDatabase.list(next_page_token);
+    }
   }
 
   @Override
@@ -121,7 +167,13 @@ public class GoogleCloudStorage implements StorageProvider, BindProvider {
 
   @Override
   public BindResult getResourceBinding(String resourceUrn) {
-    return bindDatabase.get(resourceUrn);
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GoogleCloudStorage.getResourceBinding")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      return bindDatabase.get(resourceUrn);
+    }
   }
 
   private void saveBind() {

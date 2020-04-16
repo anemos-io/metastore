@@ -1,17 +1,27 @@
 package io.anemos.metastore.provider;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PubsubMessage;
 import io.anemos.metastore.v1alpha1.Report;
+import io.opencensus.common.Scope;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GooglePubsub implements EventingProvider {
-
-  Publisher publisherDescriptorChange;
-  Publisher publisherBindingChange;
+  private static final Logger LOG = LoggerFactory.getLogger(GooglePubsub.class);
+  private static final Tracer TRACER = Tracing.getTracer();
+  private Publisher publisherDescriptorChange;
+  private Publisher publisherBindingChange;
 
   @Override
   public void initForChangeEvent(RegistryInfo registryInfo, Map<String, String> config) {
@@ -51,7 +61,27 @@ public class GooglePubsub implements EventingProvider {
 
   @Override
   public void descriptorsChanged(Report report) {
-    PubsubMessage message = PubsubMessage.newBuilder().setData(report.toByteString()).build();
-    publisherDescriptorChange.publish(message);
+    try (Scope scope =
+        TRACER
+            .spanBuilder("GooglePubsub.descriptorsChanged")
+            .setRecordEvents(true)
+            .startScopedSpan()) {
+      PubsubMessage message = PubsubMessage.newBuilder().setData(report.toByteString()).build();
+      ApiFuture<String> future = publisherDescriptorChange.publish(message);
+      ApiFutures.addCallback(
+          future,
+          new ApiFutureCallback<String>() {
+            @Override
+            public void onFailure(Throwable t) {
+              LOG.error("Error publishing changes to Pubsub", t);
+            }
+
+            @Override
+            public void onSuccess(String messageId) {
+              LOG.debug("Published changes to Pubsub");
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
   }
 }

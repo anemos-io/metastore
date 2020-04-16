@@ -5,11 +5,18 @@ import io.anemos.metastore.core.git.GitConfig;
 import io.anemos.metastore.provider.RegistryInfo;
 import io.anemos.metastore.provider.StorageProvider;
 import io.anemos.metastore.putils.ProtoDomain;
+import io.opencensus.common.Scope;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.io.*;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AvroSchemaGitStorage implements StorageProvider {
 
+  private static final Logger LOG = LoggerFactory.getLogger(AvroSchemaGitStorage.class);
+  private static final Tracer TRACER = Tracing.getTracer();
   private String rootOptionName;
   private GitConfig gitConfig;
   private RegistryInfo registryInfo;
@@ -36,7 +43,8 @@ public class AvroSchemaGitStorage implements StorageProvider {
 
   @Override
   public void write(ByteString payload) {
-    try {
+    try (Scope scope =
+        TRACER.spanBuilder("AvroSchemaGitStorage.write").setRecordEvents(true).startScopedSpan()) {
       ProtoDomain protoDomain = ProtoDomain.buildFrom(payload);
       AvroGit.write(registryInfo.getName(), gitConfig, protoDomain, rootOptionName);
     } catch (IOException e) {

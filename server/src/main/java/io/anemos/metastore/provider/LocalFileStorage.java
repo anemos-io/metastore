@@ -20,10 +20,10 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
 
   private String path;
   private BindDatabase bindDatabase;
-  private String registyName;
+  private String registryName;
 
   private void init(RegistryInfo registryInfo, Map<String, String> config) {
-    this.registyName = registryInfo.getName();
+    this.registryName = registryInfo.getName();
     this.path = config.get("path");
     if (path == null) {
       throw new RuntimeException("path variable not set");
@@ -51,7 +51,7 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
 
   @Override
   public ByteString read() {
-    String filePath = path + "/" + registyName + ".pb";
+    String filePath = path + "/" + registryName + ".pb";
     try {
       if (!new File(filePath).exists()) {
         return null;
@@ -64,7 +64,7 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
 
   @Override
   public void write(ByteString payload) {
-    String filePath = path + "/" + registyName + ".pb";
+    String filePath = path + "/" + registryName + ".pb";
     try {
       FileUtils.writeByteArrayToFile(new File(filePath), payload.toByteArray());
     } catch (IOException e) {
@@ -118,7 +118,7 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
   }
 
   private void saveBind() {
-    String filePath = path + "/" + registyName + ".bind";
+    String filePath = path + "/" + registryName + ".bind";
     try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filePath))) {
       bindDatabase.write(writer);
     } catch (FileNotFoundException e) {
@@ -129,7 +129,7 @@ public class LocalFileStorage implements StorageProvider, BindProvider {
   }
 
   private void loadBind() {
-    String filePath = path + "/" + registyName + ".bind";
+    String filePath = path + "/" + registryName + ".bind";
     File file = new File(filePath);
     bindDatabase = new BindDatabase();
     if (file.exists()) {

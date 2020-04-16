@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class GitBase {
-  protected static final Logger LOG = LoggerFactory.getLogger(GitBase.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GitBase.class);
   protected static final Tracer TRACER = Tracing.getTracer();
   protected GitConfig config;
   private String name;
